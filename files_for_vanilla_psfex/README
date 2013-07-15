@@ -1,0 +1,15 @@
+Copy these files into the source code for psfex's "rhl" branch, then to build psfex say something like
+
+$ setup -r .
+
+Paul tells me that fftw will now work -- change FFTWF_DIR to FFTW_DIR if so
+Atlas may not be needed on all machines -- from the -with-atlas-XX if so
+
+$ configure CC='cc -Wno-empty-body -Wno-format -Wno-format-security' \
+    --prefix=/u/lsst/products/DarwinX86/external/psfex/rhl \
+    --with-fftw-incdir=$FFTWF_DIR/include --with-fftw-libdir=$FFTWF_DIR/lib \
+    --with-atlas-incdir=$ATLAS_DIR/include --with-atlas-libdir=$ATLAS_DIR/lib
+
+To build the library,
+
+$ scons opt=3
