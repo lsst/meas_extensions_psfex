@@ -21,13 +21,13 @@
  * see <http://www.lsstcorp.org/LegalNotices/>.
  */
 
-#ifndef ASTROMATIC_PSFEX_PSFEX_H
-#define ASTROMATIC_PSFEX_PSFEX_H
+# if !defined(LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H)
+#define LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H 1
 
 #include "lsst/meas/algorithms/ImagePsf.h"
 #include "lsst/meas/extensions/psfex/psf.hh"
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
     namespace detail {
         class PsfexPsfFactory;
     }
@@ -43,7 +43,7 @@ public:
      *  @brief Constructor for a PsfexPsf
      */
     explicit PsfexPsf(
-        astromatic::psfex::Psf const& psf, ///< [in] Psfex PSF model that we want to wrap into an LSST Psf
+        lsst::meas::extensions::psfex::Psf const& psf, ///< [in] Psfex PSF model to be wrapped into an LSST Psf
         lsst::afw::geom::Point2D const & averagePosition=lsst::afw::geom::Point2D()
                                         ///< [in] Average position of stars used to construct the Psf.
     );
@@ -103,6 +103,6 @@ private:
     virtual std::string getPythonModule() const;
 };
 
-}}
+}}}}
 
-#endif // !ASTROMATIC_PSFEX_PSFEX_H
+#endif // !LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H

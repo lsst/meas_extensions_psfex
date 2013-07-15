@@ -64,7 +64,7 @@ load_samples(char **filenames, int catindex, int ncat, int ext,
 
 /************************************************************************************************************/
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 void
 makeit(std::vector<boost::shared_ptr<Field> > &fields_,
@@ -110,4 +110,4 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
     context_end(context);   
 }
 
-}}
+}}}}

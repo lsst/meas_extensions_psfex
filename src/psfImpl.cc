@@ -12,7 +12,7 @@
         return ndarray::external(impl->CNAME, shape, strides); \
     }
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 Context::Context(std::vector<std::string> const& names,
                  std::vector<int> const& group,
@@ -137,4 +137,4 @@ Psf::build(double x, double y,
 RETURN_IMAGE_FIELD(Psf::getLoc,  loc,  impl->size)
 RETURN_IMAGE_FIELD(Psf::getResi, resi, impl->size)
 
-}}
+}}}}

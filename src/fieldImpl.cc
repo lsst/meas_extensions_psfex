@@ -9,7 +9,7 @@ extern "C" {
     #include "globals.h"
 }
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 Field::Field(std::string const& ident) :
     impl(new fieldstruct, field_end), _isInitialized(false)
@@ -138,4 +138,4 @@ Field::addExt(lsst::afw::image::Wcs const& wcs_,
     ++impl->next;
 }
 
-}}
+}}}}

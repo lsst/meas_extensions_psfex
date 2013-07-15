@@ -43,13 +43,12 @@ extern "C" {
 #include "lsst/meas/extensions/psfex/PsfexPsf.h"
 #include "lsst/meas/algorithms/KernelPsfFactory.h"
 
-namespace astromatic {
-namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 namespace afw = lsst::afw;
 
 PsfexPsf::PsfexPsf(
-    astromatic::psfex::Psf const& psf,
+    lsst::meas::extensions::psfex::Psf const& psf,
     afw::geom::Point2D const & averagePosition
                   ) : ImagePsf(), _averagePosition(averagePosition),
                       _size(psf.impl->dim),
@@ -491,4 +490,4 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
     }
 }
 
-}} // namespace astromatic::psfex
+}}}}

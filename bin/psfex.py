@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from astromatic.psfex.psfex import *
+from lsst.meas.extensions.psfex import *
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 

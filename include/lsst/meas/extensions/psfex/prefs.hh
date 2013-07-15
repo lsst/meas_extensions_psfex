@@ -17,7 +17,7 @@ struct structtab; typedef struct structtab tabstruct;
 #include "prefs.h"
 }
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 /**
  * \brief Tuning parameters
  */
@@ -101,7 +101,6 @@ private:
    std::vector<int> _group_degs;	     // Degree for each group
 };
 
-
-}}
+}}}}
 
 #endif

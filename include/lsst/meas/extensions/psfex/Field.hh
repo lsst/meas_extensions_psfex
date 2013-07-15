@@ -23,7 +23,7 @@ struct structtab; typedef struct structtab tabstruct;
 #include "field.h"
 }
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 class Psf;
 class Set;
 
@@ -58,6 +58,6 @@ private:
 void makeit(std::vector<boost::shared_ptr<Field> > &fields,
             std::vector<boost::shared_ptr<Set> > const& sets);
 
-}}
+}}}}
 
 #endif

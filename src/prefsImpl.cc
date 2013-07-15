@@ -2,7 +2,7 @@
 #include "lsst/meas/extensions/psfex/prefs.hh"
 #include "lsst/daf/base.h"
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* values
             ) : _command_line(0) {
@@ -60,4 +60,4 @@ Prefs::addCatalog(std::string const& filename) {
     prefs.incat_name[prefs.ncat++] = const_cast<char *>((_catalogs.end() - 1)->c_str());
 }
 
-}}
+}}}}

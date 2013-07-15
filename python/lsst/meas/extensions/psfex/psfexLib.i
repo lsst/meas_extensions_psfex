@@ -5,7 +5,7 @@ Python interface to psfex classes
 %enddef
 
 %feature("autodoc", "1");
-%module(package="astromatic.psfex", docstring=psfexLib_DOCSTRING) psfexLib
+%module(package="lsst.meas.extensions.psfex", docstring=psfexLib_DOCSTRING) psfexLib
 
 %include "lsst/p_lsstSwig.i"
 
@@ -36,8 +36,8 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 
 %include "ndarray.i"
 
-%shared_ptr(astromatic::psfex::Field);
-%shared_ptr(astromatic::psfex::Set);
+%shared_ptr(lsst::meas::extensions::psfex::Field);
+%shared_ptr(lsst::meas::extensions::psfex::Set);
 
 %import "lsst/daf/base/baseLib.i"
 %import "lsst/afw/image/Wcs.i"
@@ -48,13 +48,13 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 
 %declareNumPyConverters(ndarray::Array<float,2,2>);
 
-%exception astromatic::psfex::Context::getPc {
+%exception lsst::meas::extensions::psfex::Context::getPc {
    try { $action } catch (const std::out_of_range& e) { SWIG_exception(SWIG_IndexError, e.what()); }
 }
-%exception astromatic::psfex::Set::getSample {
+%exception lsst::meas::extensions::psfex::Set::getSample {
    try { $action } catch (const std::out_of_range& e) { SWIG_exception(SWIG_IndexError, e.what()); }
 }
-%exception astromatic::psfex::Psf::build {
+%exception lsst::meas::extensions::psfex::Psf::build {
    try { $action } catch (const std::out_of_range & e) { SWIG_exception(SWIG_IndexError, e.what()); }
 }
 
@@ -62,9 +62,9 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 %include "lsst/meas/extensions/psfex/prefs.hh"
 %include "lsst/meas/extensions/psfex/psf.hh"
 
-%template(vectorField) std::vector<boost::shared_ptr<astromatic::psfex::Field> >;
-%template(vectorPsf) std::vector<astromatic::psfex::Psf>;
-%template(vectorSet) std::vector<boost::shared_ptr<astromatic::psfex::Set> >;
+%template(vectorField) std::vector<boost::shared_ptr<lsst::meas::extensions::psfex::Field> >;
+%template(vectorPsf) std::vector<lsst::meas::extensions::psfex::Psf>;
+%template(vectorSet) std::vector<boost::shared_ptr<lsst::meas::extensions::psfex::Set> >;
 
 %inline %{
    #undef BIG
@@ -87,8 +87,8 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 %import "lsst/afw/detection/detectionLib.i"
 %import "lsst/meas/algorithms/algorithmsLib.i"
 
-%declareTablePersistable(PsfexPsf, astromatic::psfex::PsfexPsf);
+%declareTablePersistable(PsfexPsf, lsst::meas::extensions::psfex::PsfexPsf);
 
 %include "lsst/meas/extensions/psfex/PsfexPsf.h"
 
-%lsst_persistable(astromatic::psfex::PsfexPsf);
+%lsst_persistable(lsst::meas::extensions::psfex::PsfexPsf);

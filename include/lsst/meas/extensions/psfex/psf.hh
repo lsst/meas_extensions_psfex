@@ -19,7 +19,7 @@ namespace ndarray {
     template<typename T, int n1, int n2> class Array;
 }
 
-namespace astromatic { namespace psfex {
+namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 class Field;
 class Psf;
@@ -178,6 +178,6 @@ private:
     boost::shared_ptr<fieldstruct> _owner;
 };
 
-}}
+}}}}
 
 #endif
