@@ -96,7 +96,7 @@ public:
     Sample newSample();
     void trimMemory() const;
 
-    int getFwhm() const { return impl->fwhm; }
+    double getFwhm() const { return impl->fwhm; }
     void setFwhm(double fwhm) { impl->fwhm = fwhm; }
     int getNcontext() const { return impl->ncontext; }
     int getNsample() const { return impl->nsample; }
