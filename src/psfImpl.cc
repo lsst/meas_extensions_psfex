@@ -61,7 +61,9 @@ std::vector<double> & Context::getPc(int const i) const
 
 void Sample::setVig(ndarray::Array<float,2,2> const& img)
 {
-    memcpy(impl->vig, &img(0,0), img.getSize<0>()*img.getSize<1>()*sizeof(float));
+    int const w = img.getSize<0>(), h = img.getSize<1>();
+    float const *begin = &img(0,0);
+    std::copy(begin, begin + w*h, impl->vig);
 }
 
 RETURN_IMAGE_FIELD(Sample::getVig,       vig,       _vigsize)
@@ -127,7 +129,7 @@ Psf::build(double x, double y,
 
     pos.insert(pos.end(), other.begin(), other.end());
     
-    for (int i = 0; i != pos.size(); ++i) {
+    for (unsigned int i = 0; i != pos.size(); ++i) {
         pos[i] = (pos[i] - impl->contextoffset[i])/impl->contextscale[i];
     }
 

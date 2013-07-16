@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <cstring>
 #include <string>
 #include <vector>
 #include "boost/shared_ptr.hpp"

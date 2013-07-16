@@ -480,7 +480,7 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
         {
             double *begin1 = record->getElement(keys._context_first);
             double *begin2 = record->getElement(keys._context_second);
-            for (int i = 0; i != _context.size(); ++i) {
+            for (unsigned int i = 0; i != _context.size(); ++i) {
                 begin1[i] = _context[i].first;
                 begin2[i] = _context[i].second;
             }

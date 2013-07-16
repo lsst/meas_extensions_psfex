@@ -72,7 +72,7 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
       )
 {
     std::vector<fieldstruct *> fields(fields_.size());
-    for (int i = 0; i != fields.size(); ++i) {
+    for (unsigned int i = 0; i != fields.size(); ++i) {
         fields[i] = fields_[i]->impl.get();
     }
     /*
