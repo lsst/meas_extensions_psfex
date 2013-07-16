@@ -40,7 +40,7 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 %shared_ptr(lsst::meas::extensions::psfex::Set);
 
 %import "lsst/daf/base/baseLib.i"
-%import "lsst/afw/image/Wcs.i"
+%import "lsst/afw/image/wcs.i"
 
 %template(vectorF) std::vector<float>;
 %template(vectorI) std::vector<int>;
