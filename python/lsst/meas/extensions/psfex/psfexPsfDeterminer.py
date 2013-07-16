@@ -181,6 +181,8 @@ class PsfexPsfDeterminer(object):
             # construct and populate a spatial cell set
             bbox = mi.getBBox(afwImage.PARENT)
             psfCellSet = afwMath.SpatialCellSet(bbox, self.config.sizeCellX, self.config.sizeCellY)
+        else:
+            psfCellSet = None
         
         sizes = np.empty(nCand)
         for i, psfCandidate in enumerate(psfCandidateList):
