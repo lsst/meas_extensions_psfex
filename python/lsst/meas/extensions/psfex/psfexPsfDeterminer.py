@@ -27,6 +27,7 @@ import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
 import lsst.pex.exceptions as pexExceptions
 import lsst.pex.logging as pexLog
+import lsst.afw.cameraGeom as afwCG
 import lsst.afw.geom as afwGeom
 import lsst.afw.geom.ellipses as afwEll
 import lsst.afw.detection as afwDetection
@@ -236,8 +237,12 @@ class PsfexPsfDeterminer(object):
 
         catindex, ext = 0, 0
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
-        gain = 1.0
-        self.warnLog.log(pexLog.Log.WARN, "Setting gain to %g" % gain)
+        ccd = afwCG.cast_Ccd(exposure.getDetector())
+        if ccd:
+            gain = np.mean(np.array([a.getElectronicParams().getGain() for a in ccd]))
+        else:
+            gain = 1.0
+            self.warnLog.log(pexLog.Log.WARN, "Setting gain to %g" % gain)
 
         contextvalp = []
         for i, key in enumerate(context.getName()):
