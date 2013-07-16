@@ -13,8 +13,10 @@ Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* va
     } else {
         std::vector<char *> argkey(narg);
         std::vector<char *> argval(narg);
+        std::vector<std::string> const names = values->paramNames();
+
         for (int i = 0; i != narg; ++i) {
-            std::string const& name = values->paramNames()[i];
+            std::string const& name = names[i];
             argkey[i] = const_cast<char *>(name.c_str());
             argval[i] = const_cast<char *>(values->getAsString(name).c_str());
         }
