@@ -29,6 +29,7 @@
  */
 #include <cmath>
 #include <cassert>
+#include <numeric>
 
 #include "boost/make_shared.hpp"
 
@@ -230,9 +231,10 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
                static_cast<int>(center[1] - dy - h/2 + 0.5));
     {
         float *pl = &sampledIm[0];
+        float const sum = std::accumulate(pl, pl + w*h, static_cast<float>(0));
         for (int y = 0; y != h; ++y) {
             for (int x = 0; x != w; ++x) {
-                (*im)(y, x) = *pl++;       // N.b.: (y, x) --- we're transposing the data
+                (*im)(y, x) = *pl++/sum; // N.b.: (y, x) --- we're transposing the data
             }
         }
     }
