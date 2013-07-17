@@ -286,8 +286,13 @@ class PsfexPsfDeterminer(object):
                     continue
 
                 try:
-                    pstamp = mi[x - actualKernelSize//2:x + actualKernelSize//2 + 1,
-                                y - actualKernelSize//2:y + actualKernelSize//2 + 1]
+                    x0, x1 = x - actualKernelSize//2, x + actualKernelSize//2,
+                    y0, y1 = y - actualKernelSize//2, y + actualKernelSize//2
+
+                    if x0 < 0 or x1 >= mi.getWidth() or y0 < 0 or y1 >= mi.getHeight():
+                        continue
+
+                    pstamp = mi[x0:x1 + 1, y0:y1 + 1]
                     sample.setVig(pstamp.getImage().getArray().transpose().copy())
                 except Exception, e:
                     print e

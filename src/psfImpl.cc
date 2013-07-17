@@ -1,4 +1,6 @@
 // -*- lsst-C++ -*-
+#include "boost/format.hpp"
+#include "lsst/pex/exceptions.h"
 #include "lsst/meas/extensions/psfex/psf.hh"
 #include "ndarray.h"
 
@@ -62,8 +64,15 @@ std::vector<double> & Context::getPc(int const i) const
 void Sample::setVig(ndarray::Array<float,2,2> const& img)
 {
     int const w = img.getSize<0>(), h = img.getSize<1>();
-    float const *begin = &img(0,0);
-    std::copy(begin, begin + w*h, impl->vig);
+
+    if (_vigsize[0]*_vigsize[1] != w*h) {
+        throw LSST_EXCEPT(lsst::pex::exceptions::LengthErrorException,
+                          str(boost::format("Expected %dx%d array, but was passed %dx%d")
+                              % _vigsize[0] % _vigsize[1] % w % h));
+    }
+
+    ndarray::Array<float,1,1> flattened = ndarray::flatten<1>(img);
+    std::copy(flattened.begin(), flattened.end(), impl->vig);
 }
 
 RETURN_IMAGE_FIELD(Sample::getVig,       vig,       _vigsize)
