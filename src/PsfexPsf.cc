@@ -225,10 +225,10 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     // And copy it into place
     //
     PTR(afw::detection::Psf::Image) im = boost::make_shared<afw::detection::Psf::Image>(w, h);
-    // N.b. center[0] - dx == (int)center[] if we hadn't reduced dx to (-0.5, 0.5].
+    // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
     // The + 0.5 is to handle floating point imprecision in this calculation
-    im->setXY0(-static_cast<int>(w/2 + dx - center[0] + 0.5),
-               -static_cast<int>(h/2 + dy - center[1] + 0.5));
+    im->setXY0(static_cast<int>(center[0] - dx + 0.5) - w/2,
+               static_cast<int>(center[1] - dy + 0.5) - h/2);
     {
         float *pl = &sampledIm[0];
         float const sum = std::accumulate(pl, pl + w*h, static_cast<float>(0));
