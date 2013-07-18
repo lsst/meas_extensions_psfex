@@ -1,7 +1,6 @@
 setupRequired(meas_algorithms)
-setupRequired(atlas)
-setupRequired(fftwf)
-setupRequired(pyfits)
+setupOptional(atlas)
+setupOptional(pyfits)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
 
