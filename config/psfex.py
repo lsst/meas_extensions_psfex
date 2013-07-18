@@ -14,4 +14,4 @@ except AttributeError, e:
 root.calibrate.measurePsf.starSelector["psfex"].maxFwhmVariability = 0.1
 root.calibrate.measurePsf.starSelector["psfex"].maxbadflag = False
 
-root.calibrate.measurePsf.psfDeterminer["psfex"].spatialOrder = 1
+root.calibrate.measurePsf.psfDeterminer["psfex"].spatialOrder = 1 if False else 2
