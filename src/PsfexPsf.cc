@@ -136,7 +136,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
          */
         vignet_resample(const_cast<float *>(&_comp[i*w*h]), w, h,
                         &sampledBasis[0],                   w, h,
-                        -dy*vigstep, -dx*vigstep, vigstep, 1.0); // n.b. x and y are transposed
+                        -dx*vigstep, -dy*vigstep, vigstep, 1.0);
         //
         // And copy it into place
         //
@@ -144,7 +144,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
             float *pl = &sampledBasis[0];
             for (int y = 0; y != h; ++y) {
                 for (int x = 0; x != w; ++x) {
-                    kim(y, x) = *pl++;  // N.b.: (y, x) --- we're transposing the data
+                    kim(x, y) = *pl++;
                 }
             }
         }
@@ -220,7 +220,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     std::vector<float> sampledIm(w*h);
     vignet_resample(&fullresIm[0], w, h,
                     &sampledIm[0], w, h,
-                    -dy*vigstep, -dx*vigstep, vigstep, 1.0); // n.b. x and y are transposed
+                    -dx*vigstep, -dy*vigstep, vigstep, 1.0);
     //
     // And copy it into place
     //
@@ -234,7 +234,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
         float const sum = std::accumulate(pl, pl + w*h, static_cast<float>(0));
         for (int y = 0; y != h; ++y) {
             for (int x = 0; x != w; ++x) {
-                (*im)(y, x) = *pl++/sum; // N.b.: (y, x) --- we're transposing the data
+                (*im)(x, y) = *pl++/sum;
             }
         }
     }
