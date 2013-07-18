@@ -86,6 +86,13 @@ class PsfexPsfDeterminerConfig(pexConfig.Config):
         dtype = int,
         default = 45,
     )
+    badMaskBits = pexConfig.ListField(
+        doc="""List of mask bits which cause a source to be rejected as bad
+N.b. INTRP is used specially in PsfCandidateSet; it means "Contaminated by neighbour"
+""",
+        dtype=str,
+        default=["INTRP", "SAT"],
+        )
     __borderWidth = pexConfig.Field(
         doc = "Number of pixels to ignore around the edge of PSF candidate postage stamps",
         dtype = int,
@@ -224,6 +231,7 @@ class PsfexPsfDeterminer(object):
         defaultsFile = os.path.join(os.environ["MEAS_EXTENSIONS_PSFEX_DIR"], "config", "default-lsst.psfex")
         args_md = dafBase.PropertySet()
         args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
+        args_md.set("PSF_SIZE", str(actualKernelSize))
         prefs = psfex.Prefs(defaultsFile, args_md)
         prefs.setCommandLine([])
         prefs.addCatalog("psfexPsfDeterminer")
@@ -270,6 +278,8 @@ class PsfexPsfDeterminer(object):
             if displayExposure:
                 ds9.mtv(exposure, frame=frame, title="psf determination")
             
+        badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
+
         with ds9.Buffering():
             xpos, ypos = [], []
             for i, psfCandidate in enumerate(psfCandidateList):
@@ -286,22 +296,13 @@ class PsfexPsfDeterminer(object):
                     continue
 
                 try:
-                    x0, x1 = x - actualKernelSize//2, x + actualKernelSize//2,
-                    y0, y1 = y - actualKernelSize//2, y + actualKernelSize//2
-
-                    if x0 < 0 or x1 >= mi.getWidth() or y0 < 0 or y1 >= mi.getHeight():
-                        continue
-
-                    pstamp = mi[x0:x1 + 1, y0:y1 + 1]
-                    sample.setVig(pstamp.getImage().getArray().transpose().copy())
+                    pstamp = psfCandidate.getMaskedImage().clone()
                 except Exception, e:
-                    print e
                     continue
 
-                if False:
-                    pstamp.getImage().getArray()[:] = sample.getVig()
-
-                    ds9.mtv(pstamp)
+                imArray = pstamp.getImage().getArray()
+                imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = -2*psfex.cvar.BIG
+                sample.setVig(imArray)
 
                 sample.setNorm(source.get(prefs.getPhotfluxRkey()))
                 sample.setBacknoise2(backnoise2)
