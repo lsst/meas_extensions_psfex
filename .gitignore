@@ -28,3 +28,5 @@ python/lsst/meas/extensions/psfex/version.py
 
 psfex.xml
 sc*-mod.fits
+
+tests/.tests
