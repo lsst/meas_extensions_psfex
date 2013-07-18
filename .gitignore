@@ -30,3 +30,7 @@ psfex.xml
 sc*-mod.fits
 
 tests/.tests
+
+doc/html
+doc/doxygen.conf
+doc/*.tag
