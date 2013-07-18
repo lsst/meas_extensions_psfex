@@ -6,6 +6,8 @@ namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* values
             ) : _command_line(0) {
+    prefs = prefs0;
+
     char *cfilename = const_cast<char *>(filename.c_str()); // const_cast as PSFEX isn't careful about const
     int const narg = values->nameCount();
     if (narg == 0) {
