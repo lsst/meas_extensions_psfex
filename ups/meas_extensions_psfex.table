@@ -1,3 +1,4 @@
+setupRequired(meas_algorithms)
 setupRequired(psfex)
 #setupRequired(pyfits)
 
