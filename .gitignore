@@ -25,6 +25,7 @@ stamp-h1
 python/lsst/meas/extensions/psfex/psfexLib_wrap.*
 python/lsst/meas/extensions/psfex/psfexLib.py
 python/lsst/meas/extensions/psfex/version.py
+TAGS
 
 psfex.xml
 sc*-mod.fits
