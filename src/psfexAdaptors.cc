@@ -98,7 +98,7 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
             for (int i = 0; i != prefs.ncat; ++i) {
                 incat_name[i] = prefs.incat_name[i];
             }
-            for (int i = 0; i != sets.size(); ++i) {
+            for (unsigned int i = 0; i != sets.size(); ++i) {
                 prefs.incat_name[i] = reinterpret_cast<char *>(sets[i]->impl);
             }
             prefs.ncat = setsSize;
