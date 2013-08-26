@@ -77,9 +77,11 @@ public:
     float getNorm() const { return impl->norm; }
     
 private:
-    Sample(samplestruct *s, int *vigsize) : impl(s), _vigsize(vigsize) { }
+    Sample(samplestruct *s, bool recentroid, int *vigsize) : impl(s), _recentroid(recentroid),
+                                                             _fluxrad(0.0), _vigsize(vigsize) { }
 
     samplestruct *impl;
+    bool _recentroid;                   // should I allow psfex to recentroid PSF candidates?
     float _fluxrad;                     // needed by recenter_sample
     int *_vigsize;                      // needed to make sense of the arrays
 };
@@ -104,6 +106,8 @@ public:
     void   setContextOffset(int i, double val) { impl->contextoffset[i] = val; }
     double getContextScale(int i) const { return impl->contextscale[i]; }
     void   setContextScale(int i, double val) { impl->contextscale[i] = val; }
+    bool getRecentroid() const { return _recentroid; }
+    void setRecentroid(bool recentroid) { _recentroid = recentroid; }
     void setVigSize(int w, int h) {
         impl->vigsize[0] = w;
         impl->vigsize[1] = h;
@@ -140,12 +144,13 @@ public:
             throw std::out_of_range(s1.str());
         }
 
-        return Sample(impl->sample[i], impl->vigsize);
+        return Sample(impl->sample[i], _recentroid, impl->vigsize);
     }
 
 private:
     setstruct *impl;
     std::vector<const char *> _contextNames;
+    bool _recentroid;                   // should I allow psfex to recentroid PSF candidates?
 };
 
 /** \brief PSF
