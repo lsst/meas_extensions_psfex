@@ -133,6 +133,11 @@ N.b. INTRP is used specially in PsfCandidateSet; it means "Contaminated by neigh
         dtype = float,
         default = 3.0,
     )
+    recentroid = pexConfig.Field(
+        doc = "Should PSFEX be permitted to recentroid PSF candidates?",
+        dtype = bool,
+        default = False,
+    )
 
 class PsfexPsfDeterminer(object):
     ConfigClass = PsfexPsfDeterminerConfig
@@ -244,6 +249,7 @@ class PsfexPsfDeterminer(object):
 	set = psfex.Set(context)
         set.setVigSize(actualKernelSize, actualKernelSize)
         set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
+        set.setRecentroid(self.config.recentroid)
 
         catindex, ext = 0, 0
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()

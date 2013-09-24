@@ -100,7 +100,7 @@ Set::newSample()
             realloc_samples(impl, (int)(1.62*impl->nsamplemax + 1));
         }
     }
-    return Sample(impl->sample[impl->nsample++], impl->vigsize);
+    return Sample(impl->sample[impl->nsample++], _recentroid, impl->vigsize);
 }
         
 void
@@ -114,7 +114,9 @@ void
 Set::finiSample(Sample const& sample)
 {
     make_weights(impl, sample.impl);
-    recenter_sample(sample.impl, impl, sample._fluxrad);
+    if (sample._recentroid) {
+        recenter_sample(sample.impl, impl, sample._fluxrad);
+    }
 }
 
 /************************************************************************************************************/
