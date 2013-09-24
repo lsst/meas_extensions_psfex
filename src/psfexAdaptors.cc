@@ -1,5 +1,3 @@
-#include "boost/format.hpp"
-#include "lsst/pex/exceptions.h"
 #include "lsst/meas/extensions/psfex/Field.hh"
 
 extern "C" {
@@ -73,11 +71,6 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
        std::vector<boost::shared_ptr<Set> > const& sets
       )
 {
-    if (sets.size() > MAXFILE) {
-        throw LSST_EXCEPT(lsst::pex::exceptions::LengthErrorException,
-                          (boost::format("Too many sets: %d") % sets.size()).str());
-    }
-
     std::vector<fieldstruct *> fields(fields_.size());
     for (unsigned int i = 0; i != fields.size(); ++i) {
         fields[i] = fields_[i]->impl.get();
@@ -86,41 +79,31 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
      * We are going to scribble on prefs.incat_name to replace the array of (char*) with
      * an array of data
      */
-
-    /// RAII for the scribbling
-    struct ScribbleRaii {
-        int const ncat;                 // Original number
-        std::vector<char *> incat_name; // Original data
-        size_t const setsSize;          // New size
-        ScribbleRaii(std::vector<boost::shared_ptr<Set> > const& sets) :
-            ncat(prefs.ncat), incat_name(ncat), setsSize(sets.size())
-        {
-            for (int i = 0; i != prefs.ncat; ++i) {
-                incat_name[i] = prefs.incat_name[i];
-            }
-            for (int i = 0; i != sets.size(); ++i) {
-                prefs.incat_name[i] = reinterpret_cast<char *>(sets[i]->impl);
-            }
-            prefs.ncat = setsSize;
-        }
-        ~ScribbleRaii() {
-            for (int i = 0; i != prefs.ncat; ++i) {
-                prefs.incat_name[i] = incat_name[i];
-            }
-            for (size_t i = prefs.ncat; i < setsSize; ++i) {
-                prefs.incat_name[i] = NULL;
-            }
-            prefs.ncat = ncat;
-        }
-    };
-
-
-    contextstruct *context = NULL, *fullcontext = NULL;
-    {
-        ScribbleRaii scribble(sets);
-        makeit_body(&fields[0], &context, &fullcontext, false);
+    std::vector<char *> incat_name(prefs.ncat);
+    for (int i = 0; i != prefs.ncat; ++i) {
+        incat_name[i] = prefs.incat_name[i];
     }
 
+    contextstruct *context = NULL, *fullcontext = NULL;
+    try {
+        for (int i = 0; i != prefs.ncat; ++i) {
+            prefs.incat_name[i] = reinterpret_cast<char *>(sets[i]->impl);
+        }
+
+        makeit_body(&fields[0], &context, &fullcontext, false);
+    } catch(...) {
+        // Restore prefs.incat_name
+        for (int i = 0; i != prefs.ncat; ++i) {
+            prefs.incat_name[i] = incat_name[i];
+        }
+        throw;
+    }
+    
+    // Restore prefs.incat_name
+    for (int i = 0; i != prefs.ncat; ++i) {
+        prefs.incat_name[i] = incat_name[i];
+    }
+    
     if (context->npc) {
         context_end(fullcontext);
     }
