@@ -12,8 +12,9 @@ extern "C" {
 namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 Field::Field(std::string const& ident) :
-    impl(new fieldstruct, field_end), _isInitialized(false)
+    impl(NULL), _isInitialized(false)
 {
+    QCALLOC(impl, fieldstruct, 1);
     impl->next = 0;
     
     strcpy(impl->catname, ident.c_str());
@@ -52,7 +53,8 @@ Field::~Field()
         free(impl->wcs[i]);             // psfex's wcs isn't quite the same as ours ...
         impl->wcs[i] = NULL;            // ... so don't let psfex free it
     }
-    //field_end(impl);
+    field_end(impl);
+    impl = NULL;
 }
         
 /************************************************************************************************************/
@@ -61,7 +63,7 @@ void
 Field::_finalize(bool force)
 {
     if (force || !_isInitialized) {
-        field_init_finalize(impl.get());
+        field_init_finalize(impl);
         _isInitialized = true;
     }
 }
@@ -74,7 +76,7 @@ Field::getPsfs() const
     if (_psfs.empty()) {
         _psfs.reserve(impl->next);
         for (int i = 0; i != impl->next; ++i) {
-            _psfs.push_back(Psf(impl->psf[i], impl));
+            _psfs.push_back(Psf(impl->psf[i]));
         }
     }
 
@@ -132,6 +134,10 @@ Field::addExt(lsst::afw::image::Wcs const& wcs_,
     wcs->lat = wcsPrm->lat;
     wcs->lng = wcsPrm->lng;
     wcs->equinox = wcsPrm->equinox;
+
+    CONST_PTR(afw::coord::Coord) center = wcs_.pixelToSky(afw::geom::Point2D(0.5*naxis1, 0.5*naxis2));
+    wcs->wcsscalepos[0] = center->getLongitude().asDegrees();
+    wcs->wcsscalepos[1] = center->getLatitude().asDegrees();
 
     impl->ndet += nobj;
     

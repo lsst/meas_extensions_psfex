@@ -158,8 +158,8 @@ private:
 class Psf {
     friend class PsfexPsf;
 public:
-    Psf() : impl(0), _owner(boost::shared_ptr<fieldstruct>()) {}
-    Psf(psfstruct *psf, boost::shared_ptr<fieldstruct> owner) : impl(psf), _owner(owner) {}
+    Psf() : impl(0) {}
+    explicit Psf(psfstruct *psf) : impl(psf) {}
     ~Psf();
     
     ndarray::Array<float,2,2> getLoc() const;
@@ -180,8 +180,6 @@ public:
     
 protected:
     psfstruct *impl;
-private:
-    boost::shared_ptr<fieldstruct> _owner;
 };
 
 }}}}
