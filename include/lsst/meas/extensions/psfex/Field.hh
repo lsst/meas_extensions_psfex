@@ -34,7 +34,7 @@ class Field {
     friend void makeit(std::vector<boost::shared_ptr<Field> > &fields,
                        std::vector<boost::shared_ptr<Set> > const& sets);
 public:
-    Field(std::string const& ident="unknown" ///< Name of Field
+    explicit Field(std::string const& ident="unknown" ///< Name of Field
          );
     ~Field();
     //
@@ -48,7 +48,7 @@ public:
     std::vector<Psf> getPsfs() const;
     
 private:
-   boost::shared_ptr<fieldstruct> impl;
+   fieldstruct* impl;
    mutable std::vector<Psf> _psfs;
    mutable bool _isInitialized;
 
