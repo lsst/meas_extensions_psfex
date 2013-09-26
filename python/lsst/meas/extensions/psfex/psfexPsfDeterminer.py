@@ -290,11 +290,6 @@ class PsfexPsfDeterminer(object):
             xpos, ypos = [], []
             for i, psfCandidate in enumerate(psfCandidateList):
                 source = psfCandidate.getSource()
-
-                sample = set.newSample()
-                sample.setCatindex(catindex)
-                sample.setExtindex(ext)
-
                 xc, yc = source.getX(), source.getY()
                 try:
                     x, y = int(xc), int(yc)
@@ -306,21 +301,32 @@ class PsfexPsfDeterminer(object):
                 except Exception, e:
                     continue
 
-                imArray = pstamp.getImage().getArray()
-                imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = -2*psfex.cvar.BIG
-                sample.setVig(imArray)
+                # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
+                # Having created the sample, we must proceed to configure it, and then fini (finalize),
+                # or it will be malformed.
+                try:
+                    sample = set.newSample()
+                    sample.setCatindex(catindex)
+                    sample.setExtindex(ext)
 
-                sample.setNorm(source.get(prefs.getPhotfluxRkey()))
-                sample.setBacknoise2(backnoise2)
-                sample.setGain(gain)
-                sample.setX(xc)
-                sample.setY(float(yc))
-                sample.setFluxrad(sizes[i])
+                    imArray = pstamp.getImage().getArray()
+                    imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = -2*psfex.cvar.BIG
+                    sample.setVig(imArray)
 
-                for j in range(set.getNcontext()):
-                    sample.setContext(j, float(contextvalp[j][i]))
+                    sample.setNorm(source.get(prefs.getPhotfluxRkey()))
+                    sample.setBacknoise2(backnoise2)
+                    sample.setGain(gain)
+                    sample.setX(xc)
+                    sample.setY(yc)
+                    sample.setFluxrad(sizes[i])
 
-                set.finiSample(sample)
+                    for j in range(set.getNcontext()):
+                        sample.setContext(j, float(contextvalp[j][i]))
+                except Exception as e:
+                    self.debugLog.debug(2, "Exception when processing sample at (%f,%f): %s" % (xc,yc,e))
+                    continue
+                else:
+                    set.finiSample(sample)
 
                 if flagKey is not None:
                     source.set(flagKey, True)
