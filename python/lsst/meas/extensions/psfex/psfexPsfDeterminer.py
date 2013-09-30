@@ -301,6 +301,9 @@ class PsfexPsfDeterminer(object):
                 except Exception, e:
                     continue
 
+                if source.get(prefs.getPhotfluxRkey()) < 0:
+                    continue
+
                 # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
                 # Having created the sample, we must proceed to configure it, and then fini (finalize),
                 # or it will be malformed.
