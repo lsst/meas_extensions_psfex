@@ -285,6 +285,8 @@ class PsfexPsfDeterminer(object):
                 ds9.mtv(exposure, frame=frame, title="psf determination")
             
         badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
+        fluxName = prefs.getPhotfluxRkey()
+        fluxFlagName = fluxName + ".flags"
 
         with ds9.Buffering():
             xpos, ypos = [], []
@@ -301,7 +303,11 @@ class PsfexPsfDeterminer(object):
                 except Exception, e:
                     continue
 
-                if source.get(prefs.getPhotfluxRkey()) < 0:
+                if fluxFlagName in source.schema and source.get(fluxFlagName):
+                    continue
+
+                flux = source.get(fluxName)
+                if flux < 0 or np.isnan(flux):
                     continue
 
                 # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
@@ -316,7 +322,7 @@ class PsfexPsfDeterminer(object):
                     imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = -2*psfex.cvar.BIG
                     sample.setVig(imArray)
 
-                    sample.setNorm(source.get(prefs.getPhotfluxRkey()))
+                    sample.setNorm(flux)
                     sample.setBacknoise2(backnoise2)
                     sample.setGain(gain)
                     sample.setX(xc)
@@ -338,6 +344,9 @@ class PsfexPsfDeterminer(object):
 
             if displayExposure:
                 ds9.dot("o", xc, yc, ctype=ds9.CYAN, size=4, frame=frame)
+
+        if set.getNsample() == 0:
+            raise RuntimeError("No good PSF candidates to pass to PSFEx")
 
         #---- Update min and max and then the scaling
         for i in range(set.getNcontext()):
