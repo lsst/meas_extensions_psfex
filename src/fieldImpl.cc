@@ -139,6 +139,18 @@ Field::addExt(lsst::afw::image::Wcs const& wcs_,
     wcs->wcsscalepos[0] = center->getLongitude().asDegrees();
     wcs->wcsscalepos[1] = center->getLatitude().asDegrees();
 
+    double maxradius = 0.0;             // Maximum distance to wcsscalepos
+    for (int x = 0; x <= 1; ++x) {
+        for (int y = 0; y <= 1; ++y) {
+            afw::geom::Point2D point(x*naxis1, y*naxis2); // Corner
+            double const radius = center->angularSeparation(*wcs_.pixelToSky(point)).asDegrees();
+            if (radius > maxradius) {
+                maxradius = radius;
+            }
+        }
+    }
+    wcs->wcsmaxradius = maxradius;
+
     impl->ndet += nobj;
     
     ++impl->next;
