@@ -58,6 +58,8 @@ public:
 
     int getCatindex() const { return impl->catindex; }
     void setCatindex(int val) { impl->catindex = val; }
+    int getObjindex() const { return impl->objindex; }
+    void setObjindex(int val) { impl->objindex = val; }
     int getExtindex() const { return impl->extindex; }
     void setExtindex(int val) { impl->extindex = val; }
     void setVig(ndarray::Array<float,2,2> const& img);

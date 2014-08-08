@@ -317,6 +317,7 @@ class PsfexPsfDeterminer(object):
                     sample = set.newSample()
                     sample.setCatindex(catindex)
                     sample.setExtindex(ext)
+                    sample.setObjindex(i)
 
                     imArray = pstamp.getImage().getArray()
                     imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = -2*psfex.cvar.BIG
@@ -336,9 +337,6 @@ class PsfexPsfDeterminer(object):
                     continue
                 else:
                     set.finiSample(sample)
-
-                if flagKey is not None:
-                    source.set(flagKey, True)
 
                 xpos.append(xc); ypos.append(yc) # for QA
 
@@ -375,8 +373,22 @@ class PsfexPsfDeterminer(object):
         psfex.makeit(fields, sets)
         psfs = field.getPsfs()
 
+        # Flag which objects were actually used in psfex by
+        good_indices = []
+        for i in range(sets[0].getNsample()):
+            index = sets[0].getSample(i).getObjindex()
+            if index > -1:
+                good_indices.append(index)
+        
+        if flagKey is not None:
+            for i, psfCandidate in enumerate(psfCandidateList):
+                source = psfCandidate.getSource()
+                if i in good_indices: 
+                    source.set(flagKey, True)
+
+
         xpos = np.array(xpos); ypos = np.array(ypos)
-        numGoodStars = len(xpos)
+        numGoodStars = len(good_indices)
         avgX, avgY = np.mean(xpos), np.mean(ypos)
 
         psf = psfex.PsfexPsf(psfs[0], afwGeom.Point2D(avgX, avgY))
