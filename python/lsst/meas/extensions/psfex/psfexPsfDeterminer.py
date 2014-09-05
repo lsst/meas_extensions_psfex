@@ -86,6 +86,11 @@ class PsfexPsfDeterminerConfig(pexConfig.Config):
         dtype = int,
         default = 45,
     )
+    samplingSize = pexConfig.Field(
+        doc = "Resolution of the internal PSF model relative to the pixel size; e.g. 0.5 is equal to 2x oversampling",
+        dtype = float,
+        default = 1.0,
+    )
     badMaskBits = pexConfig.ListField(
         doc="""List of mask bits which cause a source to be rejected as bad
 N.b. INTRP is used specially in PsfCandidateSet; it means "Contaminated by neighbour"
@@ -225,9 +230,14 @@ class PsfexPsfDeterminer(object):
                 print "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
         self.debugLog.debug(3, "Kernel size=%s" % (actualKernelSize,))
 
-        # Set size of image returned around candidate
-        psfCandidateList[0].setHeight(actualKernelSize)
-        psfCandidateList[0].setWidth(actualKernelSize)
+        # If we manually set the resolution then we need the size in pixel units
+        pixKernelSize = actualKernelSize
+        if self.config.samplingSize > 0:
+            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
+            if pixKernelSize % 2 == 0: pixKernelSize += 1 
+        print pixKernelSize,actualKernelSize
+        psfCandidateList[0].setHeight(pixKernelSize)
+        psfCandidateList[0].setWidth(pixKernelSize)
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
         #
@@ -237,6 +247,7 @@ class PsfexPsfDeterminer(object):
         args_md = dafBase.PropertySet()
         args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
         args_md.set("PSF_SIZE", str(actualKernelSize))
+        args_md.set("PSF_SAMPLING", str(self.config.samplingSize))
         prefs = psfex.Prefs(defaultsFile, args_md)
         prefs.setCommandLine([])
         prefs.addCatalog("psfexPsfDeterminer")
@@ -246,8 +257,8 @@ class PsfexPsfDeterminer(object):
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
                                 prefs.getGroupDeg(),
                                 psfex.Context.REMOVEHIDDEN if False else psfex.Context.KEEPHIDDEN)
-	set = psfex.Set(context)
-        set.setVigSize(actualKernelSize, actualKernelSize)
+        set = psfex.Set(context)
+        set.setVigSize(pixKernelSize, pixKernelSize)
         set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
         set.setRecentroid(self.config.recentroid)
 

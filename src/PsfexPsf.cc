@@ -125,25 +125,33 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
 
     float const vigstep = 1/_pixstep;
     float const dx = 0.0, dy = 0.0;
-    std::vector<float> sampledBasis(w*h);
 
-    afw::detection::Psf::Image kim(w, h); // a basis function image, to be copied into a FixedKernel
-    kim.setXY0(-w/2, -h/2);
+    // Construct the size of the output image based on the physical size of the full image
+    int sampleW = static_cast<int>(w*_pixstep);
+    int sampleH = static_cast<int>(h*_pixstep);
+
+    // Ensure that sizes are odd
+    if (sampleW % 2 == 0) sampleW += 1;
+    if (sampleH % 2 == 0) sampleH += 1;
+
+    std::vector<float> sampledBasis(sampleW*sampleH);
+    afw::detection::Psf::Image kim(sampleW, sampleH); // a basis function image, to be copied into a FixedKernel
+    kim.setXY0(-sampleW/2, -sampleH/2);
 
     for (int i = 0; i != nbasis; ++i) {
         /*
          * Resample the basis function onto the output resolution (and potentially subpixel offset)
          */
         vignet_resample(const_cast<float *>(&_comp[i*w*h]), w, h,
-                        &sampledBasis[0],                   w, h,
+                        &sampledBasis[0],  sampleW, sampleH,
                         -dx*vigstep, -dy*vigstep, vigstep, 1.0);
         //
         // And copy it into place
         //
         {
             float *pl = &sampledBasis[0];
-            for (int y = 0; y != h; ++y) {
-                for (int x = 0; x != w; ++x) {
+            for (int y = 0; y != sampleH; ++y) {
+                for (int x = 0; x != sampleW; ++x) {
                     kim(x, y) = *pl++;
                 }
             }
@@ -217,23 +225,32 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     if (dx > 0.5) dx -= 1.0;
     if (dy > 0.5) dy -= 1.0;
     
-    std::vector<float> sampledIm(w*h);
+    // Construct the size of the output image based on the physical size of the full image
+    int sampleW = static_cast<int>(w*_pixstep);
+    int sampleH = static_cast<int>(h*_pixstep);
+
+    // Ensure that sizes are odd
+    if (sampleW % 2 ==0) sampleW += 1;
+    if (sampleH % 2 ==0) sampleH += 1;
+
+    std::vector<float> sampledIm(sampleW*sampleH);
+
     vignet_resample(&fullresIm[0], w, h,
-                    &sampledIm[0], w, h,
+                    &sampledIm[0], sampleW, sampleH,
                     -dx*vigstep, -dy*vigstep, vigstep, 1.0);
     //
     // And copy it into place
     //
-    PTR(afw::detection::Psf::Image) im = boost::make_shared<afw::detection::Psf::Image>(w, h);
+    PTR(afw::detection::Psf::Image) im = boost::make_shared<afw::detection::Psf::Image>(sampleW, sampleH);
     // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
     // The + 0.5 is to handle floating point imprecision in this calculation
-    im->setXY0(static_cast<int>(center[0] - dx + 0.5) - w/2,
-               static_cast<int>(center[1] - dy + 0.5) - h/2);
+    im->setXY0(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,
+               static_cast<int>(center[1] - dy + 0.5) - sampleH/2);
     {
         float *pl = &sampledIm[0];
-        float const sum = std::accumulate(pl, pl + w*h, static_cast<float>(0));
-        for (int y = 0; y != h; ++y) {
-            for (int x = 0; x != w; ++x) {
+        float const sum = std::accumulate(pl, pl + sampleW*sampleH, static_cast<float>(0));
+        for (int y = 0; y != sampleH; ++y) {
+            for (int x = 0; x != sampleW; ++x) {
                 (*im)(x, y) = *pl++/sum;
             }
         }

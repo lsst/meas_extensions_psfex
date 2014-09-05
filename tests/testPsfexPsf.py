@@ -256,7 +256,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         psfDeterminerConfig.sizeCellX = width
         psfDeterminerConfig.sizeCellY = height//3
         psfDeterminerConfig.spatialOrder = 1
-        psfDeterminerConfig.kernelSizeMin = 31
+
+        # Include oversampling in test
+        psfDeterminerConfig.kernelSize = 61
+        psfDeterminerConfig.samplingSize = 0.5
         psfDeterminer = psfDeterminerFactory(psfDeterminerConfig)
 
         return starSelector, psfDeterminer
@@ -306,7 +309,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.exposure.setPsf(psf)
 
         # Test how well we can subtract the PSF model
-        self.subtractStars(self.exposure, self.catalog, chi_lim=4.4)
+        self.subtractStars(self.exposure, self.catalog, chi_lim=4.6)
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
