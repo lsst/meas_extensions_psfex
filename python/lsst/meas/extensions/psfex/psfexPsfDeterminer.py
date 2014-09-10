@@ -228,14 +228,14 @@ class PsfexPsfDeterminer(object):
             if display:
                 rms = np.median(sizes)
                 print "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
-        self.debugLog.debug(3, "Kernel size=%s" % (actualKernelSize,))
 
         # If we manually set the resolution then we need the size in pixel units
         pixKernelSize = actualKernelSize
         if self.config.samplingSize > 0:
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0: pixKernelSize += 1 
-        print pixKernelSize,actualKernelSize
+        self.debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" % 
+                            (actualKernelSize,pixKernelSize))
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
