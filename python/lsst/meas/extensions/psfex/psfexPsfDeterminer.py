@@ -74,7 +74,7 @@ class PsfexPsfDeterminerConfig(pexConfig.Config):
     kernelSize = pexConfig.Field(
         doc = "radius of the kernel to create, relative to the square root of the stellar quadrupole moments",
         dtype = float,
-        default = 10.0,
+        default = 81.0,
     )
     kernelSizeMin = pexConfig.Field(
         doc = "Minimum radius of the kernel",
@@ -89,7 +89,7 @@ class PsfexPsfDeterminerConfig(pexConfig.Config):
     samplingSize = pexConfig.Field(
         doc = "Resolution of the internal PSF model relative to the pixel size; e.g. 0.5 is equal to 2x oversampling",
         dtype = float,
-        default = 1.0,
+        default = 0.5,
     )
     badMaskBits = pexConfig.ListField(
         doc="""List of mask bits which cause a source to be rejected as bad
