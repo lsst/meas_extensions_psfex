@@ -66,7 +66,7 @@ void Sample::setVig(ndarray::Array<float,2,2> const& img)
     int const w = img.getSize<0>(), h = img.getSize<1>();
 
     if (_vigsize[0]*_vigsize[1] != w*h) {
-        throw LSST_EXCEPT(lsst::pex::exceptions::LengthErrorException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::LengthError,
                           str(boost::format("Expected %dx%d array, but was passed %dx%d")
                               % _vigsize[0] % _vigsize[1] % w % h));
     }
@@ -146,7 +146,7 @@ Psf::build(double x, double y,
     }
 
     psf_build(impl, &pos[0]);
-}		
+}    	
 
 RETURN_IMAGE_FIELD(Psf::getLoc,  loc,  impl->size)
 RETURN_IMAGE_FIELD(Psf::getResi, resi, impl->size)

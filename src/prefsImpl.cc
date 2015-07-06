@@ -56,7 +56,7 @@ Prefs::setCommandLine(std::vector<std::string> const& argv)
 void
 Prefs::addCatalog(std::string const& filename) {
     if (prefs.ncat >= MAXFILE) {
-        throw LSST_EXCEPT(lsst::pex::exceptions::LengthErrorException, "Too many input catalogues");
+        throw LSST_EXCEPT(lsst::pex::exceptions::LengthError, "Too many input catalogues");
     }
     _catalogs.push_back(filename);
     prefs.incat_name[prefs.ncat++] = const_cast<char *>((_catalogs.end() - 1)->c_str());

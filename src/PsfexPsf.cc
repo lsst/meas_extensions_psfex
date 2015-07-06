@@ -98,7 +98,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
     if (ndim != 2) {                    // we're only handling spatial variation for now
-        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterError,
                           str(boost::format("Only spatial variation (ndim == 2) is supported; saw %d")
                               % ndim));
 
@@ -188,7 +188,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
     if (ndim != 2) {                    // we're only handling spatial variation for now
-        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterError,
                           str(boost::format("Only spatial variation (ndim == 2) is supported; saw %d")
                               % ndim));
 
