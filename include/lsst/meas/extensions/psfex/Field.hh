@@ -21,6 +21,7 @@ struct structtab; typedef struct structtab tabstruct;
 
 #include "define.h"
 #include "field.h"
+#undef VERSION
 }
 
 namespace lsst { namespace meas { namespace extensions { namespace psfex {
