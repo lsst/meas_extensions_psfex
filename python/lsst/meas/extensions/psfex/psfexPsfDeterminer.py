@@ -256,7 +256,8 @@ class PsfexPsfDeterminer(object):
 
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
                                 prefs.getGroupDeg(),
-                                psfex.Context.REMOVEHIDDEN if False else psfex.Context.KEEPHIDDEN)
+                                bool(psfex.Context.REMOVEHIDDEN if False
+    				else psfex.Context.KEEPHIDDEN))
         set = psfex.Set(context)
         set.setVigSize(pixKernelSize, pixKernelSize)
         set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
@@ -264,7 +265,7 @@ class PsfexPsfDeterminer(object):
 
         catindex, ext = 0, 0
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
-        ccd = afwCG.cast_Ccd(exposure.getDetector())
+        ccd = exposure.getDetector()
         if ccd:
             gain = np.mean(np.array([a.getElectronicParams().getGain() for a in ccd]))
         else:
