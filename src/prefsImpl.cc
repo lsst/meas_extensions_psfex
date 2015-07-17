@@ -14,11 +14,13 @@ Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* va
         std::vector<char *> argkey(narg);
         std::vector<char *> argval(narg);
         std::vector<std::string> const names = values->paramNames();
+        std::vector<std::string> paramvalues(narg);
 
         for (int i = 0; i != narg; ++i) {
             std::string const& name = names[i];
             argkey[i] = const_cast<char *>(name.c_str());
-            argval[i] = const_cast<char *>(values->getAsString(name).c_str());
+            paramvalues[i] = values->getAsString(name);
+            argval[i] = const_cast<char *>(paramvalues[i].c_str());
         }
     
         readprefs(cfilename, &argkey[0], &argval[0], narg);
