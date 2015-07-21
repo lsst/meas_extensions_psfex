@@ -1,6 +1,6 @@
+setupRequired(meas_base)
 setupRequired(meas_algorithms)
 setupRequired(psfex)
-#setupRequired(pyfits)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
 
