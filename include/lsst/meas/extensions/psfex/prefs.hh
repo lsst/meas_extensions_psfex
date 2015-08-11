@@ -1,4 +1,5 @@
 // -*- lsst-C++ -*-
+// Wrapper and extension of the psfex prefs.h header
 #if !defined(ASTROMATIC_PSFEX_PREFS_HH)
 #define ASTROMATIC_PSFEX_PREFS_HH
 
