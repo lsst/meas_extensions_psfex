@@ -86,7 +86,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
     def measure(footprintSet, exposure):
         """Measure a set of Footprints, returning a SourceCatalog"""
         config = SingleFrameMeasurementTask.ConfigClass()
-        config.slots.apFlux = 'base_CircularApertureFlux_3'
+        config.slots.apFlux = 'base_CircularApertureFlux_12_0'
         schema = afwTable.SourceTable.makeMinimalSchema()
 
         measureSources = SingleFrameMeasurementTask(schema,config=config)
