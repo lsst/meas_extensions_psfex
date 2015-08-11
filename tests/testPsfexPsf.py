@@ -57,7 +57,6 @@ import lsst.afw.cameraGeom as cameraGeom
 import lsst.meas.extensions.psfex.psfexPsfDeterminer as psfexPsfDeterminer
 from lsst.meas.base import SingleFrameMeasurementTask
 from lsst.meas.algorithms.detection import SourceDetectionTask
-
 try:
     type(verbose)
 except NameError:
@@ -201,7 +200,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.footprintSet = afwDetection.FootprintSet(self.mi, afwDetection.Threshold(100), "DETECTED")
 
         self.catalog = SpatialModelPsfTestCase.measure(self.footprintSet, self.exposure)
-        #self.catalog = SpatialModelPsfTestCase.measure(self.exposure)
 
         for source in self.catalog:
             try:
