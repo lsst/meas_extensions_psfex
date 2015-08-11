@@ -14,6 +14,11 @@ Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* va
         std::vector<char *> argkey(narg);
         std::vector<char *> argval(narg);
         std::vector<std::string> const names = values->paramNames();
+        // Next, decalre a vector to store string values. These strings must
+        // live long enough such that pointers to them (returned by c_str) stay
+        // valid until the readprefs function can read their values. Once this
+        // happens, the srings and pointers are no longer needed, and will be
+        // cleaned up when the vector goes out of scope
         std::vector<std::string> paramvalues(narg);
 
         for (int i = 0; i != narg; ++i) {
