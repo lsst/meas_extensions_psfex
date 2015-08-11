@@ -7,7 +7,7 @@ from lsst.meas.extensions.psfex import *
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="PSFEX")
+    parser = argparse.ArgumentParser(description="Wrapper for Point Spread Function Extractor (PSFEX)")
 
     parser.add_argument('catalogs', type=str, nargs="+", help="Input catalogues from SExtractor")
     parser.add_argument('-c', type=str, dest="defaultsFile",
