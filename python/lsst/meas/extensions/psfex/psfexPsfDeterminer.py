@@ -253,11 +253,10 @@ class PsfexPsfDeterminer(object):
         prefs.addCatalog("psfexPsfDeterminer")
 
         prefs.use()
-
+        principalComponentExclusionFlag = bool(bool(psfex.Context.REMOVEHIDDEN)
+                if False else psfex.Context.KEEPHIDDEN)
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
-                                prefs.getGroupDeg(),
-                                bool(psfex.Context.REMOVEHIDDEN if False
-    				else psfex.Context.KEEPHIDDEN))
+                                prefs.getGroupDeg(),principalComponentExclusionFlag)
         set = psfex.Set(context)
         set.setVigSize(pixKernelSize, pixKernelSize)
         set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
