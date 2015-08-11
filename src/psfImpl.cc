@@ -146,7 +146,7 @@ Psf::build(double x, double y,
     }
 
     psf_build(impl, &pos[0]);
-}    	
+}	
 
 RETURN_IMAGE_FIELD(Psf::getLoc,  loc,  impl->size)
 RETURN_IMAGE_FIELD(Psf::getResi, resi, impl->size)
