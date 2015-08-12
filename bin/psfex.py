@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from lsst.meas.extensions.psfex import *
+from lsst.meas.extensions.psfex import psfex, readPrefs, makeitLsst, makeit, showPsf, dafBase
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -17,12 +17,12 @@ if __name__ == "__main__":
                         help="Overrides for default parameters", default=[])
     parser.add_argument('--plot', type=str, nargs="+",
                         help="Desired plots", default=[])
-    parser.add_argument('--ds9', type=int, 
+    parser.add_argument('--ds9', type=int,
                         help="Show the PSF on ds9", default=None)
     parser.add_argument('--diagnostics', action="store_true",
                         help="Write output diagnostic plots to outDir")
     parser.add_argument('--verbose', action="store_true", help="How chatty should I be?", default=False)
-    
+
     argv = sys.argv[:]                  # argparse will mess with sys.argv
     args = parser.parse_args()
 
