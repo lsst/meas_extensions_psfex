@@ -266,7 +266,7 @@ class PsfexPsfDeterminer(object):
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
         ccd = exposure.getDetector()
         if ccd:
-            gain = np.mean(np.array([a.getElectronicParams().getGain() for a in ccd]))
+            gain = np.mean(np.array([a.getGain() for a in ccd]))
         else:
             gain = 1.0
             self.warnLog.log(pexLog.Log.WARN, "Setting gain to %g" % gain)
