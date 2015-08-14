@@ -1,4 +1,5 @@
 // -*- lsst-C++ -*-
+// Wrapper and extension of the psfex field.h header
 #if !defined(ASTROMATIC_PSFEX_FIELD_HH)
 #define ASTROMATIC_PSFEX_FIELD_HH
 
@@ -21,6 +22,7 @@ struct structtab; typedef struct structtab tabstruct;
 
 #include "define.h"
 #include "field.h"
+#undef VERSION
 }
 
 namespace lsst { namespace meas { namespace extensions { namespace psfex {

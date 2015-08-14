@@ -378,7 +378,6 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
     ncat = len(filenames)
     fwhmmin = np.empty(ncat)
     fwhmmax = np.empty(ncat)
-    fwhmode = np.empty(ncat)
     
     if not prefs.getAutoselectFlag():
         fwhmmin = np.zeros(ncat) + prefs.getFwhmrange()[0]
@@ -747,7 +746,6 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     shape = tab.getShapeDefinition()
     ixx = tab.get("%s.xx" % shape)
     iyy = tab.get("%s.yy" % shape)
-    ixy = tab.get("%s.xy" % shape)
     
     rmsSize = np.sqrt(0.5*(ixx + iyy))
     elong = 0.5*(ixx - iyy)/(ixx + iyy)
@@ -756,7 +754,6 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     fluxErr = tab.get(prefs.getPhotfluxerrRkey())
     flags = getLsstFlags(tab)
 
-    nobj = len(xm)
     #
     # Now the VIGNET data
     #
@@ -783,7 +780,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
         try:
             pstamp = mi[x - vigw//2:x + vigw//2 + 1, y - vigh//2:y + vigh//2 + 1]
             vignet[i] = pstamp.getImage().getArray().transpose()
-        except Exception, e:
+        except Exception:
             flags[i] |= edgeBit         # mark star as bad
 
     # Try to load the set of context keys
@@ -871,7 +868,6 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
     ncat = len(filenames)
     fwhmmin = np.empty(ncat)
     fwhmmax = np.empty(ncat)
-    fwhmode = np.empty(ncat)
     
     if not prefs.getAutoselectFlag():
         fwhmmin = np.zeros(ncat) + prefs.getFwhmrange()[0]
@@ -896,7 +892,6 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
             shape = tab.getShapeDefinition()
             ixx = tab.get("%s.xx" % shape)
             iyy = tab.get("%s.yy" % shape)
-            ixy = tab.get("%s.xy" % shape)
 
             rmsSize = np.sqrt(0.5*(ixx + iyy))
             elong = 0.5*(ixx - iyy)/(ixx + iyy)
@@ -1020,9 +1015,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
         field.finalize()
         fields.append(field)
 
-    next = fields[0].getNext()          # number of extensions
 
-    psfstep = prefs.getPsfStep()
 
     sets = psfex.vectorSet()
     for set in load_samples(prefs, context, plot=plot):

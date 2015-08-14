@@ -74,7 +74,7 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
       )
 {
     if (sets.size() > MAXFILE) {
-        throw LSST_EXCEPT(lsst::pex::exceptions::LengthErrorException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::LengthError,
                           (boost::format("Too many sets: %d") % sets.size()).str());
     }
 

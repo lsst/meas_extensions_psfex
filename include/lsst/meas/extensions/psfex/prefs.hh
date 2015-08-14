@@ -1,4 +1,5 @@
 // -*- lsst-C++ -*-
+// Wrapper and extension of the psfex prefs.h header
 #if !defined(ASTROMATIC_PSFEX_PREFS_HH)
 #define ASTROMATIC_PSFEX_PREFS_HH
 
@@ -15,6 +16,7 @@ struct structtab; typedef struct structtab tabstruct;
 
 #include "define.h"
 #include "prefs.h"
+#undef VERSION
 }
 
 namespace lsst { namespace meas { namespace extensions { namespace psfex {

@@ -55,7 +55,8 @@ import lsst.meas.algorithms.defects as defects
 import lsst.meas.algorithms.utils as maUtils
 import lsst.afw.cameraGeom as cameraGeom
 import lsst.meas.extensions.psfex.psfexPsfDeterminer as psfexPsfDeterminer
-
+from lsst.meas.base import SingleFrameMeasurementTask
+from lsst.meas.algorithms.detection import SourceDetectionTask
 try:
     type(verbose)
 except NameError:
@@ -84,32 +85,21 @@ class SpatialModelPsfTestCase(unittest.TestCase):
     @staticmethod
     def measure(footprintSet, exposure):
         """Measure a set of Footprints, returning a SourceCatalog"""
-        config = measAlg.SourceMeasurementConfig()
-        config.prefix = "initial."
-        config.algorithms.names = ["flags.pixel", "flux.psf", "flux.sinc", "flux.gaussian", "shape.sdss"]
-        config.centroider.name = "centroid.sdss"
-        config.algorithms["flux.naive"].radius = 3.0
-        config.slots.centroid = "initial.centroid.sdss"
-        config.slots.psfFlux = "initial.flux.psf"
-        config.slots.apFlux = "initial.flux.sinc"
-        config.slots.modelFlux = None
-        config.slots.instFlux = None
-        config.slots.calibFlux = None
-        config.slots.shape = "initial.shape.sdss"
-
+        config = SingleFrameMeasurementTask.ConfigClass()
+        config.slots.apFlux = 'base_CircularApertureFlux_12_0'
         schema = afwTable.SourceTable.makeMinimalSchema()
-        measureSources = config.makeMeasureSources(schema)
+
+        measureSources = SingleFrameMeasurementTask(schema,config=config)
+
+        tab = afwTable.SourceTable.make(schema)
         catalog = afwTable.SourceCatalog(schema)
-        config.slots.setupTable(catalog.table)
 
         if display:
             ds9.mtv(exposure, title="Original", frame=0)
 
         footprintSet.makeSources(catalog)
 
-        for i, source in enumerate(catalog):
-            measureSources.applyWithPeak(source, exposure)
-
+        measureSources.run(catalog,exposure)
         return catalog
 
     def setUp(self):
@@ -134,14 +124,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         wcs = afwImage.makeWcs(crval, afwGeom.PointD(0, 0), 1.0, 0, 0, 1.0)
         self.exposure.setWcs(wcs)
 
-        ccd = cameraGeom.Ccd(cameraGeom.Id(1))
-        ccd.addAmp(cameraGeom.Amp(cameraGeom.Id(0),
-                                  afwGeom.BoxI(afwGeom.PointI(0,0), self.exposure.getDimensions()),
-                                  afwGeom.BoxI(afwGeom.PointI(0,0), afwGeom.ExtentI(0,0)),
-                                  afwGeom.BoxI(afwGeom.PointI(0,0), self.exposure.getDimensions()),
-                                  cameraGeom.ElectronicParams(1.0, 100.0, 65535)))
-        self.exposure.setDetector(ccd)
-        self.exposure.getDetector().setDistortion(None)        
         #
         # Make a kernel with the exactly correct basis functions.  Useful for debugging
         #
@@ -241,13 +223,12 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         starSelectorFactory = measAlg.starSelectorRegistry["objectSize"]
         starSelectorConfig = starSelectorFactory.ConfigClass()
 
-        starSelectorConfig.sourceFluxField = "initial.flux.gaussian"
-        starSelectorConfig.badFlags = ["initial.flags.pixel.edge",
-                                       "initial.flags.pixel.interpolated.center",
-                                       "initial.flags.pixel.saturated.center",
-                                       "initial.flags.pixel.cr.center",
+        starSelectorConfig.sourceFluxField = "base_GaussianFlux_flux"
+        starSelectorConfig.badFlags = ["base_PixelFlags_flag_edge",
+                                       "base_PixelFlags_flag_interpolatedCenter",
+                                       "base_PixelFlags_flag_saturatedCenter",
+                                       "base_PixelFlags_flag_crCenter",
                                        ]
-        starSelectorConfig.widthStdAllowed = 0.5
             
         starSelector = starSelectorFactory(starSelectorConfig)
         
@@ -270,7 +251,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         mi, psf = exposure.getMaskedImage(), exposure.getPsf()
 
         subtracted =  mi.Factory(mi, True)
-
         for s in catalog:
             xc, yc = s.getX(), s.getY()
             bbox = subtracted.getBBox(afwImage.PARENT)
@@ -279,7 +259,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     measAlg.subtractPsf(psf, subtracted, xc, yc)
                 except:
                     pass
-
         chi = subtracted.Factory(subtracted, True)
         var = subtracted.getVariance()
         np.sqrt(var.getArray(), var.getArray()) # inplace sqrt

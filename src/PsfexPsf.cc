@@ -43,6 +43,7 @@ extern "C" {
 }
 #include "lsst/meas/extensions/psfex/PsfexPsf.h"
 #include "lsst/meas/algorithms/KernelPsfFactory.h"
+#include "lsst/afw/table/aggregates.h"
 
 namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
@@ -98,7 +99,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
     if (ndim != 2) {                    // we're only handling spatial variation for now
-        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterError,
                           str(boost::format("Only spatial variation (ndim == 2) is supported; saw %d")
                               % ndim));
 
@@ -188,7 +189,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
     if (ndim != 2) {                    // we're only handling spatial variation for now
-        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterException,
+        throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterError,
                           str(boost::format("Only spatial variation (ndim == 2) is supported; saw %d")
                               % ndim));
 
@@ -279,8 +280,7 @@ public:
         _comp_size(schema.addField<int>("_comp_size", "Size of _comp array")),
         _context_size(schema.addField<int>("_context_size", "Size of _context array")),
     // Other scalars
-        averagePosition(schema.addField< afw::table::Point<double> >(
-                        "averagePosition", "average position of stars used to make the PSF")),
+        averagePosition(afw::table::PointKey<double>::addFields(schema,"averagePosition","average position of stars used to make the PSF","pixels")),
         _pixstep(schema.addField<float>("_pixstep", "oversampling", "pixel"))
     {
         ;
@@ -297,7 +297,7 @@ public:
     table::Key<int> _comp_size;
     table::Key<int> _context_size;
     // Other scalars
-    table::Key<table::Point<double> > averagePosition;
+    table::PointKey<double> averagePosition;
     table::Key<float> _pixstep;
 };
 
