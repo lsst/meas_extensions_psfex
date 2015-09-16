@@ -93,7 +93,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         tab = afwTable.SourceTable.make(schema)
         catalog = afwTable.SourceCatalog(schema)
-
         if display:
             ds9.mtv(exposure, title="Original", frame=0)
 
@@ -229,9 +228,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        "base_PixelFlags_flag_saturatedCenter",
                                        "base_PixelFlags_flag_crCenter",
                                        ]
-            
+        starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
+
         starSelector = starSelectorFactory(starSelectorConfig)
-        
+
         psfDeterminerFactory = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerFactory.ConfigClass()
         width, height = exposure.getMaskedImage().getDimensions()
