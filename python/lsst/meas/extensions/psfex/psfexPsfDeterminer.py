@@ -1,6 +1,6 @@
 # 
 # LSST Data Management System
-# Copyright 2008, 2009, 2010 LSST Corporation.
+# Copyright 2008-2015 AURA/LSST.
 # 
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -17,7 +17,7 @@
 # 
 # You should have received a copy of the LSST License Statement and 
 # the GNU General Public License along with this program.  If not, 
-# see <http://www.lsstcorp.org/LegalNotices/>.
+# see <https://www.lsstcorp.org/LegalNotices/>.
 #
 import os
 import sys
@@ -160,34 +160,36 @@ class PsfexPsfDeterminer(object):
 
     def determinePsf(self, exposure, psfCandidateList, metadata=None, flagKey=None):
         """Determine a PSFEX PSF model for an exposure given a list of PSF candidates
-        
+
         @param[in] exposure: exposure containing the psf candidates (lsst.afw.image.Exposure)
         @param[in] psfCandidateList: a sequence of PSF candidates (each an lsst.meas.algorithms.PsfCandidate);
             typically obtained by detecting sources and then running them through a star selector
         @param[in,out] metadata  a home for interesting tidbits of information
         @param[in] flagKey: schema key used to mark sources actually used in PSF determination
-    
+
         @return psf: a meas.extensions.psfex.PsfexPsf
         """
         import lsstDebug
-        display = lsstDebug.Info(__name__).display 
+        display = lsstDebug.Info(__name__).display
         displayExposure = display and \
-            lsstDebug.Info(__name__).displayExposure     # display the Exposure + spatialCells 
+            lsstDebug.Info(__name__).displayExposure      # display the Exposure + spatialCells
         displayPsfCandidates = display and \
-            lsstDebug.Info(__name__).displayPsfCandidates # show the viable candidates 
+            lsstDebug.Info(__name__).displayPsfCandidates # show the viable candidates
         displayPsfComponents = display and \
             lsstDebug.Info(__name__).displayPsfComponents # show the basis functions
         showBadCandidates = display and \
-            lsstDebug.Info(__name__).showBadCandidates # Include bad candidates (meaningless, methinks)
+            lsstDebug.Info(__name__).showBadCandidates    # Include bad candidates (meaningless, methinks)
         displayResiduals = display and \
-            lsstDebug.Info(__name__).displayResiduals         # show residuals
+            lsstDebug.Info(__name__).displayResiduals     # show residuals
         displayPsfMosaic = display and \
-            lsstDebug.Info(__name__).displayPsfMosaic   # show mosaic of reconstructed PSF(x,y)
-        matchKernelAmplitudes = lsstDebug.Info(__name__).matchKernelAmplitudes # match Kernel amplitudes for spatial plots
-        normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals # Normalise residuals by object amplitude 
+            lsstDebug.Info(__name__).displayPsfMosaic     # show mosaic of reconstructed PSF(x,y)
+        matchKernelAmplitudes = lsstDebug.Info(__name__).matchKernelAmplitudes
+                                                          # match Kernel amplitudes for spatial plots
+        normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals
+                                                          # Normalise residuals by object amplitude
 
         mi = exposure.getMaskedImage()
-        
+
         nCand = len(psfCandidateList)
         if nCand == 0:
             raise RuntimeError("No PSF candidates supplied.")
@@ -200,7 +202,7 @@ class PsfexPsfDeterminer(object):
             psfCellSet = afwMath.SpatialCellSet(bbox, self.config.sizeCellX, self.config.sizeCellY)
         else:
             psfCellSet = None
-        
+
         sizes = np.empty(nCand)
         for i, psfCandidate in enumerate(psfCandidateList):
             try:
@@ -233,8 +235,8 @@ class PsfexPsfDeterminer(object):
         pixKernelSize = actualKernelSize
         if self.config.samplingSize > 0:
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0: pixKernelSize += 1 
-        self.debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" % 
+            if pixKernelSize % 2 == 0: pixKernelSize += 1
+        self.debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
                             (actualKernelSize,pixKernelSize))
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
@@ -294,7 +296,7 @@ class PsfexPsfDeterminer(object):
             frame = 0
             if displayExposure:
                 ds9.mtv(exposure, frame=frame, title="psf determination")
-            
+
         badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
         fluxName = prefs.getPhotfluxRkey()
         fluxFlagName = fluxName + ".flags"
@@ -367,7 +369,7 @@ class PsfexPsfDeterminer(object):
         # Don't waste memory!
         set.trimMemory()
 
-        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX 
+        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
         #
         # Do a PSFEX decomposition of those PSF candidates
         #
@@ -390,11 +392,11 @@ class PsfexPsfDeterminer(object):
             index = sets[0].getSample(i).getObjindex()
             if index > -1:
                 good_indices.append(index)
-        
+
         if flagKey is not None:
             for i, psfCandidate in enumerate(psfCandidateList):
                 source = psfCandidate.getSource()
-                if i in good_indices: 
+                if i in good_indices:
                     source.set(flagKey, True)
 
 
@@ -431,7 +433,7 @@ class PsfexPsfDeterminer(object):
                 maUtils.showPsf(psf, frame=6)
             if displayPsfMosaic:
                 maUtils.showPsfMosaic(exposure, psf, frame=7, showFwhm=True)
-                ds9.ds9Cmd(ds9.selectFrame(frame=7) + " ;scale limits 0 1")
+                ds9.scale('linear', 0, 1, frame=7)
         #
         # Generate some QA information
         #
@@ -447,6 +449,6 @@ class PsfexPsfDeterminer(object):
         psfCellSet = None
         return psf, psfCellSet
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-    
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 psfDeterminerRegistry.register("psfex", PsfexPsfDeterminer)

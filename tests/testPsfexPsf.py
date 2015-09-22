@@ -2,7 +2,7 @@
 
 # 
 # LSST Data Management System
-# Copyright 2008, 2009, 2010 LSST Corporation.
+# Copyright 2008-2015 AURA/LSST.
 # 
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -19,7 +19,7 @@
 # 
 # You should have received a copy of the LSST License Statement and 
 # the GNU General Public License along with this program.  If not, 
-# see <http://www.lsstcorp.org/LegalNotices/>.
+# see <https://www.lsstcorp.org/LegalNotices/>.
 #
 
 """
@@ -57,6 +57,7 @@ import lsst.afw.cameraGeom as cameraGeom
 import lsst.meas.extensions.psfex.psfexPsfDeterminer as psfexPsfDeterminer
 from lsst.meas.base import SingleFrameMeasurementTask
 from lsst.meas.algorithms.detection import SourceDetectionTask
+
 try:
     type(verbose)
 except NameError:
@@ -68,7 +69,7 @@ except NameError:
 def psfVal(ix, iy, x, y, sigma1, sigma2, b):
     """Return the value at (ix, iy) of a double Gaussian
        (N(0, sigma1^2) + b*N(0, sigma2^2))/(1 + b)
-    centered at (x, y)
+       centered at (x, y)
     """
     dx, dy = x - ix, y - iy
     theta = np.radians(30)
@@ -93,7 +94,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         tab = afwTable.SourceTable.make(schema)
         catalog = afwTable.SourceCatalog(schema)
-
         if display:
             ds9.mtv(exposure, title="Original", frame=0)
 
@@ -161,7 +161,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         xarr, yarr = [], []
 
-        for x, y in [(20, 20), (60, 20), 
+        for x, y in [(20, 20), (60, 20),
                      (30, 35),
                      (50, 50),
                      (20, 90), (70, 160), (25, 265), (75, 275), (85, 30),
@@ -193,7 +193,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     Isample = rand.poisson(I) if addNoise else I
                     self.mi.getImage().set(ix, iy, self.mi.getImage().get(ix, iy) + Isample)
                     self.mi.getVariance().set(ix, iy, self.mi.getVariance().get(ix, iy) + I)
-        # 
+
         bbox = afwGeom.BoxI(afwGeom.PointI(0,0), afwGeom.ExtentI(width, height))
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
 
@@ -229,9 +229,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        "base_PixelFlags_flag_saturatedCenter",
                                        "base_PixelFlags_flag_crCenter",
                                        ]
-            
+        starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
+
         starSelector = starSelectorFactory(starSelectorConfig)
-        
+
         psfDeterminerFactory = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerFactory.ConfigClass()
         width, height = exposure.getMaskedImage().getDimensions()
@@ -269,7 +270,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             ds9.mtv(chi, title="Chi", frame=2)
             xc, yc = exposure.getWidth()//2, exposure.getHeight()//2
             ds9.mtv(psf.computeImage(afwGeom.Point2D(xc, yc)), title="Psf %.1f,%.1f" % (xc, yc), frame=3)
-        
+
         chi_min, chi_max = np.min(chi.getImage().getArray()),  np.max(chi.getImage().getArray())
         if False:
             print chi_min, chi_max
