@@ -620,30 +620,29 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 
 def getLsstFlags(tab=None):
     flagKeys = [
-        "flags.pixel.edge",
-        #"flags.pixel.interpolated.any",
-        #"flags.pixel.interpolated.center",
-        #"flags.pixel.saturated.any",
-        "flags.pixel.saturated.center",
-        #"flags.pixel.cr.any",
-        "flags.pixel.cr.center",
-        "flags.pixel.bad",
-        #"flags.pixel.suspect.any",
-        "flags.pixel.suspect.center",
-        "flux.psf.flags",
+        "base_PixelFlags_flag_edge",
+        #"base_PixelFlags_flag_interpolated",
+        #"base_PixelFlags_flag_interpolatedCenter",
+        #"base_PixelFlags_flag_saturated",
+        "base_PixelFlags_flag_saturatedCenter",
+        #"base_PixelFlags_flag_cr",
+        "base_PixelFlags_flag_crCenter",
+        "base_PixelFlags_flag_bad",
+        "base_PsfFlux_flag",
         "parent",
         ]
 
     if tab is None:
         flags = {}
         for i, k in enumerate(flagKeys):
-            flags[1<<i] = re.sub(r"^flags\.pixel\.", "", k)
+            flags[1<<i] = re.sub(r"\_flag", "",
+                                 re.sub(r"^base\_", "",re.sub(r"^base\_PixelFlags\_flag\_", "", k)))
     else:
         flags = 0
         for i, k in enumerate(flagKeys):
             if k == "parent":
                 try:
-                    isSet = tab.get("deblend.nchild") > 0
+                    isSet = tab.get("deblend_nChild") > 0
                 except KeyError:
                     isSet = 0
             else:

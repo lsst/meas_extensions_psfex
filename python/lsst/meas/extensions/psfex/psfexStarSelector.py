@@ -47,19 +47,19 @@ class PsfexStarSelectorConfig(pexConfig.Config):
     badFlags = pexConfig.ListField(
         doc="List of flags which cause a source to be rejected as bad",
         dtype=str,
-        default=["initial.flags.pixel.edge",
-                 "initial.flags.pixel.saturated.center",
-                 "initial.flags.pixel.cr.center",
-                 "initial.flags.pixel.bad",
-                 "initial.flags.pixel.suspect.center",
-                 "initial.flux.psf.flags",
-                 #"parent",            # actually this is a test on deblend.nchild
+        default=["base_PixelFlags_flag_edge",
+                 "base_PixelFlags_flag_saturated.center",
+                 "base_PixelFlags_flag_cr.center",
+                 "base_PixelFlags_flag_bad",
+                 "base_PixelFlags_flag_suspect.center",
+                 "base_PsfFlux_flag",
+                 #"parent",            # actually this is a test on deblend_nChild
                  ],
         )
     fluxName = pexConfig.Field(
         dtype=str,
         doc="Name of photometric flux key ",
-        default="initial.flux.psf",
+        default="base_PsfFlux",
         )
     fluxErrName = pexConfig.Field(
         dtype=str,
@@ -358,7 +358,9 @@ class PsfexStarSelector(object):
                     if isSet.any():
                         if np.isfinite(imag[isSet] + fwhm[isSet]).any():
                             plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha,
-                                     label=re.sub(r"^.*(flags\.pixel|flux)\.", "", f))
+                                     label=re.sub(r"\_flag", "",
+                                                  re.sub(r"^base\_", "",
+                                                         re.sub(r"^.*base\_PixelFlags\_flag\_", "", f)))
             else:
                 for bad, label in selectionVectors:
                     plt.plot(imag[bad], fwhm[bad], 'o', alpha=alpha, label=label)

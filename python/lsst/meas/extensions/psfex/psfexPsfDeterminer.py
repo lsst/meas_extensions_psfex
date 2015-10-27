@@ -299,7 +299,7 @@ class PsfexPsfDeterminer(object):
 
         badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
         fluxName = prefs.getPhotfluxRkey()
-        fluxFlagName = fluxName + ".flags"
+        fluxFlagName = "base_" + fluxName + "_flag"
 
         with ds9.Buffering():
             xpos, ypos = [], []
