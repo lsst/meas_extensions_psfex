@@ -202,6 +202,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         
 class PsfexStarSelector(object):
     ConfigClass = PsfexStarSelectorConfig
+    usesMatches = False # selectStars does not use its matches argument
 
     def __init__(self, config):
         """Construct a star selector using psfex's algorithm
@@ -209,7 +210,7 @@ class PsfexStarSelector(object):
         @param[in] config: An instance of PsfexStarSelectorConfig
         """
         self.config = config
-            
+
     def selectStars(self, exposure, catalog, matches=None):
         """Return a list of PSF candidates that represent likely stars
         
