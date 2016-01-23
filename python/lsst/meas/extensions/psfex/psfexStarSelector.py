@@ -31,14 +31,8 @@ except ImportError:
 
 import lsst.pex.config as pexConfig
 import lsst.pex.logging as pexLogging
-import lsst.afw.detection as afwDetection
 import lsst.afw.display.ds9 as ds9
-import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
-import lsst.afw.table as afwTable
-import lsst.afw.geom as afwGeom
-import lsst.afw.geom.ellipses as geomEllip
-import lsst.afw.cameraGeom as cameraGeom
 import lsst.meas.algorithms as measAlg
 from lsst.meas.algorithms.starSelectorRegistry import starSelectorRegistry
 import lsst.meas.extensions.psfex as psfex
@@ -146,7 +140,6 @@ class EventHandler(object):
         if ev.key and ev.key in ("p"):
             dist = np.hypot(self.xs - ev.xdata, self.ys - ev.ydata)
             dist[np.where(np.isnan(dist))] = 1e30
-            dmin = min(dist)
 
             which = np.where(dist == min(dist))
 
@@ -254,7 +247,6 @@ class PsfexStarSelector(object):
         shape = catalog.getShapeDefinition()
         ixx = catalog.get("%s.xx" % shape)
         iyy = catalog.get("%s.yy" % shape)
-        ixy = catalog.get("%s.xy" % shape)
 
         fwhm = 2*np.sqrt(2*np.log(2))*np.sqrt(0.5*(ixx + iyy))
         elong = 0.5*(ixx - iyy)/(ixx + iyy)
