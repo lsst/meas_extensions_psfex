@@ -358,10 +358,10 @@ class PsfexStarSelector(object):
                     isSet = np.where(np.bitwise_and(flags, mask))[0]
                     if isSet.any():
                         if np.isfinite(imag[isSet] + fwhm[isSet]).any():
-                            plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha,
-                                     label=re.sub(r"\_flag", "",
+                            label = re.sub(r"\_flag", "",
                                                   re.sub(r"^base\_", "",
                                                          re.sub(r"^.*base\_PixelFlags\_flag\_", "", f)))
+                            plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha, label=label)
             else:
                 for bad, label in selectionVectors:
                     plt.plot(imag[bad], fwhm[bad], 'o', alpha=alpha, label=label)
