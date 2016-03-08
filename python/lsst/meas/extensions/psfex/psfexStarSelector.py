@@ -31,14 +31,8 @@ except ImportError:
 
 import lsst.pex.config as pexConfig
 import lsst.pex.logging as pexLogging
-import lsst.afw.detection as afwDetection
 import lsst.afw.display.ds9 as ds9
-import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
-import lsst.afw.table as afwTable
-import lsst.afw.geom as afwGeom
-import lsst.afw.geom.ellipses as geomEllip
-import lsst.afw.cameraGeom as cameraGeom
 import lsst.meas.algorithms as measAlg
 from lsst.meas.algorithms.starSelectorRegistry import starSelectorRegistry
 import lsst.meas.extensions.psfex as psfex
@@ -146,7 +140,6 @@ class EventHandler(object):
         if ev.key and ev.key in ("p"):
             dist = np.hypot(self.xs - ev.xdata, self.ys - ev.ydata)
             dist[np.where(np.isnan(dist))] = 1e30
-            dmin = min(dist)
 
             which = np.where(dist == min(dist))
 
@@ -202,6 +195,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         
 class PsfexStarSelector(object):
     ConfigClass = PsfexStarSelectorConfig
+    usesMatches = False # selectStars does not use its matches argument
 
     def __init__(self, config):
         """Construct a star selector using psfex's algorithm
@@ -209,7 +203,7 @@ class PsfexStarSelector(object):
         @param[in] config: An instance of PsfexStarSelectorConfig
         """
         self.config = config
-            
+
     def selectStars(self, exposure, catalog, matches=None):
         """Return a list of PSF candidates that represent likely stars
         
@@ -253,7 +247,6 @@ class PsfexStarSelector(object):
         shape = catalog.getShapeDefinition()
         ixx = catalog.get("%s.xx" % shape)
         iyy = catalog.get("%s.yy" % shape)
-        ixy = catalog.get("%s.xy" % shape)
 
         fwhm = 2*np.sqrt(2*np.log(2))*np.sqrt(0.5*(ixx + iyy))
         elong = 0.5*(ixx - iyy)/(ixx + iyy)
@@ -357,10 +350,10 @@ class PsfexStarSelector(object):
                     isSet = np.where(np.bitwise_and(flags, mask))[0]
                     if isSet.any():
                         if np.isfinite(imag[isSet] + fwhm[isSet]).any():
-                            plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha,
-                                     label=re.sub(r"\_flag", "",
+                            label = re.sub(r"\_flag", "",
                                                   re.sub(r"^base\_", "",
                                                          re.sub(r"^.*base\_PixelFlags\_flag\_", "", f)))
+                            plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha, label=label)
             else:
                 for bad, label in selectionVectors:
                     plt.plot(imag[bad], fwhm[bad], 'o', alpha=alpha, label=label)
