@@ -36,4 +36,5 @@ tests/.tests
 doc/html
 doc/doxygen.conf
 doc/*.tag
+doc/xml
 bin/psfex.py
