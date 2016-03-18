@@ -204,13 +204,13 @@ class PsfexStarSelector(object):
         """
         self.config = config
 
-    def selectStars(self, exposure, catalog, matches=None):
+    def selectStars(self, exposure, sourceCat, matches=None):
         """Return a list of PSF candidates that represent likely stars
         
         A list of PSF candidates may be used by a PSF fitter to construct a PSF.
         
         @param[in] exposure: the exposure containing the sources
-        @param[in] catalog: a SourceCatalog containing sources that may be stars
+        @param[in] sourceCat: a SourceCatalog containing sources that may be stars
         @param[in] matches: astrometric matches; ignored by this star selector
         
         @return psfCandidateList: a list of PSF candidates.
@@ -244,21 +244,21 @@ class PsfexStarSelector(object):
         maxelong = (maxellip + 1.0)/(1.0 - maxellip) if maxellip < 1.0 else 100
 
         # Unpack the catalogue
-        shape = catalog.getShapeDefinition()
-        ixx = catalog.get("%s.xx" % shape)
-        iyy = catalog.get("%s.yy" % shape)
+        shape = sourceCat.getShapeDefinition()
+        ixx = sourceCat.get("%s.xx" % shape)
+        iyy = sourceCat.get("%s.yy" % shape)
 
         fwhm = 2*np.sqrt(2*np.log(2))*np.sqrt(0.5*(ixx + iyy))
         elong = 0.5*(ixx - iyy)/(ixx + iyy)
 
-        flux = catalog.get(fluxName)
-        fluxErr = catalog.get(fluxErrName)
+        flux = sourceCat.get(fluxName)
+        fluxErr = sourceCat.get(fluxErrName)
         sn = flux/np.where(fluxErr > 0, fluxErr, 1)
         sn[fluxErr <= 0] = -psfex.psfex.cvar.BIG
 
         flags = 0x0
         for i, f in enumerate(self.config.badFlags):
-            flags = np.bitwise_or(flags, np.where(catalog.get(f), 1 << i, 0))
+            flags = np.bitwise_or(flags, np.where(sourceCat.get(f), 1 << i, 0))
         #
         # Estimate the acceptable range of source widths
         #
@@ -327,7 +327,7 @@ class PsfexStarSelector(object):
             ds9.mtv(mi, frame=frame, title="PSF candidates")
 
             with ds9.Buffering():
-                for i, source in enumerate(catalog):
+                for i, source in enumerate(sourceCat):
                     if good[i]:
                         ctype = ds9.GREEN # star candidate
                     else:
@@ -370,7 +370,7 @@ class PsfexStarSelector(object):
 
         if displayExposure:
             global eventHandler
-            eventHandler = EventHandler(plt.axes(), imag, fwhm, catalog.getX(), catalog.getY(), frames=[frame])
+            eventHandler = EventHandler(plt.axes(), imag, fwhm, sourceCat.getX(), sourceCat.getY(), frames=[frame])
 
         if plotFlags or plotRejection:
             while True:
@@ -405,11 +405,11 @@ If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'
         with ds9.Buffering():
             psfCandidateList = []
             if True:
-                catalog = [s for s,g in zip(catalog, good) if g]
+                sourceCat = [s for s,g in zip(sourceCat, good) if g]
             else:
-                catalog = catalog[good]
+                sourceCat = sourceCat[good]
 
-            for source in catalog:
+            for source in sourceCat:
                 try:
                     psfCandidate = measAlg.makePsfCandidate(source, exposure)
                     # The setXXX methods are class static, but it's convenient to call them on
