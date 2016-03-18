@@ -183,7 +183,74 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 
     return fig
         
+## \addtogroup LSST_task_documentation
+## \{
+## \page PsfexStarSelectorTask
+## \ref PsfexStarSelectorTask_ "PsfexStarSelectorTask"
+## \copybrief PsfexStarSelectorTask
+## \}
+
 class PsfexStarSelectorTask(StarSelectorTask):
+    """!A star selector whose algorithm is not yet documented
+
+    @anchor PsfexStarSelectorTask_
+    
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Contents  Contents
+
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Purpose
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Initialize
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_IO
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Config
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Debug
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Purpose  Description
+
+    A star selector whose algorithm is not yet documented
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Initialize  Task initialisation
+
+    @copydoc \_\_init\_\_
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_IO  Invoking the Task
+
+    Like all star selectors, the main method is `run`.
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Config  Configuration parameters
+
+    See @ref PsfexStarSelectorConfig
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Debug  Debug variables
+
+    PsfexStarSelectorTask has a debug dictionary with the following keys:
+    <dl>
+    <dt>display
+    <dd>bool; if True display debug information
+    <dt>displayExposure
+    <dd>bool; if True display the exposure and spatial cells
+    <dt>plotFwhmHistogram
+    <dd>bool; if True plot histogram of FWHM
+    <dt>plotFlags
+    <dd>bool: if True plot the sources coloured by their flags
+    <dt>plotRejection
+    <dd>bool; if True plot why sources are rejected
+    </dl>
+
+    For example, put something like:
+    @code{.py}
+        import lsstDebug
+        def DebugInfo(name):
+            di = lsstDebug.getInfo(name)  # N.b. lsstDebug.Info(name) would call us recursively
+            if name.endswith("objectSizeStarSelector"):
+                di.display = True
+                di.displayExposure = True
+                di.plotFwhmHistogram = True
+
+            return di
+
+        lsstDebug.Info = DebugInfo
+    @endcode
+    into your `debug.py` file and run your task with the `--debug` flag.
+    """
     ConfigClass = PsfexStarSelectorConfig
     usesMatches = False # selectStars does not use its matches argument
 
