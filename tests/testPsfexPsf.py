@@ -220,8 +220,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
     @staticmethod
     def setupDeterminer(exposure):
         """Setup the starSelector and psfDeterminer"""
-        starSelectorFactory = measAlg.starSelectorRegistry["objectSize"]
-        starSelectorConfig = starSelectorFactory.ConfigClass()
+        starSelectorConfig = measAlg.ObjectSizeStarSelectorTask.ConfigClass()
 
         starSelectorConfig.sourceFluxField = "base_GaussianFlux_flux"
         starSelectorConfig.badFlags = ["base_PixelFlags_flag_edge",
@@ -231,7 +230,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        ]
         starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
 
-        starSelector = starSelectorFactory(starSelectorConfig)
+        starSelector = measAlg.ObjectSizeStarSelectorTask(starSelectorConfig)
 
         psfDeterminerFactory = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerFactory.ConfigClass()
@@ -285,7 +284,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         starSelector, psfDeterminer = SpatialModelPsfTestCase.setupDeterminer(self.exposure)
         metadata = dafBase.PropertyList()
 
-        psfCandidateList = starSelector.selectStars(self.exposure, self.catalog)
+        starCat = starSelector.selectStars(self.exposure, self.catalog).starCat
+        psfCandidateList = starSelector.makePsfCandidates(self.exposure, starCat)
         psf, cellSet = psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
         self.exposure.setPsf(psf)
 
