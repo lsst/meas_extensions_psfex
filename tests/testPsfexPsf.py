@@ -274,8 +274,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         starSelector, psfDeterminer = SpatialModelPsfTestCase.setupDeterminer(self.exposure)
         metadata = dafBase.PropertyList()
 
-        starCat = starSelector.selectStars(self.exposure, self.catalog).starCat
-        psfCandidateList = starSelector.makePsfCandidates(self.exposure, starCat)
+        psfCandidateList = starSelector.run(self.exposure, self.catalog).psfCandidates
         psf, cellSet = psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
         self.exposure.setPsf(psf)
 
