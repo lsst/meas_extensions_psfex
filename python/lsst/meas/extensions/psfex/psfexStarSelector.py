@@ -1,7 +1,7 @@
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -9,14 +9,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 import re
@@ -126,7 +126,7 @@ class EventHandler(object):
     def __call__(self, ev):
         if ev.inaxes != self.axes:
             return
-        
+
         if ev.key and ev.key in ("p"):
             dist = np.hypot(self.xs - ev.xdata, self.ys - ev.ydata)
             dist[np.where(np.isnan(dist))] = 1e30
@@ -155,7 +155,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         if clear:
             fig.clf()
 
-    axes = fig.add_axes((0.1, 0.1, 0.85, 0.80));
+    axes = fig.add_axes((0.1, 0.1, 0.85, 0.80))
 
     xmin = sorted(mag)[int(0.05*len(mag))]
     xmax = sorted(mag)[int(0.95*len(mag))]
@@ -182,7 +182,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         axes.set_ylabel(r"$\sqrt{I_{xx} + I_{yy}}$")
 
     return fig
-        
+
 ## \addtogroup LSST_task_documentation
 ## \{
 ## \page PsfexStarSelectorTask
@@ -194,7 +194,7 @@ class PsfexStarSelectorTask(StarSelectorTask):
     """!A star selector whose algorithm is not yet documented
 
     @anchor PsfexStarSelectorTask_
-    
+
     @section meas_extensions_psfex_psfexStarSelectorStarSelector_Contents  Contents
 
      - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Purpose
@@ -256,11 +256,11 @@ class PsfexStarSelectorTask(StarSelectorTask):
 
     def selectStars(self, exposure, sourceCat, matches=None):
         """!Select stars from source catalog
-        
+
         @param[in] exposure  the exposure containing the sources
         @param[in] sourceCat  catalog of sources that may be stars (an lsst.afw.table.SourceCatalog)
         @param[in] matches  astrometric matches; ignored by this star selector
-        
+
         @return a Struct containing:
         - starCat  a subset of sourceCat containing the selected stars
         """
@@ -370,7 +370,7 @@ class PsfexStarSelectorTask(StarSelectorTask):
         frame = 0
         if displayExposure:
             mi = exposure.getMaskedImage()
-    
+
             ds9.mtv(mi, frame=frame, title="PSF candidates")
 
             with ds9.Buffering():
@@ -441,7 +441,8 @@ At this prompt, you can continue with almost any key; 'p' enters pdb,
                         print """
 If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'll see it in ds9."""
                 elif reply[0] == "p":
-                    import pdb; pdb.set_trace()
+                    import pdb
+                    pdb.set_trace()
                 elif reply[0] == 'q':
                     sys.exit(1)
                 else:
