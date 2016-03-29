@@ -103,10 +103,10 @@ class PsfexStarSelectorConfig(StarSelectorTask.ConfigClass):
     def setDefaults(self):
         self.badFlags = [
             "base_PixelFlags_flag_edge",
-            "base_PixelFlags_flag_saturated.center",
-            "base_PixelFlags_flag_cr.center",
+            "base_PixelFlags_flag_saturatedCenter",
+            "base_PixelFlags_flag_crCenter",
             "base_PixelFlags_flag_bad",
-            "base_PixelFlags_flag_suspect.center",
+            "base_PixelFlags_flag_suspectCenter",
             "base_PsfFlux_flag",
             #"parent",            # actually this is a test on deblend_nChild
         ]
