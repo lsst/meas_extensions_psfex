@@ -1,7 +1,7 @@
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -9,14 +9,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 import re
@@ -29,27 +29,16 @@ try:
 except ImportError:
     plt = None
 
+from lsst.afw.table import SourceCatalog
+from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
-import lsst.pex.logging as pexLogging
 import lsst.afw.display.ds9 as ds9
-import lsst.afw.math as afwMath
-import lsst.meas.algorithms as measAlg
-from lsst.meas.algorithms.starSelectorRegistry import starSelectorRegistry
+from lsst.meas.algorithms import StarSelectorTask
 import lsst.meas.extensions.psfex as psfex
 
-class PsfexStarSelectorConfig(pexConfig.Config):
-    badFlags = pexConfig.ListField(
-        doc="List of flags which cause a source to be rejected as bad",
-        dtype=str,
-        default=["base_PixelFlags_flag_edge",
-                 "base_PixelFlags_flag_saturated.center",
-                 "base_PixelFlags_flag_cr.center",
-                 "base_PixelFlags_flag_bad",
-                 "base_PixelFlags_flag_suspect.center",
-                 "base_PsfFlux_flag",
-                 #"parent",            # actually this is a test on deblend_nChild
-                 ],
-        )
+__all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
+
+class PsfexStarSelectorConfig(StarSelectorTask.ConfigClass):
     fluxName = pexConfig.Field(
         dtype=str,
         doc="Name of photometric flux key ",
@@ -98,16 +87,6 @@ class PsfexStarSelectorConfig(pexConfig.Config):
         default=100,
         check = lambda x: x >= 0.0,
         )
-    kernelSize = pexConfig.Field(
-        dtype=int,
-        doc = "size of the Psf kernel to create",
-        default = 21,
-        )
-    borderWidth = pexConfig.Field(
-        doc = "number of pixels to ignore around the edge of PSF candidate postage stamps",
-        dtype = int,
-        default = 0,
-    )
 
     def validate(self):
         pexConfig.Config.validate(self)
@@ -120,6 +99,17 @@ class PsfexStarSelectorConfig(pexConfig.Config):
 
         if self.minFwhm > self.maxFwhm:
             raise pexConfig.FieldValidationError("minFwhm (%f) > maxFwhm (%f)" % (self.minFwhm, self.maxFwhm))
+
+    def setDefaults(self):
+        self.badFlags = [
+            "base_PixelFlags_flag_edge",
+            "base_PixelFlags_flag_saturatedCenter",
+            "base_PixelFlags_flag_crCenter",
+            "base_PixelFlags_flag_bad",
+            "base_PixelFlags_flag_suspectCenter",
+            "base_PsfFlux_flag",
+            #"parent",            # actually this is a test on deblend_nChild
+        ]
 
 class EventHandler(object):
     """A class to handle key strokes with matplotlib displays"""
@@ -136,7 +126,7 @@ class EventHandler(object):
     def __call__(self, ev):
         if ev.inaxes != self.axes:
             return
-        
+
         if ev.key and ev.key in ("p"):
             dist = np.hypot(self.xs - ev.xdata, self.ys - ev.ydata)
             dist[np.where(np.isnan(dist))] = 1e30
@@ -165,7 +155,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         if clear:
             fig.clf()
 
-    axes = fig.add_axes((0.1, 0.1, 0.85, 0.80));
+    axes = fig.add_axes((0.1, 0.1, 0.85, 0.80))
 
     xmin = sorted(mag)[int(0.05*len(mag))]
     xmax = sorted(mag)[int(0.95*len(mag))]
@@ -192,28 +182,87 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         axes.set_ylabel(r"$\sqrt{I_{xx} + I_{yy}}$")
 
     return fig
-        
-class PsfexStarSelector(object):
+
+## \addtogroup LSST_task_documentation
+## \{
+## \page PsfexStarSelectorTask
+## \ref PsfexStarSelectorTask_ "PsfexStarSelectorTask"
+## \copybrief PsfexStarSelectorTask
+## \}
+
+class PsfexStarSelectorTask(StarSelectorTask):
+    """!A star selector whose algorithm is not yet documented
+
+    @anchor PsfexStarSelectorTask_
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Contents  Contents
+
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Purpose
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Initialize
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_IO
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Config
+     - @ref meas_extensions_psfex_psfexStarSelectorStarSelector_Debug
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Purpose  Description
+
+    A star selector whose algorithm is not yet documented
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Initialize  Task initialisation
+
+    @copydoc \_\_init\_\_
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_IO  Invoking the Task
+
+    Like all star selectors, the main method is `run`.
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Config  Configuration parameters
+
+    See @ref PsfexStarSelectorConfig
+
+    @section meas_extensions_psfex_psfexStarSelectorStarSelector_Debug  Debug variables
+
+    PsfexStarSelectorTask has a debug dictionary with the following keys:
+    <dl>
+    <dt>display
+    <dd>bool; if True display debug information
+    <dt>displayExposure
+    <dd>bool; if True display the exposure and spatial cells
+    <dt>plotFwhmHistogram
+    <dd>bool; if True plot histogram of FWHM
+    <dt>plotFlags
+    <dd>bool: if True plot the sources coloured by their flags
+    <dt>plotRejection
+    <dd>bool; if True plot why sources are rejected
+    </dl>
+
+    For example, put something like:
+    @code{.py}
+        import lsstDebug
+        def DebugInfo(name):
+            di = lsstDebug.getInfo(name)  # N.b. lsstDebug.Info(name) would call us recursively
+            if name.endswith("objectSizeStarSelector"):
+                di.display = True
+                di.displayExposure = True
+                di.plotFwhmHistogram = True
+
+            return di
+
+        lsstDebug.Info = DebugInfo
+    @endcode
+    into your `debug.py` file and run your task with the `--debug` flag.
+    """
     ConfigClass = PsfexStarSelectorConfig
     usesMatches = False # selectStars does not use its matches argument
 
-    def __init__(self, config):
-        """Construct a star selector using psfex's algorithm
-        
-        @param[in] config: An instance of PsfexStarSelectorConfig
-        """
-        self.config = config
+    def selectStars(self, exposure, sourceCat, matches=None):
+        """!Select stars from source catalog
 
-    def selectStars(self, exposure, catalog, matches=None):
-        """Return a list of PSF candidates that represent likely stars
-        
-        A list of PSF candidates may be used by a PSF fitter to construct a PSF.
-        
-        @param[in] exposure: the exposure containing the sources
-        @param[in] catalog: a SourceCatalog containing sources that may be stars
-        @param[in] matches: astrometric matches; ignored by this star selector
-        
-        @return psfCandidateList: a list of PSF candidates.
+        @param[in] exposure  the exposure containing the sources
+        @param[in] sourceCat  catalog of sources that may be stars (an lsst.afw.table.SourceCatalog)
+        @param[in] matches  astrometric matches; ignored by this star selector
+
+        @return a Struct containing:
+        - starCat  a subset of sourceCat containing the selected stars
         """
         import lsstDebug
         display = lsstDebug.Info(__name__).display
@@ -226,8 +275,6 @@ class PsfexStarSelector(object):
             lsstDebug.Info(__name__).plotFlags # Plot the sources coloured by their flags
         plotRejection = display and plt and \
             lsstDebug.Info(__name__).plotRejection # Plot why sources are rejected
-        # create a log for my application
-        logger = pexLogging.Log(pexLogging.getDefaultLog(), "meas.extensions.psfex.psfexStarSelector")
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
@@ -244,21 +291,21 @@ class PsfexStarSelector(object):
         maxelong = (maxellip + 1.0)/(1.0 - maxellip) if maxellip < 1.0 else 100
 
         # Unpack the catalogue
-        shape = catalog.getShapeDefinition()
-        ixx = catalog.get("%s.xx" % shape)
-        iyy = catalog.get("%s.yy" % shape)
+        shape = sourceCat.getShapeDefinition()
+        ixx = sourceCat.get("%s.xx" % shape)
+        iyy = sourceCat.get("%s.yy" % shape)
 
         fwhm = 2*np.sqrt(2*np.log(2))*np.sqrt(0.5*(ixx + iyy))
         elong = 0.5*(ixx - iyy)/(ixx + iyy)
 
-        flux = catalog.get(fluxName)
-        fluxErr = catalog.get(fluxErrName)
+        flux = sourceCat.get(fluxName)
+        fluxErr = sourceCat.get(fluxErrName)
         sn = flux/np.where(fluxErr > 0, fluxErr, 1)
         sn[fluxErr <= 0] = -psfex.psfex.cvar.BIG
 
         flags = 0x0
         for i, f in enumerate(self.config.badFlags):
-            flags = np.bitwise_or(flags, np.where(catalog.get(f), 1 << i, 0))
+            flags = np.bitwise_or(flags, np.where(sourceCat.get(f), 1 << i, 0))
         #
         # Estimate the acceptable range of source widths
         #
@@ -323,11 +370,11 @@ class PsfexStarSelector(object):
         frame = 0
         if displayExposure:
             mi = exposure.getMaskedImage()
-    
+
             ds9.mtv(mi, frame=frame, title="PSF candidates")
 
             with ds9.Buffering():
-                for i, source in enumerate(catalog):
+                for i, source in enumerate(sourceCat):
                     if good[i]:
                         ctype = ds9.GREEN # star candidate
                     else:
@@ -370,7 +417,8 @@ class PsfexStarSelector(object):
 
         if displayExposure:
             global eventHandler
-            eventHandler = EventHandler(plt.axes(), imag, fwhm, catalog.getX(), catalog.getY(), frames=[frame])
+            eventHandler = EventHandler(plt.axes(), imag, fwhm, sourceCat.getX(), sourceCat.getY(),
+                frames=[frame])
 
         if plotFlags or plotRejection:
             while True:
@@ -393,45 +441,18 @@ At this prompt, you can continue with almost any key; 'p' enters pdb,
                         print """
 If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'll see it in ds9."""
                 elif reply[0] == "p":
-                    import pdb; pdb.set_trace()
+                    import pdb
+                    pdb.set_trace()
                 elif reply[0] == 'q':
                     sys.exit(1)
                 else:
                     break
 
-        #
-        # Time to use that stellar classification to generate psfCandidateList
-        #
-        with ds9.Buffering():
-            psfCandidateList = []
-            if True:
-                catalog = [s for s,g in zip(catalog, good) if g]
-            else:
-                catalog = catalog[good]
+        starCat = SourceCatalog(sourceCat.schema)
+        for source, isGood in zip(sourceCat, good):
+            if isGood:
+                starCat.append(source)
 
-            for source in catalog:
-                try:
-                    psfCandidate = measAlg.makePsfCandidate(source, exposure)
-                    # The setXXX methods are class static, but it's convenient to call them on
-                    # an instance as we don't know Exposure's pixel type
-                    # (and hence psfCandidate's exact type)
-                    if psfCandidate.getWidth() == 0:
-                        psfCandidate.setBorderWidth(self.config.borderWidth)
-                        psfCandidate.setWidth(self.config.kernelSize + 2*self.config.borderWidth)
-                        psfCandidate.setHeight(self.config.kernelSize + 2*self.config.borderWidth)
-
-                    im = psfCandidate.getMaskedImage().getImage()
-                    vmax = afwMath.makeStatistics(im, afwMath.MAX).getValue()
-                    if not np.isfinite(vmax):
-                        continue
-                    psfCandidateList.append(psfCandidate)
-
-                    if display and displayExposure:
-                        ds9.dot("o", source.getX() - mi.getX0(), source.getY() - mi.getY0(),
-                                size=4, frame=frame, ctype=ds9.CYAN)
-                except Exception as err:
-                    logger.logdebug("Failed to make a psfCandidate from source %d: %s" % (source.getId(), err))
-
-        return psfCandidateList
-
-starSelectorRegistry.register("psfex", PsfexStarSelector)
+        return Struct(
+            starCat = starCat,
+        )
