@@ -37,6 +37,3 @@ def readSExtractor(filename):
             
 def readPrefs(filename, md=None):
     return psfex.Prefs(filename, md)
-
-def foo():
-    pp = psfex.Psf(psfex.Context(["A", "B"], [1, 1], [2], 1, True), [1], 0.1, [1], 1)
