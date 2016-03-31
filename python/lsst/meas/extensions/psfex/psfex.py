@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 import os
+import re
 import sys
-from lsst.meas.extensions.psfex.utils import *
+
+import numpy as np
+import pyfits
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
+
 import lsst.afw.coord as afwCoord
 import lsst.afw.geom as afwGeom
+import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
+import lsst.afw.display.ds9 as ds9
+from lsst.daf.base import PropertySet
+from . import psfexLib
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def splitFitsCard(line):
@@ -50,7 +58,7 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
     nw = nfwhm//4;
     if nw < 4:
 	nw = 1
-    dfmin = psfex.cvar.BIG
+    dfmin = psfexLib.cvar.BIG
     fmin = 0.0
     for i in range(nfwhm - nw):
 	df = fwhm[i + nw] - fwhm[i]
@@ -87,7 +95,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                  plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfex.Set(context)
+	set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
@@ -98,8 +106,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
 		cmax[i] = cmin[i] + set.getContextScale(i);
 	    else:
-		cmin[i] =  psfex.cvar.BIG;
-		cmax[i] = -psfex.cvar.BIG;
+		cmin[i] =  psfexLib.cvar.BIG;
+		cmax[i] = -psfexLib.cvar.BIG;
     #
     # Read data
     #
@@ -263,7 +271,7 @@ def select_candidates(set, prefs, frmin, frmax,
     minsn = prefs.getMinsn()
 
     sn = flux/np.where(fluxerr > 0, fluxerr, 1)
-    sn[fluxerr <= 0] = -psfex.cvar.BIG
+    sn[fluxerr <= 0] = -psfexLib.cvar.BIG
     #---- Apply some selection over flags, fluxes...
     plotFlags = plot.get("showFlags") if plt else False
     plotRejection = plot.get("showRejection") if plt else False
@@ -301,7 +309,7 @@ def select_candidates(set, prefs, frmin, frmax,
 
     #-- ... and check the integrity of the sample
     if maxbadflag:
-        nbad = np.array([(v <= -psfex.cvar.BIG).sum() for v in vignet])
+        nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
         dbad = nbad > maxbad
         set.setBadPix(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
@@ -348,8 +356,10 @@ def select_candidates(set, prefs, frmin, frmax,
 try:
     _dataType
 except NameError:
-    class _SExtractor: pass
-    class _LSST : pass
+    class _SExtractor:
+        pass
+    class _LSST:
+        pass
 
     _dataTypes = dict(LSST = _LSST,
                       SExtractor = _SExtractor
@@ -367,7 +377,7 @@ def getFlags():
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -419,7 +429,7 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
                                 continue
                             
                             if k == "SEXBKDEV":
-                                if v < 1/psfex.cvar.BIG:
+                                if v < 1/psfexLib.cvar.BIG:
                                     v = 1.0
 
                                 backnoises.append(v)
@@ -452,7 +462,7 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
                                                    plot=plot)
 	    else:
 		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+		mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
@@ -470,10 +480,10 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
 		else:
 		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfex.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -672,9 +682,9 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfex.vectorField()
+    fields = psfexLib.vectorField()
     for cat in prefs.getCatalogs():
-        field = psfex.Field(cat)
+        field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
         with pyfits.open(cat) as pf:
@@ -702,11 +712,11 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
 
     psfstep = prefs.getPsfStep()
 
-    sets = psfex.vectorSet()
+    sets = psfexLib.vectorSet()
     for set in load_samplesLsst(prefs, context, plot=plot):
         sets.append(set)
 
-    psfex.makeit(fields, sets)
+    psfexLib.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:
@@ -720,7 +730,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                      plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfex.Set(context)
+	set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
@@ -731,8 +741,8 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
 		cmax[i] = cmin[i] + set.getContextScale(i);
 	    else:
-		cmin[i] =  psfex.cvar.BIG;
-		cmax[i] = -psfex.cvar.BIG;
+		cmin[i] =  psfexLib.cvar.BIG;
+		cmax[i] = -psfexLib.cvar.BIG;
     #
     # Read data
     #
@@ -856,7 +866,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -920,7 +930,7 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
                                                    plot=plot)
 	    else:
 		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+		mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
@@ -938,10 +948,10 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
 		else:
 		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfex.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -978,9 +988,9 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfex.vectorField()    
+    fields = psfexLib.vectorField()    
     for cat in prefs.getCatalogs():
-        field = psfex.Field(cat)
+        field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
         with pyfits.open(cat) as pf:
@@ -989,7 +999,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
                     pass
                 elif hdu.name == "LDAC_IMHEAD":
                     hdr = hdu.data[0][0]    # the fits header from the original fits image
-                    md = dafBase.PropertySet()
+                    md = PropertySet()
                     for line in hdr:
                         try:
                             md.set(*splitFitsCard(line))
@@ -1016,11 +1026,11 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
 
 
 
-    sets = psfex.vectorSet()
+    sets = psfexLib.vectorSet()
     for set in load_samples(prefs, context, plot=plot):
         sets.append(set)
 
-    psfex.makeit(fields, sets)
+    psfexLib.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:
