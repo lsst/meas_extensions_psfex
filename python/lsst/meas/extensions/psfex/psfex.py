@@ -151,7 +151,6 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                 fluxerr = tab.data[prefs.getPhotfluxerrRkey()]
                 elong = tab.data["ELONGATION"]
                 flags = tab.data["FLAGS"]
-                nobj = len(xm)
 
                 n = prefs.getPhotfluxNum() - 1
                 if n:
@@ -569,7 +568,8 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     if False:
         for x, y, i in zip((xpos[0], xpos[-1]), (ypos[0], ypos[-1]), (0, mos.nImage - 1)):
             bbox = mos.getBBox(i)
-            mosx, mosy = bbox.getMinX() + 0.5*(bbox.getWidth() - 1), bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
+            mosx = bbox.getMinX() + 0.5*(bbox.getWidth()  - 1)
+            mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
             pos.append([afwGeom.PointD(mosx, mosy), wcs.pixelToSky(afwGeom.PointD(x, y))])
     else:
         pos.append([afwGeom.PointD(0, 0), wcs.pixelToSky(afwGeom.PointD(0, 0))])
@@ -687,7 +687,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
-        with pyfits.open(cat) as pf:
+        with pyfits.open(cat):
             # Hack: I want the WCS so I'll guess where the calexp is to be found
             calexpFile = guessCalexp(cat)
             md = afwImage.readMetadata(calexpFile)
@@ -708,9 +708,9 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         field.finalize()
         fields.append(field)
 
-    next = fields[0].getNext()          # number of extensions
+    fields[0].getNext()          # number of extensions
 
-    psfstep = prefs.getPsfStep()
+    prefs.getPsfStep()
 
     sets = psfexLib.vectorSet()
     for set in load_samplesLsst(prefs, context, plot=plot):
