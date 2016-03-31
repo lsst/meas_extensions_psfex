@@ -40,16 +40,16 @@ def splitFitsCard(line):
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
     """
-	PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
-	INPUT   Pointer to an array of FWHMs,
-	maximum allowed FWHM variation,
-	minimum allowed FWHM,
-	maximum allowed FWHM,
+        PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
+        INPUT   Pointer to an array of FWHMs,
+        maximum allowed FWHM variation,
+        minimum allowed FWHM,
+        maximum allowed FWHM,
 
-	OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
-	NOTES   -.
-	AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
-	VERSION 20/03/2008
+        OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
+        NOTES   -.
+        AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
+        VERSION 20/03/2008
         """
     nfwhm = len(fwhm)
     fwhm.sort()
@@ -57,26 +57,26 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
     # Find the mode
     nw = nfwhm//4;
     if nw < 4:
-	nw = 1
+        nw = 1
     dfmin = psfexLib.cvar.BIG
     fmin = 0.0
     for i in range(nfwhm - nw):
-	df = fwhm[i + nw] - fwhm[i]
-	if df < dfmin:
-	    dfmin = df
-	    fmin = (fwhm[i + nw] + fwhm[i])/2.0
+        df = fwhm[i + nw] - fwhm[i]
+        if df < dfmin:
+            dfmin = df
+            fmin = (fwhm[i + nw] + fwhm[i])/2.0
 
     if nfwhm < 2:
-	fmin = fwhm[0]
+        fmin = fwhm[0]
 
     dfmin = (maxvar + 1.0)**0.3333333
     minout = fmin/dfmin if dfmin > 0.0 else 0.0
     if minout < minin:
-	minout = minin
+        minout = minin
 
     maxout = fmin*dfmin**2
     if maxout > maxin:
-	maxout = maxin
+        maxout = maxin
 
     if plt and plot.get("fwhmHistogram"):
         plt.clf()
@@ -95,19 +95,19 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                  plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfexLib.Set(context)
+        set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
         cmin = np.empty(set.getNcontext())
         cmax = np.empty(set.getNcontext())
         for i in range(set.getNcontext()):
-	    if set.getNsample():
-		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
-		cmax[i] = cmin[i] + set.getContextScale(i);
-	    else:
-		cmin[i] =  psfexLib.cvar.BIG;
-		cmax[i] = -psfexLib.cvar.BIG;
+            if set.getNsample():
+                cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
+                cmax[i] = cmin[i] + set.getContextScale(i);
+            else:
+                cmin[i] =  psfexLib.cvar.BIG;
+                cmax[i] = -psfexLib.cvar.BIG;
     #
     # Read data
     #
@@ -398,7 +398,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
   
         #-- Try to estimate the most appropriate Half-light Radius range
         #-- Get the Half-light radii
-	nobj = 0
+        nobj = 0
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
                 
@@ -406,14 +406,14 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                 print "Examining Catalog #%d" % (i+1)
 
             #---- Read input catalog
-	    backnoises = []
+            backnoises = []
             with pyfits.open(fileName) as cat:
                 extCtr = -1
                 for tab in cat:
                     if tab.name == "LDAC_IMHEAD":
                         extCtr += 1
 
-		    if extCtr != ext and ext != prefs.ALL_EXTENSIONS:
+                    if extCtr != ext and ext != prefs.ALL_EXTENSIONS:
                         if extCtr > ext:
                             break
                         continue
@@ -450,37 +450,37 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                         good = np.logical_and(good, fwhm < max)
                         fwhms[i] = fwhm[good]
 
-	if prefs.getVarType() == prefs.VAR_NONE:
-	    if nobj:
+        if prefs.getVarType() == prefs.VAR_NONE:
+            if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
                 for l in fwhms.values():
                     fwhms_all[i:len(l)] = l
                     i += len(l)
-		mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
+                mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
                                                    prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
                                                    plot=plot)
-	    else:
-		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+            else:
+                raise RuntimeError("No source with appropriate FWHM found!!")
+                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
                 fwhmmode = np.zeros(ncat) + mode
-	else:
+        else:
             fwhmmode = np.empty(ncat)
             fwhmmin = np.empty(ncat)
             fwhmmax = np.empty(ncat)
 
             for i in range(ncat):
-		nobj = len(fwhms[i])
-		if (nobj):
+                nobj = len(fwhms[i])
+                if (nobj):
                     fwhmmode[i], fwhmmin[i], fwhmmax[i] = \
                         compute_fwhmrange(fwhms[i], prefs.getMaxvar(),
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
-		else:
-		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                else:
+                    raise RuntimeError("No source with appropriate FWHM found!!")
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
     mode = psfexLib.cvar.BIG               # mode of FWHM distribution
@@ -488,17 +488,17 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
     sets = []
     for i, fileName in enumerate(filenames):
         set = None
-	if ext == prefs.ALL_EXTENSIONS:
+        if ext == prefs.ALL_EXTENSIONS:
             extensions = range(len(backnoises))
-	else:
+        else:
             extensions = [ext]
 
         for e in extensions:
             set = read_samples(prefs, set, fileName, fwhmmin[i]/2.0, fwhmmax[i]/2.0,
                                e, next, i, context, context.getPc(i) if context.getNpc() else None, plot=plot);
 
-	if fwhmmode[i] < mode:
-	    mode = fwhmmode[i]
+        if fwhmmode[i] < mode:
+            mode = fwhmmode[i]
 
         set.setFwhm(mode)
 
@@ -730,19 +730,19 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                      plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfexLib.Set(context)
+        set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
         cmin = np.empty(set.getNcontext())
         cmax = np.empty(set.getNcontext())
         for i in range(set.getNcontext()):
-	    if set.getNsample():
-		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
-		cmax[i] = cmin[i] + set.getContextScale(i);
-	    else:
-		cmin[i] =  psfexLib.cvar.BIG;
-		cmax[i] = -psfexLib.cvar.BIG;
+            if set.getNsample():
+                cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
+                cmax[i] = cmin[i] + set.getContextScale(i);
+            else:
+                cmin[i] =  psfexLib.cvar.BIG;
+                cmax[i] = -psfexLib.cvar.BIG;
     #
     # Read data
     #
@@ -887,7 +887,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
   
         #-- Try to estimate the most appropriate Half-light Radius range
         #-- Get the Half-light radii
-	nobj = 0
+        nobj = 0
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
                 
@@ -918,37 +918,37 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
             good = np.logical_and(good, fwhm < max)
             fwhms[i] = fwhm[good]
 
-	if prefs.getVarType() == prefs.VAR_NONE:
-	    if nobj:
+        if prefs.getVarType() == prefs.VAR_NONE:
+            if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
                 for l in fwhms.values():
                     fwhms_all[i:len(l)] = l
                     i += len(l)
-		mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
+                mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
                                                    prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
                                                    plot=plot)
-	    else:
-		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+            else:
+                raise RuntimeError("No source with appropriate FWHM found!!")
+                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
                 fwhmmode = np.zeros(ncat) + mode
-	else:
+        else:
             fwhmmode = np.empty(ncat)
             fwhmmin = np.empty(ncat)
             fwhmmax = np.empty(ncat)
 
             for i in range(ncat):
-		nobj = len(fwhms[i])
-		if (nobj):
+                nobj = len(fwhms[i])
+                if (nobj):
                     fwhmmode[i], fwhmmin[i], fwhmmax[i] = \
                         compute_fwhmrange(fwhms[i], prefs.getMaxvar(),
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
-		else:
-		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                else:
+                    raise RuntimeError("No source with appropriate FWHM found!!")
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
     mode = psfexLib.cvar.BIG               # mode of FWHM distribution
@@ -961,8 +961,8 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
                                    ext, next, i, context,
                                    context.getPc(i) if context.getNpc() else None, plot=plot);
 
-	if fwhmmode[i] < mode:
-	    mode = fwhmmode[i]
+        if fwhmmode[i] < mode:
+            mode = fwhmmode[i]
 
         set.setFwhm(mode)
 
