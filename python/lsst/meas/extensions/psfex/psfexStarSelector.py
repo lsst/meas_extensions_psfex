@@ -316,7 +316,7 @@ class PsfexStarSelectorTask(StarSelectorTask):
         good = np.logical_and(good, fwhm <  maxFwhm)
 
         fwhmMode, fwhmMin, fwhmMax = compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
-                                                             plot=dict(fwhmHistogram=plotFwhmHistogram))
+                                                       plot=dict(fwhmHistogram=plotFwhmHistogram))
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
