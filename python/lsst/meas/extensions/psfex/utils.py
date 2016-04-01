@@ -1,8 +1,6 @@
 import re
-import sys
 import numpy as np
 import pyfits
-import lsst.daf.base as dafBase
 import lsst.afw.image as afwImage
 import lsst.afw.display.ds9 as ds9
 import lsst.meas.extensions.psfex as psfex
@@ -39,6 +37,3 @@ def readSExtractor(filename):
             
 def readPrefs(filename, md=None):
     return psfex.Prefs(filename, md)
-
-def foo():
-    pp = psfex.Psf(psfex.Context(["A", "B"], [1, 1], [2], 1, True), [1], 0.1, [1], 1)

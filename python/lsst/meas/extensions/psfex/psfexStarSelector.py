@@ -34,7 +34,8 @@ from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
 import lsst.afw.display.ds9 as ds9
 from lsst.meas.algorithms import StarSelectorTask
-import lsst.meas.extensions.psfex as psfex
+from . import psfexLib
+from .psfex import compute_fwhmrange
 
 __all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
@@ -301,7 +302,7 @@ class PsfexStarSelectorTask(StarSelectorTask):
         flux = sourceCat.get(fluxName)
         fluxErr = sourceCat.get(fluxErrName)
         sn = flux/np.where(fluxErr > 0, fluxErr, 1)
-        sn[fluxErr <= 0] = -psfex.psfex.cvar.BIG
+        sn[fluxErr <= 0] = -psfexLib.cvar.BIG
 
         flags = 0x0
         for i, f in enumerate(self.config.badFlags):
@@ -314,8 +315,8 @@ class PsfexStarSelectorTask(StarSelectorTask):
         good = np.logical_and(good, fwhm >= minFwhm)
         good = np.logical_and(good, fwhm <  maxFwhm)
 
-        fwhmMode, fwhmMin, fwhmMax = psfex.compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
-                                                             plot=dict(fwhmHistogram=plotFwhmHistogram))
+        fwhmMode, fwhmMin, fwhmMax = compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
+                                                       plot=dict(fwhmHistogram=plotFwhmHistogram))
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
@@ -356,7 +357,7 @@ class PsfexStarSelectorTask(StarSelectorTask):
 
         #-- ... and check the integrity of the sample
         if maxbadflag:
-            nbad = np.array([(v <= -psfex.psfex.cvar.BIG).sum() for v in vignet])
+            nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
             dbad = nbad > maxbad
             #set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)

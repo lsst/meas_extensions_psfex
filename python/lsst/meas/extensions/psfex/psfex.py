@@ -1,14 +1,22 @@
 #!/usr/bin/env python
 import os
+import re
 import sys
-from lsst.meas.extensions.psfex.utils import *
+
+import numpy as np
+import pyfits
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
+
 import lsst.afw.coord as afwCoord
 import lsst.afw.geom as afwGeom
+import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
+import lsst.afw.display.ds9 as ds9
+from lsst.daf.base import PropertySet
+from . import psfexLib
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def splitFitsCard(line):
@@ -32,43 +40,43 @@ def splitFitsCard(line):
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
     """
-	PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
-	INPUT   Pointer to an array of FWHMs,
-	maximum allowed FWHM variation,
-	minimum allowed FWHM,
-	maximum allowed FWHM,
+        PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
+        INPUT   Pointer to an array of FWHMs,
+        maximum allowed FWHM variation,
+        minimum allowed FWHM,
+        maximum allowed FWHM,
 
-	OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
-	NOTES   -.
-	AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
-	VERSION 20/03/2008
+        OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
+        NOTES   -.
+        AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
+        VERSION 20/03/2008
         """
     nfwhm = len(fwhm)
     fwhm.sort()
 
     # Find the mode
-    nw = nfwhm//4;
+    nw = nfwhm//4
     if nw < 4:
-	nw = 1
-    dfmin = psfex.cvar.BIG
+        nw = 1
+    dfmin = psfexLib.cvar.BIG
     fmin = 0.0
     for i in range(nfwhm - nw):
-	df = fwhm[i + nw] - fwhm[i]
-	if df < dfmin:
-	    dfmin = df
-	    fmin = (fwhm[i + nw] + fwhm[i])/2.0
+        df = fwhm[i + nw] - fwhm[i]
+        if df < dfmin:
+            dfmin = df
+            fmin = (fwhm[i + nw] + fwhm[i])/2.0
 
     if nfwhm < 2:
-	fmin = fwhm[0]
+        fmin = fwhm[0]
 
     dfmin = (maxvar + 1.0)**0.3333333
     minout = fmin/dfmin if dfmin > 0.0 else 0.0
     if minout < minin:
-	minout = minin
+        minout = minin
 
     maxout = fmin*dfmin**2
     if maxout > maxin:
-	maxout = maxin
+        maxout = maxin
 
     if plt and plot.get("fwhmHistogram"):
         plt.clf()
@@ -87,19 +95,19 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                  plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfex.Set(context)
+        set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
         cmin = np.empty(set.getNcontext())
         cmax = np.empty(set.getNcontext())
         for i in range(set.getNcontext()):
-	    if set.getNsample():
-		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
-		cmax[i] = cmin[i] + set.getContextScale(i);
-	    else:
-		cmin[i] =  psfex.cvar.BIG;
-		cmax[i] = -psfex.cvar.BIG;
+            if set.getNsample():
+                cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
+                cmax[i] = cmin[i] + set.getContextScale(i)
+            else:
+                cmin[i] =  psfexLib.cvar.BIG
+                cmax[i] = -psfexLib.cvar.BIG
     #
     # Read data
     #
@@ -119,7 +127,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
             elif tab.name == "LDAC_IMHEAD":
                 hdr = tab.data[0][0]    # the fits header from the original fits image
                 foundCards = 0          # how many of our desired cards have we found?
-                        
+
                 for line in hdr:
                     try:
                         k, v = splitFitsCard(line)
@@ -143,9 +151,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                 fluxerr = tab.data[prefs.getPhotfluxerrRkey()]
                 elong = tab.data["ELONGATION"]
                 flags = tab.data["FLAGS"]
-                nobj = len(xm)
 
-                n = prefs.getPhotfluxNum() - 1;
+                n = prefs.getPhotfluxNum() - 1
                 if n:
                     assert False, "Code to handle e.g. FLUX_APER(3) isn't yet converted"
                     if key.naxis == 1 and n < key.naxisn[0]:
@@ -154,10 +161,10 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                         print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
                             (prefs.getPhotfluxRkey(), filename)
 
-                n = prefs.getPhotfluxerrNum() - 1;
+                n = prefs.getPhotfluxerrNum() - 1
                 if n:
                     if key.naxis == 1 and n < key.naxisn[0]:
-                        fluxerr += n;
+                        fluxerr += n
                     else:
                         print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
                             (prefs.getPhotfluxerrRkey(), filename)
@@ -170,7 +177,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                     vigw, vigh = vignet[0].shape
                 except ValueError:
                     raise RuntimeError("*Error*: VIGNET should be a 2D vector; saw %s" % str(vignet[0].shape))
-                
+
                 if set.empty():
                     set.setVigSize(vigw, vigh)
 
@@ -196,7 +203,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                         set.setContextname(i, key)
 
     # Now examine each vector of the shipment
-    good = select_candidates(set, prefs, frmin, frmax, 
+    good = select_candidates(set, prefs, frmin, frmax,
                              flags, flux, fluxerr, fluxrad, elong, vignet,
                              plot=plot, title="%s[%d]" % (filename, ext + 1))
     #
@@ -204,7 +211,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
     #
     if not vignet.dtype.isnative:
         # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
-        vignet = vignet.byteswap() 
+        vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
         sample = set.newSample()
@@ -254,7 +261,7 @@ def getSexFlags(*args):
             128 : "memory error (extract)",
             }
 
-def select_candidates(set, prefs, frmin, frmax, 
+def select_candidates(set, prefs, frmin, frmax,
                       flags, flux, fluxerr, rmsSize, elong, vignet,
                       plot=dict(), title=""):
     maxbad = prefs.getBadpixNmax()
@@ -263,7 +270,7 @@ def select_candidates(set, prefs, frmin, frmax,
     minsn = prefs.getMinsn()
 
     sn = flux/np.where(fluxerr > 0, fluxerr, 1)
-    sn[fluxerr <= 0] = -psfex.cvar.BIG
+    sn[fluxerr <= 0] = -psfexLib.cvar.BIG
     #---- Apply some selection over flags, fluxes...
     plotFlags = plot.get("showFlags") if plt else False
     plotRejection = plot.get("showRejection") if plt else False
@@ -301,7 +308,7 @@ def select_candidates(set, prefs, frmin, frmax,
 
     #-- ... and check the integrity of the sample
     if maxbadflag:
-        nbad = np.array([(v <= -psfex.cvar.BIG).sum() for v in vignet])
+        nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
         dbad = nbad > maxbad
         set.setBadPix(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
@@ -348,8 +355,10 @@ def select_candidates(set, prefs, frmin, frmax,
 try:
     _dataType
 except NameError:
-    class _SExtractor: pass
-    class _LSST : pass
+    class _SExtractor:
+        pass
+    class _LSST:
+        pass
 
     _dataTypes = dict(LSST = _LSST,
                       SExtractor = _SExtractor
@@ -367,7 +376,7 @@ def getFlags():
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -378,32 +387,32 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
     ncat = len(filenames)
     fwhmmin = np.empty(ncat)
     fwhmmax = np.empty(ncat)
-    
+
     if not prefs.getAutoselectFlag():
         fwhmmin = np.zeros(ncat) + prefs.getFwhmrange()[0]
         fwhmmax = np.zeros(ncat) + prefs.getFwhmrange()[1]
         fwhmmode = (fwhmmin + fwhmmax)/2.0
     else:
         fwhms = {}
-  
+
         #-- Try to estimate the most appropriate Half-light Radius range
         #-- Get the Half-light radii
-	nobj = 0
+        nobj = 0
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
-                
+
             if prefs.getVerboseType() != prefs.QUIET:
                 print "Examining Catalog #%d" % (i+1)
 
             #---- Read input catalog
-	    backnoises = []
+            backnoises = []
             with pyfits.open(fileName) as cat:
                 extCtr = -1
                 for tab in cat:
                     if tab.name == "LDAC_IMHEAD":
                         extCtr += 1
 
-		    if extCtr != ext and ext != prefs.ALL_EXTENSIONS:
+                    if extCtr != ext and ext != prefs.ALL_EXTENSIONS:
                         if extCtr > ext:
                             break
                         continue
@@ -417,9 +426,9 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
                                 k, v = splitFitsCard(line)
                             except AttributeError:
                                 continue
-                            
+
                             if k == "SEXBKDEV":
-                                if v < 1/psfex.cvar.BIG:
+                                if v < 1/psfexLib.cvar.BIG:
                                     v = 1.0
 
                                 backnoises.append(v)
@@ -440,55 +449,55 @@ def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=di
                         good = np.logical_and(good, fwhm < max)
                         fwhms[i] = fwhm[good]
 
-	if prefs.getVarType() == prefs.VAR_NONE:
-	    if nobj:
+        if prefs.getVarType() == prefs.VAR_NONE:
+            if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
                 for l in fwhms.values():
                     fwhms_all[i:len(l)] = l
                     i += len(l)
-		mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
+                mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
                                                    prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
                                                    plot=plot)
-	    else:
-		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+            else:
+                raise RuntimeError("No source with appropriate FWHM found!!")
+                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
                 fwhmmode = np.zeros(ncat) + mode
-	else:
+        else:
             fwhmmode = np.empty(ncat)
             fwhmmin = np.empty(ncat)
             fwhmmax = np.empty(ncat)
 
             for i in range(ncat):
-		nobj = len(fwhms[i])
-		if (nobj):
+                nobj = len(fwhms[i])
+                if (nobj):
                     fwhmmode[i], fwhmmin[i], fwhmmax[i] = \
                         compute_fwhmrange(fwhms[i], prefs.getMaxvar(),
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
-		else:
-		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+                else:
+                    raise RuntimeError("No source with appropriate FWHM found!!")
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfex.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
         set = None
-	if ext == prefs.ALL_EXTENSIONS:
+        if ext == prefs.ALL_EXTENSIONS:
             extensions = range(len(backnoises))
-	else:
+        else:
             extensions = [ext]
 
         for e in extensions:
             set = read_samples(prefs, set, fileName, fwhmmin[i]/2.0, fwhmmax[i]/2.0,
-                               e, next, i, context, context.getPc(i) if context.getNpc() else None, plot=plot);
+                               e, next, i, context, context.getPc(i) if context.getNpc() else None, plot=plot)
 
-	if fwhmmode[i] < mode:
-	    mode = fwhmmode[i]
+        if fwhmmode[i] < mode:
+            mode = fwhmmode[i]
 
         set.setFwhm(mode)
 
@@ -524,7 +533,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             # cmin, cmax are the range of input star positions
             cmin, cmax = [set.getContextOffset(i) + d*set.getContextScale(i) for d in (-0.5, 0.5)]
             naxis[i] = cmax + cmin          # a decent guess
-  
+
     import lsst.afw.display.utils as ds9Utils
     if naxis[0] > naxis[1]:
         nx, ny = int(nspot*naxis[0]/float(naxis[1]) + 0.5), nspot
@@ -546,7 +555,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
                     trim = im.getHeight()//2
 
                 im = im[trim:-trim, trim:-trim]
-            
+
             mos.append(im)
 
     mosaic = mos.makeMosaic(mode=nx)
@@ -559,7 +568,8 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     if False:
         for x, y, i in zip((xpos[0], xpos[-1]), (ypos[0], ypos[-1]), (0, mos.nImage - 1)):
             bbox = mos.getBBox(i)
-            mosx, mosy = bbox.getMinX() + 0.5*(bbox.getWidth() - 1), bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
+            mosx = bbox.getMinX() + 0.5*(bbox.getWidth()  - 1)
+            mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
             pos.append([afwGeom.PointD(mosx, mosy), wcs.pixelToSky(afwGeom.PointD(x, y))])
     else:
         pos.append([afwGeom.PointD(0, 0), wcs.pixelToSky(afwGeom.PointD(0, 0))])
@@ -590,7 +600,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
         s = set.getSample(i)
         if ext is not None and s.getExtindex() != ext:
             continue
-    
+
         smos = ds9Utils.Mosaic(gutter=2, background=-0.003)
         for func in [s.getVig, s.getVigResi]:
             arr = func()
@@ -603,7 +613,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             smos.append(im)
 
         mos.append(smos.makeMosaic(mode="x"))
-        
+
     mosaic = mos.makeMosaic(title=title)
 
     if frame is not None:
@@ -613,7 +623,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
         outFile = "%s-psfstars.fits" % title
         if outDir:
             outFile = os.path.join(outDir, outFile)
-    
+
         mosaic.writeFits(outFile)
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -672,12 +682,12 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfex.vectorField()
+    fields = psfexLib.vectorField()
     for cat in prefs.getCatalogs():
-        field = psfex.Field(cat)
+        field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
-        with pyfits.open(cat) as pf:
+        with pyfits.open(cat):
             # Hack: I want the WCS so I'll guess where the calexp is to be found
             calexpFile = guessCalexp(cat)
             md = afwImage.readMetadata(calexpFile)
@@ -686,7 +696,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
             if not wcs:
                 crval = afwCoord.makeCoord(afwCoord.ICRS, 0.0*afwGeom.degrees, 0.0*afwGeom.degrees)
                 wcs = afwImage.makeWcs(crval, afwGeom.PointD(0, 0), 1.0, 0, 0, 1.0)
-            
+
             naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
             # Find how many rows there are in the catalogue
             md = afwImage.readMetadata(cat)
@@ -698,15 +708,15 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         field.finalize()
         fields.append(field)
 
-    next = fields[0].getNext()          # number of extensions
+    fields[0].getNext()          # number of extensions
 
-    psfstep = prefs.getPsfStep()
+    prefs.getPsfStep()
 
-    sets = psfex.vectorSet()
+    sets = psfexLib.vectorSet()
     for set in load_samplesLsst(prefs, context, plot=plot):
         sets.append(set)
 
-    psfex.makeit(fields, sets)
+    psfexLib.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:
@@ -720,19 +730,19 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                      plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-	set = psfex.Set(context)
+        set = psfexLib.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
         cmin = np.empty(set.getNcontext())
         cmax = np.empty(set.getNcontext())
         for i in range(set.getNcontext()):
-	    if set.getNsample():
-		cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0;
-		cmax[i] = cmin[i] + set.getContextScale(i);
-	    else:
-		cmin[i] =  psfex.cvar.BIG;
-		cmax[i] = -psfex.cvar.BIG;
+            if set.getNsample():
+                cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
+                cmax[i] = cmin[i] + set.getContextScale(i)
+            else:
+                cmin[i] =  psfexLib.cvar.BIG
+                cmax[i] = -psfexLib.cvar.BIG
     #
     # Read data
     #
@@ -745,7 +755,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     shape = tab.getShapeDefinition()
     ixx = tab.get("%s.xx" % shape)
     iyy = tab.get("%s.yy" % shape)
-    
+
     rmsSize = np.sqrt(0.5*(ixx + iyy))
     elong = 0.5*(ixx - iyy)/(ixx + iyy)
 
@@ -759,7 +769,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     vigw, vigh = 35, 35 # [prefs.getPsfsize()[i] for i in range(2)]
     if set.empty():
         set.setVigSize(vigw, vigh)
-        
+
     vignet = np.empty(nobj*vigw*vigh, "float32").reshape(nobj, vigw, vigh)
 
     # Hack: I want the WCS so I'll guess where the calexp is to be found
@@ -769,7 +779,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     gain = 1.0
 
     edgeBit = [k for k, v in getFlags().items() if v == "edge"][0]
-    
+
     for i, xc, yc in zip(range(nobj), xm, ym):
         try:
             x, y = int(xc), int(yc)
@@ -804,7 +814,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
             set.setContextname(i, key)
 
     # Now examine each vector of the shipment
-    good = select_candidates(set, prefs, frmin, frmax, 
+    good = select_candidates(set, prefs, frmin, frmax,
                              flags, flux, fluxErr, rmsSize, elong, vignet,
                              plot=plot, title="%s[%d]" % (filename, ext + 1) if next > 1 else filename)
     #
@@ -812,7 +822,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     #
     if not vignet.dtype.isnative:
         # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
-        vignet = vignet.byteswap() 
+        vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
         sample = set.newSample()
@@ -856,7 +866,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -867,20 +877,20 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
     ncat = len(filenames)
     fwhmmin = np.empty(ncat)
     fwhmmax = np.empty(ncat)
-    
+
     if not prefs.getAutoselectFlag():
         fwhmmin = np.zeros(ncat) + prefs.getFwhmrange()[0]
         fwhmmax = np.zeros(ncat) + prefs.getFwhmrange()[1]
         fwhmmode = (fwhmmin + fwhmmax)/2.0
     else:
         fwhms = {}
-  
+
         #-- Try to estimate the most appropriate Half-light Radius range
         #-- Get the Half-light radii
-	nobj = 0
+        nobj = 0
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
-                
+
             if prefs.getVerboseType() != prefs.QUIET:
                 print "Examining Catalog #%d" % (i+1)
 
@@ -908,40 +918,40 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
             good = np.logical_and(good, fwhm < max)
             fwhms[i] = fwhm[good]
 
-	if prefs.getVarType() == prefs.VAR_NONE:
-	    if nobj:
+        if prefs.getVarType() == prefs.VAR_NONE:
+            if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
                 for l in fwhms.values():
                     fwhms_all[i:len(l)] = l
                     i += len(l)
-		mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
+                mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
                                                    prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
                                                    plot=plot)
-	    else:
-		raise RuntimeError("No source with appropriate FWHM found!!")
-		mode = min = max = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+            else:
+                raise RuntimeError("No source with appropriate FWHM found!!")
+                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
                 fwhmmode = np.zeros(ncat) + mode
-	else:
+        else:
             fwhmmode = np.empty(ncat)
             fwhmmin = np.empty(ncat)
             fwhmmax = np.empty(ncat)
 
             for i in range(ncat):
-		nobj = len(fwhms[i])
-		if (nobj):
+                nobj = len(fwhms[i])
+                if (nobj):
                     fwhmmode[i], fwhmmin[i], fwhmmax[i] = \
                         compute_fwhmrange(fwhms[i], prefs.getMaxvar(),
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
-		else:
-		    raise RuntimeError("No source with appropriate FWHM found!!")
-		    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.cvar.INTERPFAC)
+                else:
+                    raise RuntimeError("No source with appropriate FWHM found!!")
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfex.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -949,10 +959,10 @@ def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plo
         for ext in range(next):
             set = read_samplesLsst(prefs, set, fileName, fwhmmin[i]/2.0, fwhmmax[i]/2.0,
                                    ext, next, i, context,
-                                   context.getPc(i) if context.getNpc() else None, plot=plot);
+                                   context.getPc(i) if context.getNpc() else None, plot=plot)
 
-	if fwhmmode[i] < mode:
-	    mode = fwhmmode[i]
+        if fwhmmode[i] < mode:
+            mode = fwhmmode[i]
 
         set.setFwhm(mode)
 
@@ -978,9 +988,9 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfex.vectorField()    
+    fields = psfexLib.vectorField()
     for cat in prefs.getCatalogs():
-        field = psfex.Field(cat)
+        field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
         with pyfits.open(cat) as pf:
@@ -989,7 +999,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
                     pass
                 elif hdu.name == "LDAC_IMHEAD":
                     hdr = hdu.data[0][0]    # the fits header from the original fits image
-                    md = dafBase.PropertySet()
+                    md = PropertySet()
                     for line in hdr:
                         try:
                             md.set(*splitFitsCard(line))
@@ -1016,11 +1026,11 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
 
 
 
-    sets = psfex.vectorSet()
+    sets = psfexLib.vectorSet()
     for set in load_samples(prefs, context, plot=plot):
         sets.append(set)
 
-    psfex.makeit(fields, sets)
+    psfexLib.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:
