@@ -7,7 +7,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "boost/shared_ptr.hpp"
+#include <memory>
 
 extern "C" {
 #include "context.h"
@@ -92,8 +92,8 @@ private:
     
 class Set {
     friend class Psf;
-    friend void makeit(std::vector<boost::shared_ptr<Field> > &fields,
-                       std::vector<boost::shared_ptr<Set> > const& sets);
+    friend void makeit(std::vector<std::shared_ptr<Field> > &fields,
+                       std::vector<std::shared_ptr<Set> > const& sets);
 public:
     Set(Context &c);
     ~Set();

@@ -62,9 +62,9 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 %include "lsst/meas/extensions/psfex/prefs.hh"
 %include "lsst/meas/extensions/psfex/psf.hh"
 
-%template(vectorField) std::vector<boost::shared_ptr<lsst::meas::extensions::psfex::Field> >;
+%template(vectorField) std::vector<std::shared_ptr<lsst::meas::extensions::psfex::Field> >;
 %template(vectorPsf) std::vector<lsst::meas::extensions::psfex::Psf>;
-%template(vectorSet) std::vector<boost::shared_ptr<lsst::meas::extensions::psfex::Set> >;
+%template(vectorSet) std::vector<std::shared_ptr<lsst::meas::extensions::psfex::Set> >;
 
 %inline %{
    #undef BIG
