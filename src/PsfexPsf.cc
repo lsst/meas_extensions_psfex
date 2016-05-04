@@ -31,7 +31,7 @@
 #include <cassert>
 #include <numeric>
 
-#include "boost/make_shared.hpp"
+#include <memory>
 
 #include "lsst/base.h"
 #include "lsst/utils/ieee.h"
