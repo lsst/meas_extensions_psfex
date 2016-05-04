@@ -31,7 +31,7 @@
 #include <cassert>
 #include <numeric>
 
-#include "boost/make_shared.hpp"
+#include <memory>
 
 #include "lsst/base.h"
 #include "lsst/utils/ieee.h"
@@ -90,7 +90,7 @@ PsfexPsf::~PsfexPsf()
 
 PTR(afw::detection::Psf)
 PsfexPsf::clone() const {
-    return boost::make_shared<PsfexPsf>(*this);
+    return std::make_shared<PsfexPsf>(*this);
 }
 
 PTR(afw::math::LinearCombinationKernel const)
@@ -158,11 +158,11 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
             }
         }
 
-        kernels.push_back(boost::make_shared<afw::math::FixedKernel>(kim));
+        kernels.push_back(std::make_shared<afw::math::FixedKernel>(kim));
         weights.push_back(_poly->basis[i]);
     }
 
-    _kernel = boost::make_shared<afw::math::LinearCombinationKernel>(kernels, weights);
+    _kernel = std::make_shared<afw::math::LinearCombinationKernel>(kernels, weights);
 
     return _kernel;
 }
@@ -242,7 +242,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     //
     // And copy it into place
     //
-    PTR(afw::detection::Psf::Image) im = boost::make_shared<afw::detection::Psf::Image>(sampleW, sampleH);
+    PTR(afw::detection::Psf::Image) im = std::make_shared<afw::detection::Psf::Image>(sampleW, sampleH);
     // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
     // The + 0.5 is to handle floating point imprecision in this calculation
     im->setXY0(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,

@@ -69,8 +69,8 @@ load_samples(char **filenames, int catindex, int ncat, int ext,
 namespace lsst { namespace meas { namespace extensions { namespace psfex {
 
 void
-makeit(std::vector<boost::shared_ptr<Field> > &fields_,
-       std::vector<boost::shared_ptr<Set> > const& sets
+makeit(std::vector<std::shared_ptr<Field> > &fields_,
+       std::vector<std::shared_ptr<Set> > const& sets
       )
 {
     if (sets.size() > MAXFILE) {
@@ -92,7 +92,7 @@ makeit(std::vector<boost::shared_ptr<Field> > &fields_,
         int const ncat;                 // Original number
         std::vector<char *> incat_name; // Original data
         size_t const setsSize;          // New size
-        ScribbleRaii(std::vector<boost::shared_ptr<Set> > const& sets) :
+        ScribbleRaii(std::vector<std::shared_ptr<Set> > const& sets) :
             ncat(prefs.ncat), incat_name(ncat), setsSize(sets.size())
         {
             for (int i = 0; i != prefs.ncat; ++i) {
