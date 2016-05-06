@@ -280,7 +280,7 @@ public:
         _comp_size(schema.addField<int>("_comp_size", "Size of _comp array")),
         _context_size(schema.addField<int>("_context_size", "Size of _context array")),
     // Other scalars
-        averagePosition(afw::table::PointKey<double>::addFields(schema,"averagePosition","average position of stars used to make the PSF","pixels")),
+        averagePosition(afw::table::PointKey<double>::addFields(schema,"averagePosition","average position of stars used to make the PSF","pixel")),
         _pixstep(schema.addField<float>("_pixstep", "oversampling", "pixel"))
     {
         ;
