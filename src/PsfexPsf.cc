@@ -30,11 +30,9 @@
 #include <cmath>
 #include <cassert>
 #include <numeric>
-
 #include <memory>
 
 #include "lsst/base.h"
-#include "lsst/utils/ieee.h"
 #include "lsst/pex/exceptions.h"
 #include "lsst/afw/image/ImageUtils.h"
 #include "lsst/afw/math/Statistics.h"
@@ -105,7 +103,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
 
     }
     // where we want to evaluate the basis function's weights
-    if (!lsst::utils::isfinite(position[0])) {
+    if (!std::isfinite(position[0])) {
         position = _averagePosition;
     }
 
