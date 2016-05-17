@@ -74,25 +74,24 @@ def psfVal(ix, iy, x, y, sigma1, sigma2, b):
 class SpatialModelPsfTestCase(unittest.TestCase):
     """A test case for SpatialModelPsf"""
 
-    @staticmethod
-    def measure(footprintSet, exposure):
+    def measure(self, footprintSet, exposure):
         """Measure a set of Footprints, returning a SourceCatalog"""
-        config = SingleFrameMeasurementTask.ConfigClass()
-        config.slots.apFlux = 'base_CircularApertureFlux_12_0'
-        schema = afwTable.SourceTable.makeMinimalSchema()
-
-        measureSources = SingleFrameMeasurementTask(schema,config=config)
-
-        catalog = afwTable.SourceCatalog(schema)
+        catalog = afwTable.SourceCatalog(self.schema)
         if display:
             ds9.mtv(exposure, title="Original", frame=0)
 
         footprintSet.makeSources(catalog)
 
-        measureSources.run(catalog,exposure)
+        self.measureSources.run(catalog,exposure)
         return catalog
 
     def setUp(self):
+        config = SingleFrameMeasurementTask.ConfigClass()
+        config.slots.apFlux = 'base_CircularApertureFlux_12_0'
+        self.schema = afwTable.SourceTable.makeMinimalSchema()
+
+        self.measureSources = SingleFrameMeasurementTask(self.schema, config=config)
+
         width, height = 110, 301
 
         self.mi = afwImage.MaskedImageF(afwGeom.ExtentI(width, height))
@@ -189,7 +188,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         self.footprintSet = afwDetection.FootprintSet(self.mi, afwDetection.Threshold(100), "DETECTED")
 
-        self.catalog = SpatialModelPsfTestCase.measure(self.footprintSet, self.exposure)
+        self.catalog = self.measure(self.footprintSet, self.exposure)
 
         for source in self.catalog:
             try:
@@ -206,9 +205,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         del self.mi
         del self.footprintSet
         del self.catalog
+        del self.schema
+        del self.measureSources
 
-    @staticmethod
-    def setupDeterminer(exposure):
+    def setupDeterminer(self, exposure):
         """Setup the starSelector and psfDeterminer"""
         starSelectorConfig = measAlg.ObjectSizeStarSelectorTask.ConfigClass()
 
@@ -220,7 +220,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        ]
         starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
 
-        starSelector = measAlg.ObjectSizeStarSelectorTask(starSelectorConfig)
+        starSelector = measAlg.ObjectSizeStarSelectorTask(schema=self.schema, config=starSelectorConfig)
 
         psfDeterminerFactory = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerFactory.ConfigClass()
@@ -271,7 +271,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
     def testPsfexDeterminer(self):
         """Test the (Psfex) psfDeterminer on subImages"""
 
-        starSelector, psfDeterminer = SpatialModelPsfTestCase.setupDeterminer(self.exposure)
+        starSelector, psfDeterminer = self.setupDeterminer(self.exposure)
         metadata = dafBase.PropertyList()
 
         psfCandidateList = starSelector.run(self.exposure, self.catalog).psfCandidates
