@@ -33,7 +33,7 @@ from lsst.afw.table import SourceCatalog
 from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
 import lsst.afw.display.ds9 as ds9
-from lsst.meas.algorithms import StarSelectorTask
+from lsst.meas.algorithms import StarSelectorTask, starSelectorRegistry
 from . import psfexLib
 from .psfex import compute_fwhmrange
 
@@ -457,3 +457,5 @@ If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'
         return Struct(
             starCat = starCat,
         )
+
+starSelectorRegistry.register("psfex", PsfexStarSelectorTask)

@@ -210,6 +210,9 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
     def setupDeterminer(self, exposure):
         """Setup the starSelector and psfDeterminer"""
+        starSelectorClass = measAlg.starSelectorRegistry["objectSize"]
+        starSelectorConfig = starSelectorClass.ConfigClass()
+
         starSelectorConfig = measAlg.ObjectSizeStarSelectorTask.ConfigClass()
 
         starSelectorConfig.sourceFluxField = "base_GaussianFlux_flux"
@@ -220,7 +223,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        ]
         starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
 
-        starSelector = measAlg.ObjectSizeStarSelectorTask(schema=self.schema, config=starSelectorConfig)
+        starSelector = starSelectorClass(schema=self.schema, config=starSelectorConfig)
 
         psfDeterminerClass = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerClass.ConfigClass()
