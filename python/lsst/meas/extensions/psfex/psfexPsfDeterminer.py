@@ -26,7 +26,6 @@ import numpy as np
 import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
 import lsst.pex.exceptions as pexExceptions
-import lsst.pex.logging as pexLog
 import lsst.afw.cameraGeom as afwCG
 import lsst.afw.geom as afwGeom
 import lsst.afw.geom.ellipses as afwEll
@@ -37,10 +36,9 @@ import lsst.afw.table as afwTable
 import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
-import lsst.meas.algorithms.psfDeterminerRegistry as psfDeterminerRegistry
 import lsst.meas.extensions.psfex as psfex
 
-class PsfexPsfDeterminerConfig(pexConfig.Config):
+class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
     __nEigenComponents = pexConfig.Field(
         doc = "number of eigen components for PSF kernel creation",
         dtype = int,
@@ -70,21 +68,6 @@ class PsfexPsfDeterminerConfig(pexConfig.Config):
         doc = "number of stars per psf cell for PSF kernel creation",
         dtype = int,
         default = 3,
-    )
-    kernelSize = pexConfig.Field(
-        doc = "radius of the kernel to create, relative to the square root of the stellar quadrupole moments",
-        dtype = float,
-        default = 81.0,
-    )
-    kernelSizeMin = pexConfig.Field(
-        doc = "Minimum radius of the kernel",
-        dtype = int,
-        default = 25,
-    )
-    kernelSizeMax = pexConfig.Field(
-        doc = "Maximum radius of the kernel",
-        dtype = int,
-        default = 45,
     )
     samplingSize = pexConfig.Field(
         doc = "Resolution of the internal PSF model relative to the pixel size; e.g. 0.5 is equal to 2x oversampling",
@@ -144,19 +127,11 @@ N.b. INTRP is used specially in PsfCandidateSet; it means "Contaminated by neigh
         default = False,
     )
 
-class PsfexPsfDeterminer(object):
+    def setDefaults(self):
+        self.kernelSize = 81
+
+class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
-
-    def __init__(self, config):
-        """Construct a PSFEX PSF Fitter
-
-        @param[in] config: instance of PsfexPsfDeterminerConfig
-        """
-        self.config = config
-        # N.b. name of component is meas.algorithms.psfDeterminer so you can turn on psf debugging
-        # independent of which determiner is active
-        self.debugLog = pexLog.Debug("meas.algorithms.psfDeterminer")
-        self.warnLog = pexLog.Log(pexLog.getDefaultLog(), "meas.algorithms.psfDeterminer")
 
     def determinePsf(self, exposure, psfCandidateList, metadata=None, flagKey=None):
         """Determine a PSFEX PSF model for an exposure given a list of PSF candidates
@@ -209,7 +184,7 @@ class PsfexPsfDeterminer(object):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception, e:
-                self.debugLog.debug(2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
+                self.log.log(-2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
                 continue
 
             source = psfCandidate.getSource()
@@ -218,7 +193,7 @@ class PsfexPsfDeterminer(object):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            self.debugLog.debug(1, \
+            self.log.log(-1, \
                 "WARNING: NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = int(self.config.kernelSize)
         else:
@@ -236,7 +211,7 @@ class PsfexPsfDeterminer(object):
         if self.config.samplingSize > 0:
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0: pixKernelSize += 1
-        self.debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
+        self.log.log(-3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
                             (actualKernelSize,pixKernelSize))
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
@@ -271,7 +246,7 @@ class PsfexPsfDeterminer(object):
             gain = np.mean(np.array([a.getGain() for a in ccd]))
         else:
             gain = 1.0
-            self.warnLog.log(pexLog.Log.WARN, "Setting gain to %g" % gain)
+            self.log.warn("Setting gain to %g" % (gain,))
 
         contextvalp = []
         for i, key in enumerate(context.getName()):
@@ -289,7 +264,7 @@ class PsfexPsfDeterminer(object):
                     contextvalp.append(np.array([psfCandidateList[_].getSource().get(key)
                                                     for _ in range(nCand)]))
                 except KeyError:
-                    raise RuntimeError("*Error*: %s parameter not found" % (key))
+                    raise RuntimeError("*Error*: %s parameter not found" % (key,))
                 set.setContextname(i, key)
 
         if display:
@@ -346,7 +321,7 @@ class PsfexPsfDeterminer(object):
                     for j in range(set.getNcontext()):
                         sample.setContext(j, float(contextvalp[j][i]))
                 except Exception as e:
-                    self.debugLog.debug(2, "Exception when processing sample at (%f,%f): %s" % (xc,yc,e))
+                    self.log.log(-2, "Exception when processing sample at (%f,%f): %s" % (xc, yc, e))
                     continue
                 else:
                     set.finiSample(sample)
@@ -451,4 +426,4 @@ class PsfexPsfDeterminer(object):
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-psfDeterminerRegistry.register("psfex", PsfexPsfDeterminer)
+measAlg.psfDeterminerRegistry.register("psfex", PsfexPsfDeterminerTask)

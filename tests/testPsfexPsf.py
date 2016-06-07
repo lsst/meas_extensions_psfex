@@ -222,8 +222,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         starSelector = measAlg.ObjectSizeStarSelectorTask(schema=self.schema, config=starSelectorConfig)
 
-        psfDeterminerFactory = measAlg.psfDeterminerRegistry["psfex"]
-        psfDeterminerConfig = psfDeterminerFactory.ConfigClass()
+        psfDeterminerClass = measAlg.psfDeterminerRegistry["psfex"]
+        psfDeterminerConfig = psfDeterminerClass.ConfigClass()
         width, height = exposure.getMaskedImage().getDimensions()
         psfDeterminerConfig.sizeCellX = width
         psfDeterminerConfig.sizeCellY = height//3
@@ -232,7 +232,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         # Include oversampling in test
         psfDeterminerConfig.kernelSize = 61
         psfDeterminerConfig.samplingSize = 0.5
-        psfDeterminer = psfDeterminerFactory(psfDeterminerConfig)
+        psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
         return starSelector, psfDeterminer
 
