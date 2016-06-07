@@ -33,13 +33,13 @@ from lsst.afw.table import SourceCatalog
 from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
 import lsst.afw.display.ds9 as ds9
-from lsst.meas.algorithms import StarSelectorTask, starSelectorRegistry
+from lsst.meas.algorithms import BaseStarSelectorTask, starSelectorRegistry
 from . import psfexLib
 from .psfex import compute_fwhmrange
 
 __all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
-class PsfexStarSelectorConfig(StarSelectorTask.ConfigClass):
+class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
     fluxName = pexConfig.Field(
         dtype=str,
         doc="Name of photometric flux key ",
@@ -191,7 +191,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 ## \copybrief PsfexStarSelectorTask
 ## \}
 
-class PsfexStarSelectorTask(StarSelectorTask):
+class PsfexStarSelectorTask(BaseStarSelectorTask):
     """!A star selector whose algorithm is not yet documented
 
     @anchor PsfexStarSelectorTask_
