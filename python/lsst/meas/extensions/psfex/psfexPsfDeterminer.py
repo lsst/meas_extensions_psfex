@@ -250,7 +250,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                     contextvalp.append(exposure.getMetadata().get(key[1:]))
                 except KeyError:
                     raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
-                                       (key[1:], filename))
+                                       (key[1:], prefs.getContextName()))
             else:
                 try:
                     contextvalp.append(np.array([psfCandidateList[_].getSource().get(key)
