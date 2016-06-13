@@ -212,9 +212,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         """Setup the starSelector and psfDeterminer"""
         starSelectorClass = measAlg.starSelectorRegistry["objectSize"]
         starSelectorConfig = starSelectorClass.ConfigClass()
-
-        starSelectorConfig = measAlg.ObjectSizeStarSelectorTask.ConfigClass()
-
         starSelectorConfig.sourceFluxField = "base_GaussianFlux_flux"
         starSelectorConfig.badFlags = ["base_PixelFlags_flag_edge",
                                        "base_PixelFlags_flag_interpolatedCenter",
