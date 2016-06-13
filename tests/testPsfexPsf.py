@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# 
+#
 # LSST Data Management System
 # Copyright 2008-2015 AURA/LSST.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -11,14 +11,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -210,8 +210,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
     def setupDeterminer(self, exposure):
         """Setup the starSelector and psfDeterminer"""
-        starSelectorConfig = measAlg.ObjectSizeStarSelectorTask.ConfigClass()
-
+        starSelectorClass = measAlg.starSelectorRegistry["objectSize"]
+        starSelectorConfig = starSelectorClass.ConfigClass()
         starSelectorConfig.sourceFluxField = "base_GaussianFlux_flux"
         starSelectorConfig.badFlags = ["base_PixelFlags_flag_edge",
                                        "base_PixelFlags_flag_interpolatedCenter",
@@ -220,7 +220,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        ]
         starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
 
-        starSelector = measAlg.ObjectSizeStarSelectorTask(schema=self.schema, config=starSelectorConfig)
+        starSelector = starSelectorClass(schema=self.schema, config=starSelectorConfig)
 
         psfDeterminerClass = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerClass.ConfigClass()
