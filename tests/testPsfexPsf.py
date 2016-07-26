@@ -100,7 +100,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.mi.getVariance().set(sd*sd)
         self.mi.getMask().addMaskPlane("DETECTED")
 
-        self.FWHM = 5
         self.ksize = 31                      # size of desired kernel
 
         sigma1 = 1.75
