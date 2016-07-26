@@ -229,9 +229,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         psfDeterminerConfig.sizeCellY = height//3
         psfDeterminerConfig.spatialOrder = 1
 
-        # Include oversampling in test
-        psfDeterminerConfig.kernelSize = 61
-        psfDeterminerConfig.samplingSize = 0.5
         psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
         return starSelector, psfDeterminer
