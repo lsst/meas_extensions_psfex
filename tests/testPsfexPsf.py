@@ -100,7 +100,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.mi.getVariance().set(sd*sd)
         self.mi.getMask().addMaskPlane("DETECTED")
 
-        self.FWHM = 5
         self.ksize = 31                      # size of desired kernel
 
         sigma1 = 1.75
@@ -229,9 +228,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         psfDeterminerConfig.sizeCellY = height//3
         psfDeterminerConfig.spatialOrder = 1
 
-        # Include oversampling in test
-        psfDeterminerConfig.kernelSize = 61
-        psfDeterminerConfig.samplingSize = 0.5
         psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
         return starSelector, psfDeterminer
