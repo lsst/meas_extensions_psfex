@@ -24,6 +24,7 @@ import numpy as np
 
 import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
+import lsst.pex.logging as pexLog
 import lsst.afw.geom as afwGeom
 import lsst.afw.geom.ellipses as afwEll
 import lsst.afw.display.ds9 as ds9
@@ -154,6 +155,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals
                                                             # Normalise residuals by object amplitude
 
+        debugLog = pexLog.Debug("meas.algorithms.psfDeterminer")
         mi = exposure.getMaskedImage()
 
         nCand = len(psfCandidateList)
@@ -175,7 +177,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception, e:
-                self.log.log(-2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
+                debugLog.debug(2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
                 continue
 
             source = psfCandidate.getSource()
@@ -184,7 +186,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            self.log.log(-1, \
+            debugLog.debug(1, \
                 "WARNING: NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = int(self.config.kernelSize)
         else:
@@ -203,7 +205,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0:
                 pixKernelSize += 1
-        self.log.log(-3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
+        debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
                             (actualKernelSize,pixKernelSize))
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
@@ -314,7 +316,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                     for j in range(set.getNcontext()):
                         sample.setContext(j, float(contextvalp[j][i]))
                 except Exception as e:
-                    self.log.log(-2, "Exception when processing sample at (%f,%f): %s" % (xc, yc, e))
+                    debugLog.debug(2, "Exception when processing sample at (%f,%f): %s" % (xc, yc, e))
                     continue
                 else:
                     set.finiSample(sample)
