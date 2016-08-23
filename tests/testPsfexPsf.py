@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-
 #
 # LSST Data Management System
-# Copyright 2008-2015 AURA/LSST.
+#
+# Copyright 2008-2016  AURA/LSST.
 #
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
@@ -21,20 +21,11 @@
 # the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
-
-"""
-Tests for PsfexPsf
-
-Run with:
-   python testPsfexPsf.py
-or
-   python
-   >>> import testPsfexPsf; testPsfexPsf.run()
-"""
 import math
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+
+import lsst.utils.tests
 import lsst.afw.image as afwImage
 import lsst.afw.coord as afwCoord
 import lsst.afw.detection as afwDetection
@@ -46,7 +37,7 @@ import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
 # register the PSF determiner
 import lsst.meas.extensions.psfex.psfexPsfDeterminer
-assert lsst.meas.extensions.psfex.psfexPsfDeterminer # make pyflakes happy
+assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
 from lsst.meas.base import SingleFrameMeasurementTask
 
 try:
@@ -56,6 +47,7 @@ except NameError:
     display = False
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def psfVal(ix, iy, x, y, sigma1, sigma2, b):
     """Return the value at (ix, iy) of a double Gaussian
@@ -71,6 +63,7 @@ def psfVal(ix, iy, x, y, sigma1, sigma2, b):
     return (math.exp(-0.5*(u**2 + (v*ab)**2)/sigma1**2) +
             b*math.exp(-0.5*(u**2 + (v*ab)**2)/sigma2**2))/(1 + b)
 
+
 class SpatialModelPsfTestCase(unittest.TestCase):
     """A test case for SpatialModelPsf"""
 
@@ -82,7 +75,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         footprintSet.makeSources(catalog)
 
-        self.measureSources.run(catalog,exposure)
+        self.measureSources.run(catalog, exposure)
         return catalog
 
     def setUp(self):
@@ -107,7 +100,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         self.exposure = afwImage.makeExposure(self.mi)
         self.exposure.setPsf(measAlg.DoubleGaussianPsf(self.ksize, self.ksize,
-                                                    1.5*sigma1, 1, 0.1))
+                                                       1.5*sigma1, 1, 0.1))
         crval = afwCoord.makeCoord(afwCoord.ICRS, 0.0*afwGeom.degrees, 0.0*afwGeom.degrees)
         wcs = afwImage.makeWcs(crval, afwGeom.PointD(0, 0), 1.0, 0, 0, 1.0)
         self.exposure.setWcs(wcs)
@@ -134,7 +127,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         spFunc = afwMath.PolynomialFunction2D(order)
 
         exactKernel = afwMath.LinearCombinationKernel(basisKernelList, spFunc)
-        exactKernel.setSpatialParameters([[1.0, 0,          0],
+        exactKernel.setSpatialParameters([[1.0, 0, 0],
                                           [0.0, 0.5*1e-2, 0.2e-2]])
 
         rand = afwMath.Random()               # make these tests repeatable by setting seed
@@ -143,7 +136,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         if addNoise:
             im = self.mi.getImage()
-            afwMath.randomGaussianImage(im, rand) # N(0, 1)
+            afwMath.randomGaussianImage(im, rand)  # N(0, 1)
             im *= sd                              # N(0, sd^2)
             del im
 
@@ -163,7 +156,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             dx = rand.uniform() - 0.5   # random (centered) offsets
             dy = rand.uniform() - 0.5
 
-            k = exactKernel.getSpatialFunction(1)(x, y) # functional variation of Kernel ...
+            k = exactKernel.getSpatialFunction(1)(x, y)  # functional variation of Kernel ...
             b = (k*sigma1**2/((1 - k)*sigma2**2))       # ... converted double Gaussian's "b"
 
             #flux = 80000 - 20*x - 10*(y/float(height))**2
@@ -182,7 +175,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     self.mi.getImage().set(ix, iy, self.mi.getImage().get(ix, iy) + Isample)
                     self.mi.getVariance().set(ix, iy, self.mi.getVariance().get(ix, iy) + I)
 
-        bbox = afwGeom.BoxI(afwGeom.PointI(0,0), afwGeom.ExtentI(width, height))
+        bbox = afwGeom.BoxI(afwGeom.PointI(0, 0), afwGeom.ExtentI(width, height))
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
 
         self.footprintSet = afwDetection.FootprintSet(self.mi, afwDetection.Threshold(100), "DETECTED")
@@ -236,7 +229,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         """Subtract the exposure's PSF from all the sources in catalog"""
         mi, psf = exposure.getMaskedImage(), exposure.getPsf()
 
-        subtracted =  mi.Factory(mi, True)
+        subtracted = mi.Factory(mi, True)
         for s in catalog:
             xc, yc = s.getX(), s.getY()
             bbox = subtracted.getBBox(afwImage.PARENT)
@@ -247,7 +240,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     pass
         chi = subtracted.Factory(subtracted, True)
         var = subtracted.getVariance()
-        np.sqrt(var.getArray(), var.getArray()) # inplace sqrt
+        np.sqrt(var.getArray(), var.getArray())  # inplace sqrt
         chi /= var
 
         if display:
@@ -256,13 +249,13 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             xc, yc = exposure.getWidth()//2, exposure.getHeight()//2
             ds9.mtv(psf.computeImage(afwGeom.Point2D(xc, yc)), title="Psf %.1f,%.1f" % (xc, yc), frame=3)
 
-        chi_min, chi_max = np.min(chi.getImage().getArray()),  np.max(chi.getImage().getArray())
+        chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
         if False:
             print chi_min, chi_max
 
         if chi_lim > 0:
             self.assertGreater(chi_min, -chi_lim)
-            self.assertLess(   chi_max,  chi_lim)
+            self.assertLess(chi_max, chi_lim)
 
     def testPsfexDeterminer(self):
         """Test the (Psfex) psfDeterminer on subImages"""
@@ -279,18 +272,13 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
+class TestMemory(lsst.utils.tests.MemoryTestCase):
+    pass
 
-    suites = []
-    suites += unittest.makeSuite(SpatialModelPsfTestCase)
-    suites += unittest.makeSuite(utilsTests.MemoryTestCase)
-    return unittest.TestSuite(suites)
 
-def run(exit = False):
-    """Run the utilsTests"""
-    utilsTests.run(suite(), exit)
+def setup_module(module):
+    lsst.utils.tests.init()
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
