@@ -24,7 +24,6 @@ import numpy as np
 
 import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
-import lsst.pex.logging as pexLog
 import lsst.afw.geom as afwGeom
 import lsst.afw.geom.ellipses as afwEll
 import lsst.afw.display.ds9 as ds9
@@ -155,7 +154,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals
                                                             # Normalise residuals by object amplitude
 
-        debugLog = pexLog.Debug("meas.algorithms.psfDeterminer")
         mi = exposure.getMaskedImage()
 
         nCand = len(psfCandidateList)
@@ -177,7 +175,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception, e:
-                debugLog.debug(2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
+                self.log.debug("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
                 continue
 
             source = psfCandidate.getSource()
@@ -204,8 +202,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0:
                 pixKernelSize += 1
-        debugLog.debug(3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
-                            (actualKernelSize,pixKernelSize))
+        self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize,pixKernelSize)
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
@@ -315,7 +312,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                     for j in range(set.getNcontext()):
                         sample.setContext(j, float(contextvalp[j][i]))
                 except Exception as e:
-                    debugLog.debug(2, "Exception when processing sample at (%f,%f): %s" % (xc, yc, e))
+                    self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                     continue
                 else:
                     set.finiSample(sample)
