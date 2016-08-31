@@ -186,8 +186,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            debugLog.debug(1, \
-                "WARNING: NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
+            self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = int(self.config.kernelSize)
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
