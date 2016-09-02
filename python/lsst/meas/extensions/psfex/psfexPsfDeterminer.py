@@ -175,7 +175,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception, e:
-                self.log.log(-2, "Skipping PSF candidate %d of %d: %s" % (i, len(psfCandidateList), e))
+                self.log.debug("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
                 continue
 
             source = psfCandidate.getSource()
@@ -184,8 +184,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            self.log.log(-1, \
-                "WARNING: NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
+            self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = int(self.config.kernelSize)
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
@@ -203,8 +202,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0:
                 pixKernelSize += 1
-        self.log.log(-3, "Psfex Kernel size=%.2f, Image Kernel Size=%.2f" %
-                            (actualKernelSize,pixKernelSize))
+        self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize,pixKernelSize)
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
@@ -314,7 +312,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                     for j in range(set.getNcontext()):
                         sample.setContext(j, float(contextvalp[j][i]))
                 except Exception as e:
-                    self.log.log(-2, "Exception when processing sample at (%f,%f): %s" % (xc, yc, e))
+                    self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                     continue
                 else:
                     set.finiSample(sample)
