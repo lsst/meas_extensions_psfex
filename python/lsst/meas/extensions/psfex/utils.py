@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 import numpy as np
 import pyfits
@@ -13,9 +14,9 @@ def readSExtractor(filename):
                 pass
             elif hdu.name == "LDAC_IMHEAD":
                 hdr = hdu.data[0][0]    # the fits header from the original fits image
-                print hdr[3]
+                print(hdr[3])
             elif hdu.name == "LDAC_OBJECTS":
-                print "%d objects" % (len(hdu.data))
+                print("%d objects" % (len(hdu.data)))
                 # Find the VIGNET column
                 ttype = [k for k, v in hdu.header.items() if v == "VIGNET"]
                 if not ttype:

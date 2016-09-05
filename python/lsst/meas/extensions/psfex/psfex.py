@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os
 import re
 import sys
@@ -162,16 +163,16 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                     if key.naxis == 1 and n < key.naxisn[0]:
                         flux += n
                     else:
-                        print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxRkey(), filename)
+                        print("Not enough apertures for %s in catalogue %s: using first aperture" % \
+                            (prefs.getPhotfluxRkey(), filename), file=sys.stderr)
 
                 n = prefs.getPhotfluxerrNum() - 1
                 if n:
                     if key.naxis == 1 and n < key.naxisn[0]:
                         fluxerr += n
                     else:
-                        print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxerrRkey(), filename)
+                        print("Not enough apertures for %s in catalogue %s: using first aperture" % \
+                            (prefs.getPhotfluxerrRkey(), filename), file=sys.stderr)
                 #
                 # Now the VIGNET data
                 #
@@ -412,7 +413,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
             fwhms[i] = []
 
             if prefs.getVerboseType() != prefs.QUIET:
-                print "Examining Catalog #%d" % (i+1)
+                print("Examining Catalog #%d" % (i+1))
 
             #---- Read input catalog
             backnoises = []
@@ -513,7 +514,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
         if prefs.getVerboseType() != prefs.QUIET:
             if set.getNsample():
-                print "%d samples loaded." % set.getNsample()
+                print("%d samples loaded." % set.getNsample())
             else:
                 raise RuntimeError("No appropriate source found!!")
 
@@ -691,7 +692,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper that reads lsst tables"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
-        print "----- %d input catalogues:" % prefs.getNcat()
+        print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []
@@ -908,7 +909,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
             fwhms[i] = []
 
             if prefs.getVerboseType() != prefs.QUIET:
-                print "Examining Catalog #%d" % (i+1)
+                print("Examining Catalog #%d" % (i+1))
 
             #---- Read input catalog
             tab = afwTable.SourceCatalog.readFits(fileName)
@@ -984,7 +985,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
         if prefs.getVerboseType() != prefs.QUIET:
             if set.getNsample():
-                print "%d samples loaded." % set.getNsample()
+                print("%d samples loaded." % set.getNsample())
             else:
                 raise RuntimeError("No appropriate source found!!")
 
@@ -999,7 +1000,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper for the original psfex that reads SExtractor outputs"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
-        print "----- %d input catalogues:" % prefs.getNcat()
+        print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []

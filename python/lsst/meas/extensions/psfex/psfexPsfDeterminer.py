@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # LSST Data Management System
 # Copyright 2008-2015 AURA/LSST.
@@ -176,7 +177,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             try:
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
-            except Exception, e:
+            except Exception as e:
                 self.log.debug("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
                 continue
 
@@ -196,7 +197,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 actualKernelSize = self.config.kernelSizeMax
             if display:
                 rms = np.median(sizes)
-                print "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
+                print("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms))
 
         # If we manually set the resolution then we need the size in pixel units
         pixKernelSize = actualKernelSize
@@ -280,7 +281,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
                 try:
                     pstamp = psfCandidate.getMaskedImage().clone()
-                except Exception, e:
+                except Exception as e:
                     continue
 
                 if fluxFlagName in source.schema and source.get(fluxFlagName):

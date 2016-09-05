@@ -1,3 +1,4 @@
+from __future__ import print_function
 #
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
@@ -437,15 +438,15 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
                     reply = "y"
 
                 if reply[0] == "h":
-                    print """\
+                    print("""\
 At this prompt, you can continue with almost any key; 'p' enters pdb,
                                                       'q' returns to the shell, and
                                                       'h' prints this text
-""",
+""", end=' ')
 
                     if displayExposure:
-                        print """
-If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'll see it in ds9."""
+                        print("""
+If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'll see it in ds9.""")
                 elif reply[0] == "p":
                     import pdb
                     pdb.set_trace()
