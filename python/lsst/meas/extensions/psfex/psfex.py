@@ -169,7 +169,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                         flux += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxRkey(), filename), file=sys.stderr)
+                             (prefs.getPhotfluxRkey(), filename), file=sys.stderr)
 
                 n = prefs.getPhotfluxerrNum() - 1
                 if n:
@@ -177,7 +177,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                         fluxerr += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxerrRkey(), filename), file=sys.stderr)
+                             (prefs.getPhotfluxerrRkey(), filename), file=sys.stderr)
                 #
                 # Now the VIGNET data
                 #
