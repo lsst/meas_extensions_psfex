@@ -20,7 +20,7 @@ def readSExtractor(filename):
             elif hdu.name == "LDAC_OBJECTS":
                 print("%d objects" % (len(hdu.data)))
                 # Find the VIGNET column
-                ttype = [k for k, v in list(hdu.header.items()) if v == "VIGNET"]
+                ttype = [k for k, v in hdu.header.items() if v == "VIGNET"]
                 if not ttype:
                     raise RuntimeError("Unable to find a VIGNET column")
                 vignetCol = int(re.search(r"^TTYPE(\d+)$", ttype[0]).group(1)) - 1

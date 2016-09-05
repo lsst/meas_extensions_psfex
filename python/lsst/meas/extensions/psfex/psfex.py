@@ -801,7 +801,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
     edgeBit = [k for k, v in getFlags().items() if v == "edge"][0]
 
-    for i, xc, yc in zip(list(range(nobj)), xm, ym):
+    for i, xc, yc in zip(range(nobj), xm, ym):
         try:
             x, y = int(xc), int(yc)
         except ValueError:
