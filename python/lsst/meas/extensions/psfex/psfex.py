@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from builtins import zip
+from builtins import input
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import re
 import sys
@@ -89,7 +94,7 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
         plt.axvline(fmin, color='red')
         [plt.axvline(_, color='blue') for _ in (minout, maxout)]
 
-        raw_input("Continue? ")
+        input("Continue? ")
 
     return fmin, minout, maxout
 
@@ -353,7 +358,7 @@ def select_candidates(set, prefs, frmin, frmax,
         plt.ylabel("rmsSize")
         plt.title("%s %d selected" % (title, sum(good)))
 
-        raw_input("Continue? ")
+        input("Continue? ")
 
     return good
 
@@ -362,10 +367,10 @@ def select_candidates(set, prefs, frmin, frmax,
 try:
     _dataType
 except NameError:
-    class _SExtractor:
+    class _SExtractor(object):
         pass
 
-    class _LSST:
+    class _LSST(object):
         pass
 
     _dataTypes = dict(LSST=_LSST,
@@ -499,7 +504,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
     for i, fileName in enumerate(filenames):
         set = None
         if ext == prefs.ALL_EXTENSIONS:
-            extensions = range(len(backnoises))
+            extensions = list(range(len(backnoises)))
         else:
             extensions = [ext]
 
@@ -796,7 +801,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
     edgeBit = [k for k, v in getFlags().items() if v == "edge"][0]
 
-    for i, xc, yc in zip(range(nobj), xm, ym):
+    for i, xc, yc in zip(list(range(nobj)), xm, ym):
         try:
             x, y = int(xc), int(yc)
         except ValueError:

@@ -22,6 +22,8 @@
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
 from __future__ import print_function
+from builtins import zip
+from builtins import range
 import math
 import numpy as np
 import unittest

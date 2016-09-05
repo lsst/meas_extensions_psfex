@@ -1,4 +1,7 @@
 from __future__ import print_function
+from builtins import zip
+from builtins import input
+from builtins import object
 #
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
@@ -430,7 +433,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         if plotFlags or plotRejection:
             while True:
                 try:
-                    reply = raw_input("continue? [y[es] h(elp) p(db) q(uit)] ").strip()
+                    reply = input("continue? [y[es] h(elp) p(db) q(uit)] ").strip()
                 except EOFError:
                     reply = "y"
 
