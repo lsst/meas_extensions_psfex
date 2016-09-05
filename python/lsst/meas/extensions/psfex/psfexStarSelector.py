@@ -39,55 +39,56 @@ from .psfex import compute_fwhmrange
 
 __all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
+
 class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
     fluxName = pexConfig.Field(
         dtype=str,
         doc="Name of photometric flux key ",
         default="base_PsfFlux",
-        )
+    )
     fluxErrName = pexConfig.Field(
         dtype=str,
         doc="Name of phot. flux err. key",
         default="",
-        )
+    )
     minFwhm = pexConfig.Field(
         dtype=float,
         doc="Maximum allowed FWHM ",
         default=2,
-        )
+    )
     maxFwhm = pexConfig.Field(
         dtype=float,
         doc="Minimum allowed FWHM ",
         default=10,
-        )
+    )
     maxFwhmVariability = pexConfig.Field(
         dtype=float,
         doc="Allowed FWHM variability (1.0 = 100%)",
         default=0.2,
-        )
+    )
     maxbad = pexConfig.Field(
         dtype=int,
         doc="Max number of bad pixels ",
         default=0,
-        check = lambda x: x >= 0,
-        )
+        check=lambda x: x >= 0,
+    )
     maxbadflag = pexConfig.Field(
         dtype=bool,
         doc="Filter bad pixels? ",
         default=True
-        )
+    )
     maxellip = pexConfig.Field(
         dtype=float,
         doc="Maximum (A-B)/(A+B) ",
         default=0.3,
-        check = lambda x: x >= 0.0,
-        )
+        check=lambda x: x >= 0.0,
+    )
     minsn = pexConfig.Field(
         dtype=float,
         doc="Minimum S/N for candidates",
         default=100,
-        check = lambda x: x >= 0.0,
-        )
+        check=lambda x: x >= 0.0,
+    )
 
     def validate(self):
         pexConfig.Config.validate(self)
@@ -112,8 +113,10 @@ class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
             #"parent",            # actually this is a test on deblend_nChild
         ]
 
+
 class EventHandler(object):
     """A class to handle key strokes with matplotlib displays"""
+
     def __init__(self, axes, xs, ys, x, y, frames=[0]):
         self.axes = axes
         self.xs = xs
@@ -144,6 +147,7 @@ class EventHandler(object):
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewidth=0, ltype='-',
          clear=True):
 
@@ -165,7 +169,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
     axes.set_xlim(xmin - 0.1*(xmax - xmin), xmax + 0.1*(xmax - xmin))
     axes.set_ylim(0, 10)
 
-    colors = ["r", "g", "b", "c", "m", "k",]
+    colors = ["r", "g", "b", "c", "m", "k", ]
     for k, mean in enumerate(centers):
         if k == 0:
             axes.plot(axes.get_xlim(), (mean, mean,), "k%s" % ltype)
@@ -190,6 +194,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 ## \ref PsfexStarSelectorTask_ "PsfexStarSelectorTask"
 ## \copybrief PsfexStarSelectorTask
 ## \}
+
 
 class PsfexStarSelectorTask(BaseStarSelectorTask):
     """!A star selector whose algorithm is not yet documented
@@ -253,7 +258,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
     into your `debug.py` file and run your task with the `--debug` flag.
     """
     ConfigClass = PsfexStarSelectorConfig
-    usesMatches = False # selectStars does not use its matches argument
+    usesMatches = False  # selectStars does not use its matches argument
 
     def selectStars(self, exposure, sourceCat, matches=None):
         """!Select stars from source catalog
@@ -269,13 +274,13 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         display = lsstDebug.Info(__name__).display
 
         displayExposure = display and \
-            lsstDebug.Info(__name__).displayExposure # display the Exposure + spatialCells
+            lsstDebug.Info(__name__).displayExposure  # display the Exposure + spatialCells
         plotFwhmHistogram = display and plt and \
-            lsstDebug.Info(__name__).plotFwhmHistogram # Plot histogram of FWHM
+            lsstDebug.Info(__name__).plotFwhmHistogram  # Plot histogram of FWHM
         plotFlags = display and plt and \
-            lsstDebug.Info(__name__).plotFlags # Plot the sources coloured by their flags
+            lsstDebug.Info(__name__).plotFlags  # Plot the sources coloured by their flags
         plotRejection = display and plt and \
-            lsstDebug.Info(__name__).plotRejection # Plot why sources are rejected
+            lsstDebug.Info(__name__).plotRejection  # Plot why sources are rejected
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
@@ -313,7 +318,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         good = np.logical_and(sn > minsn, np.logical_not(flags))
         good = np.logical_and(good, elong < maxelong)
         good = np.logical_and(good, fwhm >= minFwhm)
-        good = np.logical_and(good, fwhm <  maxFwhm)
+        good = np.logical_and(good, fwhm < maxFwhm)
 
         fwhmMode, fwhmMin, fwhmMax = compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
                                                        plot=dict(fwhmHistogram=plotFwhmHistogram))
@@ -325,32 +330,32 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         #---- Apply some selection over flags, fluxes...
 
         bad = (flags != 0)
-        #set.setBadFlags(int(sum(bad)))
+        # set.setBadFlags(int(sum(bad)))
 
         if plotRejection:
             selectionVectors = []
             selectionVectors.append((bad, "flags %d" % sum(bad)))
 
         dbad = sn < minsn
-        #set.setBadSN(int(sum(dbad)))
+        # set.setBadSN(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
         if plotRejection:
             selectionVectors.append((dbad, "S/N %d" % sum(dbad)))
 
         dbad = fwhm < fwhmMin
-        #set.setBadFrmin(int(sum(dbad)))
+        # set.setBadFrmin(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
         if plotRejection:
             selectionVectors.append((dbad, "fwhmMin %d" % sum(dbad)))
 
         dbad = fwhm > fwhmMax
-        #set.setBadFrmax(int(sum(dbad)))
+        # set.setBadFrmax(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
         if plotRejection:
             selectionVectors.append((dbad, "fwhmMax %d" % sum(dbad)))
 
         dbad = elong > maxelong
-        #set.setBadElong(int(sum(dbad)))
+        # set.setBadElong(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
         if plotRejection:
             selectionVectors.append((dbad, "elong %d" % sum(dbad)))
@@ -359,7 +364,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         if maxbadflag:
             nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
             dbad = nbad > maxbad
-            #set.setBadPix(int(sum(dbad)))
+            # set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)
             if plotRejection:
                 selectionVectors.append((dbad, "badpix %d" % sum(dbad)))
@@ -377,9 +382,9 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
             with ds9.Buffering():
                 for i, source in enumerate(sourceCat):
                     if good[i]:
-                        ctype = ds9.GREEN # star candidate
+                        ctype = ds9.GREEN  # star candidate
                     else:
-                        ctype = ds9.RED # not star
+                        ctype = ds9.RED  # not star
 
                     ds9.dot("+", source.getX() - mi.getX0(), source.getY() - mi.getY0(),
                             frame=frame, ctype=ctype)
@@ -399,8 +404,8 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
                     if isSet.any():
                         if np.isfinite(imag[isSet] + fwhm[isSet]).any():
                             label = re.sub(r"\_flag", "",
-                                                  re.sub(r"^base\_", "",
-                                                         re.sub(r"^.*base\_PixelFlags\_flag\_", "", f)))
+                                           re.sub(r"^base\_", "",
+                                                  re.sub(r"^.*base\_PixelFlags\_flag\_", "", f)))
                             plt.plot(imag[isSet], fwhm[isSet], 'o', alpha=alpha, label=label)
             else:
                 for bad, label in selectionVectors:
@@ -419,7 +424,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         if displayExposure:
             global eventHandler
             eventHandler = EventHandler(plt.axes(), imag, fwhm, sourceCat.getX(), sourceCat.getY(),
-                frames=[frame])
+                                        frames=[frame])
 
         if plotFlags or plotRejection:
             while True:
@@ -455,7 +460,7 @@ If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'
                 starCat.append(source)
 
         return Struct(
-            starCat = starCat,
+            starCat=starCat,
         )
 
 starSelectorRegistry.register("psfex", PsfexStarSelectorTask)

@@ -33,97 +33,99 @@ import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.meas.extensions.psfex as psfex
 
+
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
     __nEigenComponents = pexConfig.Field(
-        doc = "number of eigen components for PSF kernel creation",
-        dtype = int,
-        default = 4,
+        doc="number of eigen components for PSF kernel creation",
+        dtype=int,
+        default=4,
     )
     spatialOrder = pexConfig.Field(
-        doc = "specify spatial order for PSF kernel creation",
-        dtype = int,
-        default = 2,
-        check = lambda x: x >= 0,
+        doc="specify spatial order for PSF kernel creation",
+        dtype=int,
+        default=2,
+        check=lambda x: x >= 0,
     )
     sizeCellX = pexConfig.Field(
-        doc = "size of cell used to determine PSF (pixels, column direction)",
-        dtype = int,
-        default = 256,
-#        minValue = 10,
-        check = lambda x: x >= 10,
+        doc="size of cell used to determine PSF (pixels, column direction)",
+        dtype=int,
+        default=256,
+        #        minValue = 10,
+        check=lambda x: x >= 10,
     )
     sizeCellY = pexConfig.Field(
-        doc = "size of cell used to determine PSF (pixels, row direction)",
-        dtype = int,
-        default = sizeCellX.default,
-#        minValue = 10,
-        check = lambda x: x >= 10,
+        doc="size of cell used to determine PSF (pixels, row direction)",
+        dtype=int,
+        default=sizeCellX.default,
+        #        minValue = 10,
+        check=lambda x: x >= 10,
     )
     __nStarPerCell = pexConfig.Field(
-        doc = "number of stars per psf cell for PSF kernel creation",
-        dtype = int,
-        default = 3,
+        doc="number of stars per psf cell for PSF kernel creation",
+        dtype=int,
+        default=3,
     )
     samplingSize = pexConfig.Field(
-        doc = "Resolution of the internal PSF model relative to the pixel size; "
-                "e.g. 0.5 is equal to 2x oversampling",
-        dtype = float,
-        default = 1,
+        doc="Resolution of the internal PSF model relative to the pixel size; "
+        "e.g. 0.5 is equal to 2x oversampling",
+        dtype=float,
+        default=1,
     )
     badMaskBits = pexConfig.ListField(
         doc="List of mask bits which cause a source to be rejected as bad "
-                "N.b. INTRP is used specially in PsfCandidateSet; it means \"Contaminated by neighbour\"",
+        "N.b. INTRP is used specially in PsfCandidateSet; it means \"Contaminated by neighbour\"",
         dtype=str,
         default=["INTRP", "SAT"],
-        )
+    )
     __borderWidth = pexConfig.Field(
-        doc = "Number of pixels to ignore around the edge of PSF candidate postage stamps",
-        dtype = int,
-        default = 0,
+        doc="Number of pixels to ignore around the edge of PSF candidate postage stamps",
+        dtype=int,
+        default=0,
     )
     __nStarPerCellSpatialFit = pexConfig.Field(
-        doc = "number of stars per psf Cell for spatial fitting",
-        dtype = int,
-        default = 5,
+        doc="number of stars per psf Cell for spatial fitting",
+        dtype=int,
+        default=5,
     )
     __constantWeight = pexConfig.Field(
-        doc = "Should each PSF candidate be given the same weight, independent of magnitude?",
-        dtype = bool,
-        default = True,
+        doc="Should each PSF candidate be given the same weight, independent of magnitude?",
+        dtype=bool,
+        default=True,
     )
     __nIterForPsf = pexConfig.Field(
-        doc = "number of iterations of PSF candidate star list",
-        dtype = int,
-        default = 3,
+        doc="number of iterations of PSF candidate star list",
+        dtype=int,
+        default=3,
     )
     tolerance = pexConfig.Field(
-        doc = "tolerance of spatial fitting",
-        dtype = float,
-        default = 1e-2,
+        doc="tolerance of spatial fitting",
+        dtype=float,
+        default=1e-2,
     )
     lam = pexConfig.Field(
-        doc = "floor for variance is lam*data",
-        dtype = float,
-        default = 0.05,
+        doc="floor for variance is lam*data",
+        dtype=float,
+        default=0.05,
     )
     reducedChi2ForPsfCandidates = pexConfig.Field(
-        doc = "for psf candidate evaluation",
-        dtype = float,
-        default = 2.0,
+        doc="for psf candidate evaluation",
+        dtype=float,
+        default=2.0,
     )
     spatialReject = pexConfig.Field(
-        doc = "Rejection threshold (stdev) for candidates based on spatial fit",
-        dtype = float,
-        default = 3.0,
+        doc="Rejection threshold (stdev) for candidates based on spatial fit",
+        dtype=float,
+        default=3.0,
     )
     recentroid = pexConfig.Field(
-        doc = "Should PSFEX be permitted to recentroid PSF candidates?",
-        dtype = bool,
-        default = False,
+        doc="Should PSFEX be permitted to recentroid PSF candidates?",
+        dtype=bool,
+        default=False,
     )
 
     def setDefaults(self):
         self.kernelSize = 41
+
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
@@ -144,7 +146,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         displayExposure = display and \
             lsstDebug.Info(__name__).displayExposure      # display the Exposure + spatialCells
         displayPsfComponents = display and \
-            lsstDebug.Info(__name__).displayPsfComponents # show the basis functions
+            lsstDebug.Info(__name__).displayPsfComponents  # show the basis functions
         showBadCandidates = display and \
             lsstDebug.Info(__name__).showBadCandidates    # Include bad candidates (meaningless, methinks)
         displayResiduals = display and \
@@ -152,7 +154,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         displayPsfMosaic = display and \
             lsstDebug.Info(__name__).displayPsfMosaic     # show mosaic of reconstructed PSF(x,y)
         normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals
-                                                            # Normalise residuals by object amplitude
+        # Normalise residuals by object amplitude
 
         mi = exposure.getMaskedImage()
 
@@ -202,7 +204,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
             if pixKernelSize % 2 == 0:
                 pixKernelSize += 1
-        self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize,pixKernelSize)
+        self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize, pixKernelSize)
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
@@ -221,9 +223,9 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         prefs.use()
         principalComponentExclusionFlag = bool(bool(psfex.Context.REMOVEHIDDEN)
-                if False else psfex.Context.KEEPHIDDEN)
+                                               if False else psfex.Context.KEEPHIDDEN)
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
-                                prefs.getGroupDeg(),principalComponentExclusionFlag)
+                                prefs.getGroupDeg(), principalComponentExclusionFlag)
         set = psfex.Set(context)
         set.setVigSize(pixKernelSize, pixKernelSize)
         set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
@@ -252,7 +254,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             else:
                 try:
                     contextvalp.append(np.array([psfCandidateList[_].getSource().get(key)
-                                                    for _ in range(nCand)]))
+                                                 for _ in range(nCand)]))
                 except KeyError:
                     raise RuntimeError("*Error*: %s parameter not found" % (key,))
                 set.setContextname(i, key)
@@ -365,7 +367,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 source = psfCandidate.getSource()
                 if i in good_indices:
                     source.set(flagKey, True)
-
 
         xpos = np.array(xpos)
         ypos = np.array(ypos)
