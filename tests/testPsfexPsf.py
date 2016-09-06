@@ -21,6 +21,9 @@
 # the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
+from __future__ import print_function
+from builtins import zip
+from builtins import range
 import math
 import numpy as np
 import unittest
@@ -187,8 +190,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                 cand = measAlg.makePsfCandidate(source, self.exposure)
                 self.cellSet.insertCandidate(cand)
 
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
                 continue
 
     def tearDown(self):
@@ -251,7 +254,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
         if False:
-            print chi_min, chi_max
+            print(chi_min, chi_max)
 
         if chi_lim > 0:
             self.assertGreater(chi_min, -chi_lim)
@@ -271,6 +274,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.subtractStars(self.exposure, self.catalog, chi_lim=4.6)
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):
     pass

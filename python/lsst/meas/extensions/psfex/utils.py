@@ -1,9 +1,13 @@
+from __future__ import print_function
+from builtins import input
+from builtins import range
 import re
 import numpy as np
 import pyfits
 import lsst.afw.image as afwImage
 import lsst.afw.display.ds9 as ds9
 import lsst.meas.extensions.psfex as psfex
+
 
 def readSExtractor(filename):
     with pyfits.open(filename) as pf:
@@ -12,9 +16,9 @@ def readSExtractor(filename):
                 pass
             elif hdu.name == "LDAC_IMHEAD":
                 hdr = hdu.data[0][0]    # the fits header from the original fits image
-                print hdr[3]
+                print(hdr[3])
             elif hdu.name == "LDAC_OBJECTS":
-                print "%d objects" % (len(hdu.data))
+                print("%d objects" % (len(hdu.data)))
                 # Find the VIGNET column
                 ttype = [k for k, v in hdu.header.items() if v == "VIGNET"]
                 if not ttype:
@@ -33,7 +37,8 @@ def readSExtractor(filename):
                     msk[bad] = afwImage.MaskU.getPlaneBitMask("BAD")
                     msk[sat] = afwImage.MaskU.getPlaneBitMask("SAT")
                     ds9.mtv(mi, title=row)
-                    raw_input("Next ")
-            
+                    input("Next ")
+
+
 def readPrefs(filename, md=None):
     return psfex.Prefs(filename, md)

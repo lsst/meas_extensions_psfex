@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from builtins import zip
+from builtins import input
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import re
 import sys
@@ -19,6 +25,8 @@ from lsst.daf.base import PropertySet
 from . import psfexLib
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
 def splitFitsCard(line):
     """Split a fits header, returning (key, value)"""
     try:
@@ -37,6 +45,7 @@ def splitFitsCard(line):
     return k, v
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
     """
@@ -85,11 +94,12 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
         plt.axvline(fmin, color='red')
         [plt.axvline(_, color='blue') for _ in (minout, maxout)]
 
-        raw_input("Continue? ")
+        input("Continue? ")
 
     return fmin, minout, maxout
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, context, pcval,
                  plot=dict(showFlags=False, showRejection=False)):
@@ -106,7 +116,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] =  psfexLib.cvar.BIG
+                cmin[i] = psfexLib.cvar.BIG
                 cmax[i] = -psfexLib.cvar.BIG
     #
     # Read data
@@ -158,16 +168,16 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                     if key.naxis == 1 and n < key.naxisn[0]:
                         flux += n
                     else:
-                        print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxRkey(), filename)
+                        print("Not enough apertures for %s in catalogue %s: using first aperture" % \
+                             (prefs.getPhotfluxRkey(), filename), file=sys.stderr)
 
                 n = prefs.getPhotfluxerrNum() - 1
                 if n:
                     if key.naxis == 1 and n < key.naxisn[0]:
                         fluxerr += n
                     else:
-                        print >> sys.stderr, "Not enough apertures for %s in catalogue %s: using first aperture" % \
-                            (prefs.getPhotfluxerrRkey(), filename)
+                        print("Not enough apertures for %s in catalogue %s: using first aperture" % \
+                             (prefs.getPhotfluxerrRkey(), filename), file=sys.stderr)
                 #
                 # Now the VIGNET data
                 #
@@ -250,16 +260,18 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def getSexFlags(*args):
-    return {1   : "flux blended",
-            2   : "blended",
-            4   : "saturated",
-            8   : "edge",
-            16  : "bad aperture",
-            32  : "bad isophotal",
-            64  : "memory error (deblend)",
-            128 : "memory error (extract)",
+    return {1: "flux blended",
+            2: "blended",
+            4: "saturated",
+            8: "edge",
+            16: "bad aperture",
+            32: "bad isophotal",
+            64: "memory error (deblend)",
+            128: "memory error (extract)",
             }
+
 
 def select_candidates(set, prefs, frmin, frmax,
                       flags, flux, fluxerr, rmsSize, elong, vignet,
@@ -280,7 +292,7 @@ def select_candidates(set, prefs, frmin, frmax,
 
     if plotRejection:
         selectionVectors = []
-        selectionVectors.append((bad, "flags %d" % sum(bad!=0)))
+        selectionVectors.append((bad, "flags %d" % sum(bad != 0)))
 
     dbad = sn < minsn
     set.setBadSN(int(sum(dbad)))
@@ -346,7 +358,7 @@ def select_candidates(set, prefs, frmin, frmax,
         plt.ylabel("rmsSize")
         plt.title("%s %d selected" % (title, sum(good)))
 
-        raw_input("Continue? ")
+        input("Continue? ")
 
     return good
 
@@ -355,18 +367,21 @@ def select_candidates(set, prefs, frmin, frmax,
 try:
     _dataType
 except NameError:
-    class _SExtractor:
-        pass
-    class _LSST:
+    class _SExtractor(object):
         pass
 
-    _dataTypes = dict(LSST = _LSST,
-                      SExtractor = _SExtractor
+    class _LSST(object):
+        pass
+
+    _dataTypes = dict(LSST=_LSST,
+                      SExtractor=_SExtractor
                       )
     _dataType = _SExtractor
 
+
 def setDataType(t):
     _dataType = _dataTypes[t]
+
 
 def getFlags():
     if _dataType == _LSST:
@@ -375,6 +390,7 @@ def getFlags():
         return getSexFlags(None)
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
@@ -402,7 +418,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
             fwhms[i] = []
 
             if prefs.getVerboseType() != prefs.QUIET:
-                print "Examining Catalog #%d" % (i+1)
+                print("Examining Catalog #%d" % (i+1))
 
             #---- Read input catalog
             backnoises = []
@@ -444,7 +460,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                         good = np.logical_and(fmax/backnoise > minsn,
                                               np.logical_not(flags & prefs.getFlagMask()))
                         good = np.logical_and(good, elong < maxelong)
-                        fwhm=2.0*rmsSize
+                        fwhm = 2.0*rmsSize
                         good = np.logical_and(good, fwhm >= min)
                         good = np.logical_and(good, fwhm < max)
                         fwhms[i] = fwhm[good]
@@ -488,7 +504,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
     for i, fileName in enumerate(filenames):
         set = None
         if ext == prefs.ALL_EXTENSIONS:
-            extensions = range(len(backnoises))
+            extensions = list(range(len(backnoises)))
         else:
             extensions = [ext]
 
@@ -503,7 +519,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
         if prefs.getVerboseType() != prefs.QUIET:
             if set.getNsample():
-                print "%d samples loaded." % set.getNsample()
+                print("%d samples loaded." % set.getNsample())
             else:
                 raise RuntimeError("No appropriate source found!!")
 
@@ -512,6 +528,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
     return sets
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             diagnostics=False, outDir="", frame=None, title=None):
@@ -568,7 +585,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     if False:
         for x, y, i in zip((xpos[0], xpos[-1]), (ypos[0], ypos[-1]), (0, mos.nImage - 1)):
             bbox = mos.getBBox(i)
-            mosx = bbox.getMinX() + 0.5*(bbox.getWidth()  - 1)
+            mosx = bbox.getMinX() + 0.5*(bbox.getWidth() - 1)
             mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
             pos.append([afwGeom.PointD(mosx, mosy), wcs.pixelToSky(afwGeom.PointD(x, y))])
     else:
@@ -577,7 +594,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 
     CD = []
     for i in range(2):
-        delta = pos[1][1][i].asDegrees() -  pos[0][1][i].asDegrees()
+        delta = pos[1][1][i].asDegrees() - pos[0][1][i].asDegrees()
         CD.append(delta/(pos[1][0][i] - pos[0][0][i]))
     mosWcs = afwImage.makeWcs(pos[0][1], pos[0][0], CD[0], 0, 0, CD[1])
 
@@ -628,6 +645,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def getLsstFlags(tab=None):
     flagKeys = [
         "base_PixelFlags_flag_edge",
@@ -640,13 +658,13 @@ def getLsstFlags(tab=None):
         "base_PixelFlags_flag_bad",
         "base_PsfFlux_flag",
         "parent",
-        ]
+    ]
 
     if tab is None:
         flags = {}
         for i, k in enumerate(flagKeys):
-            flags[1<<i] = re.sub(r"\_flag", "",
-                                 re.sub(r"^base\_", "",re.sub(r"^base\_PixelFlags\_flag\_", "", k)))
+            flags[1 << i] = re.sub(r"\_flag", "",
+                                   re.sub(r"^base\_", "", re.sub(r"^base\_PixelFlags\_flag\_", "", k)))
     else:
         flags = 0
         for i, k in enumerate(flagKeys):
@@ -657,15 +675,16 @@ def getLsstFlags(tab=None):
                     isSet = 0
             else:
                 isSet = tab.get(k)
-            flags = np.bitwise_or(flags, np.where(isSet, 1<<i, 0))
+            flags = np.bitwise_or(flags, np.where(isSet, 1 << i, 0))
 
     return flags
+
 
 def guessCalexp(fileName):
     for guess in [
         re.sub("/src", r"", fileName),
         re.sub("(SRC([^.]+))", r"CORR\2-exp", fileName),
-        ]:
+    ]:
         if guess != fileName and os.path.exists(guess):
             return guess
 
@@ -673,11 +692,12 @@ def guessCalexp(fileName):
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper that reads lsst tables"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
-        print "----- %d input catalogues:" % prefs.getNcat()
+        print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []
@@ -726,6 +746,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, context, pcval,
                      plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
@@ -741,7 +762,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] =  psfexLib.cvar.BIG
+                cmin[i] = psfexLib.cvar.BIG
                 cmax[i] = -psfexLib.cvar.BIG
     #
     # Read data
@@ -766,7 +787,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     #
     # Now the VIGNET data
     #
-    vigw, vigh = 35, 35 # [prefs.getPsfsize()[i] for i in range(2)]
+    vigw, vigh = 35, 35  # [prefs.getPsfsize()[i] for i in range(2)]
     if set.empty():
         set.setVigSize(vigw, vigh)
 
@@ -866,6 +887,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+
 def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
@@ -892,7 +914,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
             fwhms[i] = []
 
             if prefs.getVerboseType() != prefs.QUIET:
-                print "Examining Catalog #%d" % (i+1)
+                print("Examining Catalog #%d" % (i+1))
 
             #---- Read input catalog
             tab = afwTable.SourceCatalog.readFits(fileName)
@@ -968,7 +990,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
         if prefs.getVerboseType() != prefs.QUIET:
             if set.getNsample():
-                print "%d samples loaded." % set.getNsample()
+                print("%d samples loaded." % set.getNsample())
             else:
                 raise RuntimeError("No appropriate source found!!")
 
@@ -983,7 +1005,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper for the original psfex that reads SExtractor outputs"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
-        print "----- %d input catalogues:" % prefs.getNcat()
+        print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []
@@ -1006,7 +1028,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
                         except AttributeError:
                             continue
 
-                    if not md.exists("CRPIX1"): # no WCS; try WCSA
+                    if not md.exists("CRPIX1"):  # no WCS; try WCSA
                         for k in md.names():
                             if re.search(r"A$", k):
                                 md.set(k[:-1], md.get(k))
@@ -1023,8 +1045,6 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
 
         field.finalize()
         fields.append(field)
-
-
 
     sets = psfexLib.vectorSet()
     for set in load_samples(prefs, context, plot=plot):

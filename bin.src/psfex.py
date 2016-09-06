@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+from builtins import range
 import argparse
 import os
 import sys
@@ -31,19 +33,19 @@ if __name__ == "__main__":
         try:
             k, v = x.split('=')
         except ValueError:
-            print >> sys.stderr, "Overrides must be of the form key=value, saw %s" % x
+            print("Overrides must be of the form key=value, saw %s" % x, file=sys.stderr)
             continue
         args_md.set(k, v)
 
     plotKeys = ["fwhmHistogram", "showFlags", "showRejection"]
     if "help" in args.plot:
-        print "Valid plot types are %s" % " ".join(["none"] + plotKeys)
+        print("Valid plot types are %s" % " ".join(["none"] + plotKeys))
         sys.exit(0)
     plot = {}
     if "none" not in args.plot:
         for k in args.plot:
             if k not in plotKeys:
-                print >> sys.stderr, "Unknown plot type %s (Valid types are %s)" % (k, " ".join(plotKeys))
+                print("Unknown plot type %s (Valid types are %s)" % (k, " ".join(plotKeys)), file=sys.stderr)
                 sys.exit(1)
             plot[k] = True
 
