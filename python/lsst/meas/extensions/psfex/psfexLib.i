@@ -74,7 +74,6 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 %}
 
 %{
-   #include "lsst/pex/logging.h"
    #include "lsst/afw/cameraGeom.h"
    #include "lsst/afw/image.h"
    #include "lsst/afw/detection/FootprintSet.h"
