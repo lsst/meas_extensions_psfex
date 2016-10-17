@@ -270,61 +270,61 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         fluxName = prefs.getPhotfluxRkey()
         fluxFlagName = "base_" + fluxName + "_flag"
 
-        with ds9.Buffering():
-            xpos, ypos = [], []
-            for i, psfCandidate in enumerate(psfCandidateList):
-                source = psfCandidate.getSource()
-                xc, yc = source.getX(), source.getY()
-                try:
-                    int(xc), int(yc)
-                except ValueError:
-                    continue
+        xpos, ypos = [], []
+        for i, psfCandidate in enumerate(psfCandidateList):
+            source = psfCandidate.getSource()
+            xc, yc = source.getX(), source.getY()
+            try:
+                int(xc), int(yc)
+            except ValueError:
+                continue
 
-                try:
-                    pstamp = psfCandidate.getMaskedImage().clone()
-                except Exception as e:
-                    continue
+            try:
+                pstamp = psfCandidate.getMaskedImage().clone()
+            except Exception as e:
+                continue
 
-                if fluxFlagName in source.schema and source.get(fluxFlagName):
-                    continue
+            if fluxFlagName in source.schema and source.get(fluxFlagName):
+                continue
 
-                flux = source.get(fluxName)
-                if flux < 0 or np.isnan(flux):
-                    continue
+            flux = source.get(fluxName)
+            if flux < 0 or np.isnan(flux):
+                continue
 
-                # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
-                # Having created the sample, we must proceed to configure it, and then fini (finalize),
-                # or it will be malformed.
-                try:
-                    sample = set.newSample()
-                    sample.setCatindex(catindex)
-                    sample.setExtindex(ext)
-                    sample.setObjindex(i)
+            # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
+            # Having created the sample, we must proceed to configure it, and then fini (finalize),
+            # or it will be malformed.
+            try:
+                sample = set.newSample()
+                sample.setCatindex(catindex)
+                sample.setExtindex(ext)
+                sample.setObjindex(i)
 
-                    imArray = pstamp.getImage().getArray()
-                    imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = \
-                        -2*psfex.cvar.BIG
-                    sample.setVig(imArray)
+                imArray = pstamp.getImage().getArray()
+                imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = \
+                    -2*psfex.cvar.BIG
+                sample.setVig(imArray)
 
-                    sample.setNorm(flux)
-                    sample.setBacknoise2(backnoise2)
-                    sample.setGain(gain)
-                    sample.setX(xc)
-                    sample.setY(yc)
-                    sample.setFluxrad(sizes[i])
+                sample.setNorm(flux)
+                sample.setBacknoise2(backnoise2)
+                sample.setGain(gain)
+                sample.setX(xc)
+                sample.setY(yc)
+                sample.setFluxrad(sizes[i])
 
-                    for j in range(set.getNcontext()):
-                        sample.setContext(j, float(contextvalp[j][i]))
-                except Exception as e:
-                    self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
-                    continue
-                else:
-                    set.finiSample(sample)
+                for j in range(set.getNcontext()):
+                    sample.setContext(j, float(contextvalp[j][i]))
+            except Exception as e:
+                self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
+                continue
+            else:
+                set.finiSample(sample)
 
-                xpos.append(xc)  # for QA
-                ypos.append(yc)
+            xpos.append(xc)  # for QA
+            ypos.append(yc)
 
-            if displayExposure:
+        if displayExposure:
+            with ds9.Buffering():
                 ds9.dot("o", xc, yc, ctype=ds9.CYAN, size=4, frame=frame)
 
         if set.getNsample() == 0:
