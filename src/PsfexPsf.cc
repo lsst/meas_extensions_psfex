@@ -125,17 +125,13 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
     float const vigstep = 1/_pixstep;
     float const dx = 0.0, dy = 0.0;
 
-    // Construct the size of the output image based on the physical size of the full image
-    int sampleW = static_cast<int>(w*_pixstep);
-    int sampleH = static_cast<int>(h*_pixstep);
+    afw::geom::Box2I bbox = _doComputeBBox(position, afw::geom::Point2D(0, 0));
+    afw::detection::Psf::Image kim(bbox); // a basis function image, to be copied into a FixedKernel
 
-    // Ensure that sizes are odd
-    if (sampleW % 2 == 0) sampleW += 1;
-    if (sampleH % 2 == 0) sampleH += 1;
+    int sampleW = bbox.getWidth();
+    int sampleH = bbox.getHeight();
 
     std::vector<float> sampledBasis(sampleW*sampleH);
-    afw::detection::Psf::Image kim(sampleW, sampleH); // a basis function image, to be copied into a FixedKernel
-    kim.setXY0(-sampleW/2, -sampleH/2);
 
     for (int i = 0; i != nbasis; ++i) {
         /*
@@ -178,9 +174,37 @@ PsfexPsf::doComputeKernelImage(afw::geom::Point2D const& position,
     return _doComputeImage(position, color, afw::geom::Point2D(0, 0));
 }
 
+afw::geom::Box2I PsfexPsf::doComputeBBox(afw::geom::Point2D const & position,
+                               afw::image::Color const & color) const {
+    return _doComputeBBox(position, afw::geom::Point2D(0, 0));
+}
+
+afw::geom::Box2I PsfexPsf::_doComputeBBox(afw::geom::Point2D const & position,
+                               afw::geom::Point2D const & center) const {
+    int const w = _size[0], h = _size[1];
+    int sampleW = static_cast<int>(w*_pixstep);
+    int sampleH = static_cast<int>(h*_pixstep);
+
+    // Ensure that sizes are odd
+    if (sampleW % 2 == 0) sampleW += 1;
+    if (sampleH % 2 == 0) sampleH += 1;
+
+    float dx = center[0] - static_cast<int>(center[0]);
+    float dy = center[1] - static_cast<int>(center[1]);
+
+    if (dx > 0.5) dx -= 1.0;
+    if (dy > 0.5) dy -= 1.0;
+    // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
+    // The + 0.5 is to handle floating point imprecision in this calculation
+    afw::geom::Box2I bbox(afw::geom::Point2I(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,
+                                             static_cast<int>(center[1] - dy + 0.5) - sampleH/2),
+                          afw::geom::Extent2I(sampleW, sampleH));
+    return bbox;
+}
+
 PTR(afw::detection::Psf::Image)
 PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
-                          afw::image::Color const&,
+                          afw::image::Color const& color,
                           afw::geom::Point2D const& center
         ) const
 {
@@ -223,28 +247,20 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     float dy = center[1] - static_cast<int>(center[1]);
     if (dx > 0.5) dx -= 1.0;
     if (dy > 0.5) dy -= 1.0;
-    
-    // Construct the size of the output image based on the physical size of the full image
-    int sampleW = static_cast<int>(w*_pixstep);
-    int sampleH = static_cast<int>(h*_pixstep);
+    //
+    // And copy it into place
+    //
+    afw::geom::Box2I bbox = _doComputeBBox(position, center);
+    PTR(afw::detection::Psf::Image) im = std::make_shared<afw::detection::Psf::Image>(bbox);
 
-    // Ensure that sizes are odd
-    if (sampleW % 2 ==0) sampleW += 1;
-    if (sampleH % 2 ==0) sampleH += 1;
+    int sampleW = bbox.getWidth();
+    int sampleH = bbox.getHeight();
 
     std::vector<float> sampledIm(sampleW*sampleH);
 
     vignet_resample(&fullresIm[0], w, h,
                     &sampledIm[0], sampleW, sampleH,
                     -dx*vigstep, -dy*vigstep, vigstep, 1.0);
-    //
-    // And copy it into place
-    //
-    PTR(afw::detection::Psf::Image) im = std::make_shared<afw::detection::Psf::Image>(sampleW, sampleH);
-    // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
-    // The + 0.5 is to handle floating point imprecision in this calculation
-    im->setXY0(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,
-               static_cast<int>(center[1] - dy + 0.5) - sampleH/2);
     {
         float *pl = &sampledIm[0];
         float const sum = std::accumulate(pl, pl + sampleW*sampleH, static_cast<float>(0));

@@ -97,6 +97,20 @@ private:
         lsst::afw::image::Color const& color       ///< colour of object
     ) const;
 
+    /// Compute the bbox of the kernel image at the specified position/color
+    virtual lsst::afw::geom::Box2I doComputeBBox(
+        lsst::afw::geom::Point2D const & position,
+        lsst::afw::image::Color const & color
+    ) const;
+
+    /// Compute bbox of either image or kernel image, depending on provided center
+    /// Does not depend on color, which is left out of parameter list to permit reuse
+    /// by doComputeBBox, doCompute[Kernel]Image, and getKernel.
+    lsst::afw::geom::Box2I _doComputeBBox(
+        lsst::afw::geom::Point2D const & position, ///< position within the chip
+        lsst::afw::geom::Point2D const & center ///< center of output image. Use (0., 0.) for a kernel image
+    ) const;
+
     /// Name used in table persistence
     virtual std::string getPersistenceName() const;
     /// The python module name (for use in table persistence)

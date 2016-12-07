@@ -273,6 +273,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         # Test how well we can subtract the PSF model
         self.subtractStars(self.exposure, self.catalog, chi_lim=4.6)
 
+        # Test PsfexPsf.computeBBox
+        self.assertEqual(psf.computeBBox(), psf.computeKernelImage().getBBox())
+        self.assertEqual(psf.computeBBox(), psf.getKernel().getBBox())
+
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
