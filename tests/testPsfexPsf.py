@@ -111,7 +111,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         #
         # Make a kernel with the exactly correct basis functions.  Useful for debugging
         #
-        basisKernelList = afwMath.KernelList()
+        basisKernelList = []
         for sigma in (sigma1, sigma2):
             basisKernel = afwMath.AnalyticKernel(self.ksize, self.ksize,
                                                  afwMath.GaussianFunction2D(sigma, sigma))

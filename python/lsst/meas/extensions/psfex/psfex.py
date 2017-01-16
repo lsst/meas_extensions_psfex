@@ -67,7 +67,7 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
     nw = nfwhm//4
     if nw < 4:
         nw = 1
-    dfmin = psfexLib.cvar.BIG
+    dfmin = psfexLib.BIG
     fmin = 0.0
     for i in range(nfwhm - nw):
         df = fwhm[i + nw] - fwhm[i]
@@ -116,8 +116,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] = psfexLib.cvar.BIG
-                cmax[i] = -psfexLib.cvar.BIG
+                cmin[i] = psfexLib.BIG
+                cmax[i] = -psfexLib.BIG
     #
     # Read data
     #
@@ -282,7 +282,7 @@ def select_candidates(set, prefs, frmin, frmax,
     minsn = prefs.getMinsn()
 
     sn = flux/np.where(fluxerr > 0, fluxerr, 1)
-    sn[fluxerr <= 0] = -psfexLib.cvar.BIG
+    sn[fluxerr <= 0] = -psfexLib.BIG
     #---- Apply some selection over flags, fluxes...
     plotFlags = plot.get("showFlags") if plt else False
     plotRejection = plot.get("showRejection") if plt else False
@@ -320,7 +320,7 @@ def select_candidates(set, prefs, frmin, frmax,
 
     #-- ... and check the integrity of the sample
     if maxbadflag:
-        nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
+        nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
         dbad = nbad > maxbad
         set.setBadPix(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
@@ -444,7 +444,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                                 continue
 
                             if k == "SEXBKDEV":
-                                if v < 1/psfexLib.cvar.BIG:
+                                if v < 1/psfexLib.BIG:
                                     v = 1.0
 
                                 backnoises.append(v)
@@ -498,7 +498,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                     fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -762,8 +762,8 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] = psfexLib.cvar.BIG
-                cmax[i] = -psfexLib.cvar.BIG
+                cmin[i] = psfexLib.BIG
+                cmax[i] = -psfexLib.BIG
     #
     # Read data
     #
@@ -973,7 +973,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
                     fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
 
     # Read the samples
-    mode = psfexLib.cvar.BIG               # mode of FWHM distribution
+    mode = psfexLib.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
