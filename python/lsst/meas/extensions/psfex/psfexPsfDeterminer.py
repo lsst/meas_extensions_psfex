@@ -302,7 +302,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
                 imArray = pstamp.getImage().getArray()
                 imArray[np.where(np.bitwise_and(pstamp.getMask().getArray(), badBits))] = \
-                    -2*psfex.cvar.BIG
+                    -2*psfex.BIG
                 sample.setVig(imArray)
 
                 sample.setNorm(flux)
@@ -344,14 +344,14 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         #
         # Do a PSFEX decomposition of those PSF candidates
         #
-        fields = psfex.vectorField()
+        fields = []
         field = psfex.Field("Unknown")
         field.addExt(exposure.getWcs(), exposure.getWidth(), exposure.getHeight(), set.getNsample())
         field.finalize()
 
         fields.append(field)
 
-        sets = psfex.vectorSet()
+        sets = []
         sets.append(set)
 
         psfex.makeit(fields, sets)
