@@ -22,7 +22,7 @@
 #include <pybind11/pybind11.h>
 //#include <pybind11/stl.h>
 //
-#include "lsst/afw/table/io/pybind11.h"  // for declarePersistableFacade
+#include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
 
 #include "define.h"
 #include "vignet.h"
@@ -55,7 +55,7 @@ PYBIND11_PLUGIN(_psfexPsf) {
     mod.attr("BIG") = py::cast(BIG);
     mod.attr("INTERPFAC") = py::cast(INTERPFAC);
 
-    lsst::afw::table::io::declarePersistableFacade<PsfexPsf>(mod, "PsfexPsf");
+    lsst::afw::table::io::python::declarePersistableFacade<PsfexPsf>(mod, "PsfexPsf");
 
     py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::afw::table::io::PersistableFacade<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod, "PsfexPsf");
 
