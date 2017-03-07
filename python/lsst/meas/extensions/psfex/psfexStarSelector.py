@@ -311,7 +311,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
         flux = sourceCat.get(fluxName)
         fluxErr = sourceCat.get(fluxErrName)
         sn = flux/np.where(fluxErr > 0, fluxErr, 1)
-        sn[fluxErr <= 0] = -psfexLib.cvar.BIG
+        sn[fluxErr <= 0] = -psfexLib.BIG
 
         flags = 0x0
         for i, f in enumerate(self.config.badFlags):
@@ -366,7 +366,7 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
 
         #-- ... and check the integrity of the sample
         if maxbadflag:
-            nbad = np.array([(v <= -psfexLib.cvar.BIG).sum() for v in vignet])
+            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
             dbad = nbad > maxbad
             # set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)
