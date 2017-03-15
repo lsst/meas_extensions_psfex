@@ -3,4 +3,4 @@ from lsst.sconsUtils import scripts
 scripts.BasicSConscript.pybind11(["psfexPsf",
                                   "psf",
                                   "field",
-                                  "prefs"])
+                                  "prefs"], addUnderscore=False)

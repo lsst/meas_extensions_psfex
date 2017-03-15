@@ -18,8 +18,8 @@
  * the GNU General Public License along with this program.  If not, 
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
 
 #include "lsst/meas/extensions/psfex/Field.hh"
 
@@ -35,8 +35,8 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(_field) {
-    py::module mod("_field", "Python wrapper for the meas_extensions_psfex _field library");
+PYBIND11_PLUGIN(field) {
+    py::module mod("field");
 
     py::class_<Field, std::shared_ptr<Field>> clsField(mod, "Field");
 
@@ -54,4 +54,7 @@ PYBIND11_PLUGIN(_field) {
     return mod.ptr();
 }
 
-}}}} // lsst::meas::extensions::fieldex
+}  // fieldex
+}  // extensions
+}  // meas
+}  // lsst
