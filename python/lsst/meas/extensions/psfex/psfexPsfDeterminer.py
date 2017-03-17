@@ -79,6 +79,18 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         dtype=str,
         default=["INTRP", "SAT"],
     )
+    psfexBasis = pexConfig.ChoiceField(
+        doc="BASIS value given to psfex.  PIXEL_AUTO will use the requested samplingSize only if "
+        "the FWHM < 3 pixels.  Otherwise, it will use samplingSize=1.  PIXEL will always use the "
+        "requested samplingSize",
+        dtype=str,
+        allowed={
+            "PIXEL": "Always use requested samplingSize",
+            "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
+            },
+        default='PIXEL',
+        optional=False,
+    )
     __borderWidth = pexConfig.Field(
         doc="Number of pixels to ignore around the edge of PSF candidate postage stamps",
         dtype=int,
@@ -216,6 +228,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         #
         defaultsFile = os.path.join(os.environ["MEAS_EXTENSIONS_PSFEX_DIR"], "config", "default-lsst.psfex")
         args_md = dafBase.PropertySet()
+        args_md.set("BASIS_TYPE", str(self.config.psfexBasis))
         args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
         args_md.set("PSF_SIZE", str(actualKernelSize))
         args_md.set("PSF_SAMPLING", str(self.config.samplingSize))
