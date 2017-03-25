@@ -48,6 +48,9 @@ namespace extensions {
 namespace psfex {
 
 PYBIND11_PLUGIN(psfexPsf) {
+    py::module::import("lsst.afw.table");
+    py::module::import("lsst.meas.algorithms");
+
     py::module mod("psfexPsf");
 
     mod.attr("BIG") = py::cast(BIG);
