@@ -19,12 +19,11 @@
  * the GNU General Public License along with this program.  If not, 
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
 
 #include "numpy/arrayobject.h"
 #include "ndarray/pybind11.h"
-#include "ndarray/converter.h"
 
 #include "lsst/meas/extensions/psfex/psf.hh"
 
@@ -36,8 +35,8 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(_psf) {
-    py::module mod("_psf", "Python wrapper for _psf library");
+PYBIND11_PLUGIN(psf) {
+    py::module mod("psf");
 
     if (_import_array() < 0) {
             PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");
@@ -46,7 +45,6 @@ PYBIND11_PLUGIN(_psf) {
 
     py::class_<Context> clsContext(mod, "Context");
 
-//    enum { KEEPHIDDEN=CONTEXT_KEEPHIDDEN, REMOVEHIDDEN=CONTEXT_REMOVEHIDDEN };
     clsContext.attr("KEEPHIDDEN") = py::cast(static_cast<int>(Context::KEEPHIDDEN));
     clsContext.attr("REMOVEHIDDEN") = py::cast(static_cast<int>(Context::REMOVEHIDDEN));
 
@@ -129,4 +127,7 @@ PYBIND11_PLUGIN(_psf) {
     return mod.ptr();
 }
 
-}}}} // lsst::meas::extensions::psfex
+}  // psfex
+}  // extensions
+}  // meas
+}  // lsst

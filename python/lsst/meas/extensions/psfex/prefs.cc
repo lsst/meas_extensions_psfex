@@ -19,8 +19,8 @@
  * the GNU General Public License along with this program.  If not, 
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
 
 #include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
 
@@ -35,8 +35,8 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(_prefs) {
-    py::module mod("_prefs", "Python wrapper for _prefs library");
+PYBIND11_PLUGIN(prefs) {
+    py::module mod("prefs");
 
     py::class_<Prefs> clsPrefs(mod, "Prefs");
 
@@ -75,4 +75,7 @@ PYBIND11_PLUGIN(_prefs) {
     return mod.ptr();
 }
 
-}}}} // lsst::meas::extensions::psfex
+}  // psfex
+}  // extensions
+}  // meas
+}  // lsst

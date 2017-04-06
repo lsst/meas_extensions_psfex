@@ -19,9 +19,8 @@
  * the GNU General Public License along with this program.  If not, 
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
-#include <pybind11/pybind11.h>
-//#include <pybind11/stl.h>
-//
+#include "pybind11/pybind11.h"
+
 #include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
 
 #include "define.h"
@@ -48,9 +47,11 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
+PYBIND11_PLUGIN(psfexPsf) {
+    py::module::import("lsst.afw.table");
+    py::module::import("lsst.meas.algorithms");
 
-PYBIND11_PLUGIN(_psfexPsf) {
-    py::module mod("_psfexPsf", "Python wrapper for afw _psfexPsf library");
+    py::module mod("psfexPsf");
 
     mod.attr("BIG") = py::cast(BIG);
     mod.attr("INTERPFAC") = py::cast(INTERPFAC);
@@ -63,7 +64,6 @@ PYBIND11_PLUGIN(_psfexPsf) {
     clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::afw::geom::Point2D const &>(),
             "psf"_a, "averagePosition"_a=lsst::afw::geom::Point2D());
 
-
     /* Members */
     clsPsfexPsf.def("clone", &PsfexPsf::clone);
     clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
@@ -75,4 +75,7 @@ PYBIND11_PLUGIN(_psfexPsf) {
     return mod.ptr();
 }
 
-}}}} // lsst::meas::extensions::psfex
+}  // psfex
+}  // extensions
+}  // meas
+}  // lsst
