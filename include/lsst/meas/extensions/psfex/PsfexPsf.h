@@ -52,6 +52,9 @@ public:
     /// Polymorphic deep copy; should usually be unnecessary as Psfs are immutable.x
     virtual PTR(lsst::afw::detection::Psf) clone() const;
 
+    /// Return a clone with specified kernel dimensions
+    virtual PTR(afw::detection::Psf) resized(int width, int height) const;
+
     /// Return average position of stars; used as default position.
     virtual lsst::afw::geom::Point2D getAveragePosition() const { return _averagePosition; }
     
