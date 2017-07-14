@@ -91,6 +91,11 @@ PsfexPsf::clone() const {
     return std::make_shared<PsfexPsf>(*this);
 }
 
+PTR(afw::detection::Psf)
+PsfexPsf::resized(int width, int height) const {
+    throw LSST_EXCEPT(pex::exceptions::LogicError, "Not Implemented");
+}
+
 PTR(afw::math::LinearCombinationKernel const)
 PsfexPsf::getKernel(afw::geom::Point2D position) const
 {
