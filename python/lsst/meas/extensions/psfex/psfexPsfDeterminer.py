@@ -91,6 +91,11 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         default='PIXEL',
         optional=False,
     )
+    setNoiseFromVariance = pexConfig.Field(
+        doc="Should we set the background variance from the variance, not estimate it from the image?",
+        dtype=bool,
+        default=True,
+    )
     __borderWidth = pexConfig.Field(
         doc="Number of pixels to ignore around the edge of PSF candidate postage stamps",
         dtype=int,
@@ -247,7 +252,10 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         set.setRecentroid(self.config.recentroid)
 
         catindex, ext = 0, 0
-        backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
+        if self.config.setNoiseFromVariance:
+            backnoise2 = afwMath.makeStatistics(mi.variance, afwMath.MEANCLIP).getValue()
+        else:
+            backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
         ccd = exposure.getDetector()
         if ccd:
             gain = np.mean(np.array([a.getGain() for a in ccd]))
