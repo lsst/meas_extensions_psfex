@@ -215,15 +215,16 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
 {
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
-    if (ndim != 2) {                    // we're only handling spatial variation for now
+    if (ndim == 0) {                    // no variation
+        pos[0] = 1;
+    } else if (ndim == 2) {             // we're only handling spatial variation for now (x, y == 2)
+        for (int i = 0; i < ndim; ++i) {
+            pos[i] = (position[i] - _context[i].first)/_context[i].second;
+        }
+    } else {                    // we're only handling spatial variation for now
         throw LSST_EXCEPT(lsst::pex::exceptions::InvalidParameterError,
-                          str(boost::format("Only spatial variation (ndim == 2) is supported; saw %d")
+                          str(boost::format("Only constant (ndim == 0) and spatial variation (ndim == 2) are supported; saw %d")
                               % ndim));
-
-    }
-
-    for (int i = 0; i < ndim; ++i) {
-        pos[i] = (position[i] - _context[i].first)/_context[i].second;
     }
 
     poly_func(_poly, pos);              // evaluate polynomial

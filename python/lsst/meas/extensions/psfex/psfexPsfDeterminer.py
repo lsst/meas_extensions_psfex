@@ -234,7 +234,12 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         defaultsFile = os.path.join(os.environ["MEAS_EXTENSIONS_PSFEX_DIR"], "config", "default-lsst.psfex")
         args_md = dafBase.PropertySet()
         args_md.set("BASIS_TYPE", str(self.config.psfexBasis))
-        args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
+        if self.config.spatialOrder <= 0:
+            args_md.set("PSFVAR_KEYS", "")
+            args_md.set("PSFVAR_GROUPS", "")
+            args_md.set("PSFVAR_DEGREES", "")
+        else:
+            args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
         args_md.set("PSF_SIZE", str(actualKernelSize))
         args_md.set("PSF_SAMPLING", str(self.config.samplingSize))
         prefs = psfex.Prefs(defaultsFile, args_md)
