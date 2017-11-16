@@ -30,7 +30,7 @@ import unittest
 
 import lsst.utils.tests
 import lsst.afw.image as afwImage
-import lsst.afw.coord as afwCoord
+from lsst.afw.coord import IcrsCoord
 import lsst.afw.detection as afwDetection
 import lsst.afw.geom as afwGeom
 import lsst.afw.math as afwMath
@@ -104,8 +104,11 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.exposure = afwImage.makeExposure(self.mi)
         self.exposure.setPsf(measAlg.DoubleGaussianPsf(self.ksize, self.ksize,
                                                        1.5*sigma1, 1, 0.1))
-        crval = afwCoord.makeCoord(afwCoord.ICRS, 0.0*afwGeom.degrees, 0.0*afwGeom.degrees)
-        wcs = afwImage.makeWcs(crval, afwGeom.PointD(0, 0), 1.0, 0, 0, 1.0)
+        cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
+        cdMatrix.shape = (2, 2)
+        wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
+                                 crval=IcrsCoord(0.0*afwGeom.degrees, 0.0*afwGeom.degrees),
+                                 cdMatrix=cdMatrix)
         self.exposure.setWcs(wcs)
 
         #

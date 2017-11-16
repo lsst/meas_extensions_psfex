@@ -25,7 +25,7 @@
 
 #undef PI // defined by psfex, clashes with afw
 
-#include "lsst/afw/image/Wcs.h"
+#include "lsst/afw/geom/SkyWcs.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
