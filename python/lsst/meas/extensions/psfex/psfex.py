@@ -16,8 +16,9 @@ try:
 except ImportError:
     plt = None
 
-import lsst.afw.coord as afwCoord
+from lsst.afw.coord import IcrsCoord
 import lsst.afw.geom as afwGeom
+from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
 import lsst.afw.display.ds9 as ds9
@@ -596,7 +597,9 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     for i in range(2):
         delta = pos[1][1][i].asDegrees() - pos[0][1][i].asDegrees()
         CD.append(delta/(pos[1][0][i] - pos[0][0][i]))
-    mosWcs = afwImage.makeWcs(pos[0][1], pos[0][0], CD[0], 0, 0, CD[1])
+    CD = np.array(CD)
+    CD.shape = (2, 2)
+    mosWcs = afwGeom.makeSkyWcs(crval=pos[0][0], crpix=pos[0][1], cdMatrix=CD)
 
     if ext is not None:
         title = "%s-%d" % (title, ext)
@@ -710,16 +713,19 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         with pyfits.open(cat):
             # Hack: I want the WCS so I'll guess where the calexp is to be found
             calexpFile = guessCalexp(cat)
-            md = afwImage.readMetadata(calexpFile)
-            wcs = afwImage.makeWcs(md)
+            md = readMetadata(calexpFile)
+            wcs = afwGeom.makeSkyWcs(md)
 
             if not wcs:
-                crval = afwCoord.makeCoord(afwCoord.ICRS, 0.0*afwGeom.degrees, 0.0*afwGeom.degrees)
-                wcs = afwImage.makeWcs(crval, afwGeom.PointD(0, 0), 1.0, 0, 0, 1.0)
+                cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
+                cdMatrix.shape = (2, 2)
+                wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
+                                         crval=IcrsCoord(0.0*afwGeom.degrees, 0.0*afwGeom.degrees),
+                                         cdMatrix=cdMatrix)
 
             naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
             # Find how many rows there are in the catalogue
-            md = afwImage.readMetadata(cat)
+            md = readMetadata(cat)
 
             field.addExt(wcs, naxis1, naxis2, md.get("NAXIS2"))
             if saveWcs:
@@ -1032,7 +1038,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
                         for k in md.names():
                             if re.search(r"A$", k):
                                 md.set(k[:-1], md.get(k))
-                    wcs = afwImage.makeWcs(md)
+                    wcs = afwGeom.makeSkyWcs(md)
                     naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
                 elif hdu.name == "LDAC_OBJECTS":
                     nobj = len(hdu.data)

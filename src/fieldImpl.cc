@@ -1,9 +1,8 @@
 // -*- lsst-C++ -*-
 #include <cstring>
 #include "lsst/meas/extensions/psfex/Field.hh"
-#include "wcslib/wcs.h"
 #undef PI
-#include "lsst/afw/image/Wcs.h"
+#include "lsst/afw/geom/SkyWcs.h"
 
 extern "C" {
     #include "globals.h"
@@ -83,19 +82,8 @@ Field::getPsfs() const
     return _psfs;
 }
 
-/************************************************************************************************************/
-//
-// This class exists solely so that I can recover the protected data member _wcsInfo
-//
-namespace {
-struct PsfUnpack : private lsst::afw::image::Wcs {
-    PsfUnpack(lsst::afw::image::Wcs const& wcs) : Wcs(wcs) { }
-    const struct wcsprm* getWcsInfo() { return _wcsInfo; }
-};
-}
-
 void
-Field::addExt(lsst::afw::image::Wcs const& wcs_,
+Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
               int const naxis1, int const naxis2,
               int const nobj)
 {
@@ -106,44 +94,48 @@ Field::addExt(lsst::afw::image::Wcs const& wcs_,
     /*
      * We're going to fake psfex's wcsstruct object.  We only need enough of it for field_locate
      */
-    PsfUnpack wcsUnpacked(wcs_);
-    struct wcsprm const* wcsPrm = wcsUnpacked.getWcsInfo();
     QMALLOC(impl->wcs[impl->next], wcsstruct, 1);
     wcsstruct *wcs = impl->wcs[impl->next];
     
-    wcs->naxis = wcsPrm->naxis;
+    wcs->naxis = 2;
     wcs->naxisn[0] = naxis1;
     wcs->naxisn[1] = naxis2;
-    
-    for (int i = 0; i != wcs->naxis; ++i) {
-        strncpy(wcs->ctype[i], wcsPrm->ctype[i], sizeof(wcs->ctype[i]) - 1);
-        strncpy(wcs->cunit[i], wcsPrm->cunit[i], sizeof(wcs->cunit[i]) - 1);
-        wcs->crval[i] = wcsPrm->crval[i];
-        
-        wcs->cdelt[i] = wcsPrm->cdelt[i];
-        wcs->crpix[i] = wcsPrm->crpix[i];
-        wcs->crder[i] = wcsPrm->crder[i];
-        wcs->csyer[i] = wcsPrm->csyer[i];
-        wcs->crval[i] = wcsPrm->crval[i];
-    }
-    for (int i = 0; i != wcs->naxis*wcs->naxis; ++i) {
-        wcs->cd[i] = wcsPrm->cd[i];
-    }
-    wcs->longpole = wcsPrm->lonpole;
-    wcs->latpole = wcsPrm->latpole;
-    wcs->lat = wcsPrm->lat;
-    wcs->lng = wcsPrm->lng;
-    wcs->equinox = wcsPrm->equinox;
 
-    CONST_PTR(afw::coord::Coord) center = wcs_.pixelToSky(afw::geom::Point2D(0.5*naxis1, 0.5*naxis2));
-    wcs->wcsscalepos[0] = center->getLongitude().asDegrees();
-    wcs->wcsscalepos[1] = center->getLatitude().asDegrees();
+    auto const crval = wcs_.getSkyOrigin();
+    // crpix using the FITS standard = pixel origin using the LSST standard + 1
+    auto const crpix = wcs_.getPixelOrigin() + afw::geom::Extent2D(1, 1);
+    auto const cdMatrix = wcs_.getCdMatrix();
+    std::string const cunit("DEG");
+    auto metadata = wcs_.getFitsMetadata();
+    for (int i = 0; i != wcs->naxis; ++i) {
+        auto ifits = i + 1;
+        auto ctype = metadata->getAsString("CTYPE" + std::to_string(ifits));
+        strncpy(wcs->ctype[i], ctype.c_str(), ctype.size() + 1);
+        strncpy(wcs->cunit[i], cunit.c_str(), cunit.size() + 1);
+        wcs->crpix[i] = crpix[i];
+        wcs->crval[i] = crval[i].asDegrees();
+        wcs->cdelt[i] = 1.0;  // scale is in the CD matrix (is this even needed?)
+        wcs->crder[i] = 0;
+        wcs->csyer[i] = 0;
+    }
+    for (int i = 0, k = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j, ++k) {
+            wcs->cd[k] = cdMatrix(i, j);
+        }
+    }
+    wcs->lng = 0;
+    wcs->lat = 1;
+    wcs->equinox = 2000;
+
+    auto center = wcs_.pixelToSky(afw::geom::Point2D(0.5*naxis1, 0.5*naxis2));
+    wcs->wcsscalepos[0] = center.getLongitude().asDegrees();
+    wcs->wcsscalepos[1] = center.getLatitude().asDegrees();
 
     double maxradius = 0.0;             // Maximum distance to wcsscalepos
     for (int x = 0; x <= 1; ++x) {
         for (int y = 0; y <= 1; ++y) {
             afw::geom::Point2D point(x*naxis1, y*naxis2); // Corner
-            double const radius = center->angularSeparation(*wcs_.pixelToSky(point)).asDegrees();
+            double const radius = center.angularSeparation(wcs_.pixelToSky(point)).asDegrees();
             if (radius > maxradius) {
                 maxradius = radius;
             }

@@ -11,8 +11,8 @@ namespace lsst {
    namespace daf { namespace base {
       class PropertySet;
    }}
-   namespace afw { namespace image {
-      class Wcs;
+   namespace afw { namespace geom {
+      class SkyWcs;
    }}
 }
 
@@ -42,7 +42,7 @@ public:
     //
     void finalize() { _finalize(true); }        
     
-    void addExt(lsst::afw::image::Wcs const& wcs, int const naxis1, int const naxis2, int const nobj=0);
+    void addExt(lsst::afw::geom::SkyWcs const& wcs, int const naxis1, int const naxis2, int const nobj=0);
     
     /// Return the number of extensions
     int getNext() const { return impl->next; }

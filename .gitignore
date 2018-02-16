@@ -9,6 +9,8 @@ _build*
 .sconsign.dblite
 ups/*.cfgc
 .deps
+.cache
+pytest_session.txt
 Makefile
 autom4te.cache/
 config.h
