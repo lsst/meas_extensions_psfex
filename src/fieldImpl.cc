@@ -135,7 +135,7 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
     for (int x = 0; x <= 1; ++x) {
         for (int y = 0; y <= 1; ++y) {
             afw::geom::Point2D point(x*naxis1, y*naxis2); // Corner
-            double const radius = center.angularSeparation(wcs_.pixelToSky(point)).asDegrees();
+            double const radius = center.separation(wcs_.pixelToSky(point)).asDegrees();
             if (radius > maxradius) {
                 maxradius = radius;
             }

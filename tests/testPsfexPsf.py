@@ -30,7 +30,6 @@ import unittest
 
 import lsst.utils.tests
 import lsst.afw.image as afwImage
-from lsst.afw.coord import IcrsCoord
 import lsst.afw.detection as afwDetection
 import lsst.afw.geom as afwGeom
 import lsst.afw.math as afwMath
@@ -107,7 +106,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
         cdMatrix.shape = (2, 2)
         wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
-                                 crval=IcrsCoord(0.0*afwGeom.degrees, 0.0*afwGeom.degrees),
+                                 crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
                                  cdMatrix=cdMatrix)
         self.exposure.setWcs(wcs)
 
