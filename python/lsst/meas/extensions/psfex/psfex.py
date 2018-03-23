@@ -16,7 +16,6 @@ try:
 except ImportError:
     plt = None
 
-from lsst.afw.coord import IcrsCoord
 import lsst.afw.geom as afwGeom
 from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
@@ -720,7 +719,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
                 cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
                 cdMatrix.shape = (2, 2)
                 wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
-                                         crval=IcrsCoord(0.0*afwGeom.degrees, 0.0*afwGeom.degrees),
+                                         crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
                                          cdMatrix=cdMatrix)
 
             naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
