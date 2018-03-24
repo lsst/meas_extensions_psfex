@@ -30,6 +30,7 @@ static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 
 #undef PI
 
+#include "lsst/utils/Cache.h"
 #include "lsst/meas/extensions/psfex/PsfexPsf.h"
 
 #include "lsst/afw/table/io/OutputArchive.h"
