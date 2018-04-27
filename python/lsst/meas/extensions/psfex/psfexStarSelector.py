@@ -1,7 +1,3 @@
-from __future__ import absolute_import, division, print_function
-from builtins import zip
-from builtins import input
-from builtins import object
 #
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
@@ -118,7 +114,7 @@ class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
         ]
 
 
-class EventHandler(object):
+class EventHandler():
     """A class to handle key strokes with matplotlib displays"""
 
     def __init__(self, axes, xs, ys, x, y, frames=[0]):

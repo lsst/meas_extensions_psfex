@@ -1,10 +1,3 @@
-#!/usr/bin/env python
-from __future__ import absolute_import, division, print_function
-from builtins import zip
-from builtins import input
-from builtins import str
-from builtins import range
-from builtins import object
 import os
 import re
 import sys
@@ -367,10 +360,10 @@ def select_candidates(set, prefs, frmin, frmax,
 try:
     _dataType
 except NameError:
-    class _SExtractor(object):
+    class _SExtractor():
         pass
 
-    class _LSST(object):
+    class _LSST():
         pass
 
     _dataTypes = dict(LSST=_LSST,
