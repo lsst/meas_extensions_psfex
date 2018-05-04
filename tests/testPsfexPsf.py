@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # LSST Data Management System
 #
@@ -21,9 +20,6 @@
 # the GNU General Public License along with this program.  If not,
 # see <https://www.lsstcorp.org/LegalNotices/>.
 #
-from __future__ import absolute_import, division, print_function
-from builtins import zip
-from builtins import range
 import math
 import numpy as np
 import unittest
@@ -217,7 +213,9 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                        ]
         starSelectorConfig.widthStdAllowed = 0.5  # Set to match when the tolerance of the test was set
 
-        starSelector = starSelectorClass(schema=self.schema, config=starSelectorConfig)
+        self.starSelector = starSelectorClass(schema=self.schema, config=starSelectorConfig)
+
+        self.makePsfCandidates = measAlg.MakePsfCandidatesTask()
 
         psfDeterminerClass = measAlg.psfDeterminerRegistry["psfex"]
         psfDeterminerConfig = psfDeterminerClass.ConfigClass()
@@ -226,9 +224,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         psfDeterminerConfig.sizeCellY = height//3
         psfDeterminerConfig.spatialOrder = 1
 
-        psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
-
-        return starSelector, psfDeterminer
+        self.psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
     def subtractStars(self, exposure, catalog, chi_lim=-1):
         """Subtract the exposure's PSF from all the sources in catalog"""
@@ -265,11 +261,12 @@ class SpatialModelPsfTestCase(unittest.TestCase):
     def testPsfexDeterminer(self):
         """Test the (Psfex) psfDeterminer on subImages"""
 
-        starSelector, psfDeterminer = self.setupDeterminer(self.exposure)
+        self.setupDeterminer(self.exposure)
         metadata = dafBase.PropertyList()
 
-        psfCandidateList = starSelector.run(self.exposure, self.catalog).psfCandidates
-        psf, cellSet = psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
+        stars = self.starSelector.run(self.exposure, self.catalog)
+        psfCandidateList = self.makePsfCandidates.run(stars.starCat, exposure=self.exposure).psfCandidates
+        psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
         self.exposure.setPsf(psf)
 
         # Test how well we can subtract the PSF model

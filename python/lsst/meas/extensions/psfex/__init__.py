@@ -22,7 +22,6 @@
 
 """lsst.meas.extensions.psfex
 """
-from __future__ import absolute_import, division, print_function
 from .version import *
 from .field import *
 from .prefs import *
