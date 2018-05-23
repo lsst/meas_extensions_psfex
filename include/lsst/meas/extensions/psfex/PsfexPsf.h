@@ -24,6 +24,7 @@
 # if !defined(LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H)
 #define LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H 1
 
+#include "lsst/afw/geom/Box.h"
 #include "lsst/meas/algorithms/ImagePsf.h"
 #include "lsst/meas/extensions/psfex/psf.hh"
 

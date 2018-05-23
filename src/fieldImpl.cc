@@ -2,6 +2,7 @@
 #include <cstring>
 #include "lsst/meas/extensions/psfex/Field.hh"
 #undef PI
+#include "lsst/afw/geom/Point.h"
 #include "lsst/afw/geom/SkyWcs.h"
 
 extern "C" {
