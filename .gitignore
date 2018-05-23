@@ -10,6 +10,7 @@ _build*
 ups/*.cfgc
 .deps
 .cache
+.pytest_cache
 pytest_session.txt
 Makefile
 autom4te.cache/
