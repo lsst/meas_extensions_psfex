@@ -22,7 +22,6 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
-#include "numpy/arrayobject.h"
 #include "ndarray/pybind11.h"
 
 #include "lsst/meas/extensions/psfex/psf.hh"
@@ -37,11 +36,6 @@ namespace psfex {
 
 PYBIND11_PLUGIN(psf) {
     py::module mod("psf");
-
-    if (_import_array() < 0) {
-            PyErr_SetString(PyExc_ImportError, "numpy.core.multiarray failed to import");
-            return nullptr;
-    };
 
     py::class_<Context> clsContext(mod, "Context");
 
