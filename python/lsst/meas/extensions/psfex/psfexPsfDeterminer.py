@@ -438,7 +438,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             metadata.set("avgX", avgX)
             metadata.set("avgY", avgY)
 
-        psfCellSet = None
         return psf, psfCellSet
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
