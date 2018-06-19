@@ -12,6 +12,7 @@ ups/*.cfgc
 .cache
 .pytest_cache
 pytest_session.txt
+.coverage
 Makefile
 autom4te.cache/
 config.h
