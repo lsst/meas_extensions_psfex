@@ -31,7 +31,7 @@ except ImportError:
 
 from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 from lsst.meas.algorithms import BaseSourceSelectorTask, sourceSelectorRegistry
 from . import psfexLib
 from .psfex import compute_fwhmrange
@@ -140,8 +140,9 @@ class EventHandler():
             x = self.x[which][0]
             y = self.y[which][0]
             for frame in self.frames:
-                ds9.pan(x, y, frame=frame)
-            ds9.cmdBuffer.flush()
+                disp = afwDisplay.Display(frame=frame)
+                disp.pan(x, y)
+            disp.flush()
         else:
             pass
 
@@ -294,6 +295,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
             lsstDebug.Info(__name__).plotFlags  # Plot the sources coloured by their flags
         plotRejection = display and plt and \
             lsstDebug.Info(__name__).plotRejection  # Plot why sources are rejected
+        afwDisplay.setDefaultMaskTransparency(75)
 
         #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
@@ -389,18 +391,18 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         frame = 0
         if displayExposure:
             mi = exposure.getMaskedImage()
+            disp = afwDisplay.Display(frame=frame)
+            disp.mtv(mi, title="PSF candidates")
 
-            ds9.mtv(mi, frame=frame, title="PSF candidates")
-
-            with ds9.Buffering():
+            with disp.Buffering():
                 for i, source in enumerate(sourceCat):
                     if good[i]:
-                        ctype = ds9.GREEN  # star candidate
+                        ctype = afwDisplay.GREEN  # star candidate
                     else:
-                        ctype = ds9.RED  # not star
+                        ctype = afwDisplay.RED  # not star
 
-                    ds9.dot("+", source.getX() - mi.getX0(), source.getY() - mi.getY0(),
-                            frame=frame, ctype=ctype)
+                    disp.dot("+", source.getX() - mi.getX0(), source.getY() - mi.getY0(),
+                             ctype=ctype)
 
         if plotFlags or plotRejection:
             imag = -2.5*np.log10(flux)

@@ -30,7 +30,6 @@ import lsst.afw.detection as afwDetection
 import lsst.afw.geom as afwGeom
 import lsst.afw.math as afwMath
 import lsst.afw.table as afwTable
-import lsst.afw.display.ds9 as ds9
 import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
 # register the PSF determiner
@@ -39,10 +38,12 @@ assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
 from lsst.meas.base import SingleFrameMeasurementTask
 
 try:
-    type(verbose)
+    display
 except NameError:
-    verbose = 0
     display = False
+else:
+    import lsst.afw.display as afwDisplay
+    afwDisplay.setDefaultMaskTransparency(75)
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -69,7 +70,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         """Measure a set of Footprints, returning a SourceCatalog"""
         catalog = afwTable.SourceCatalog(self.schema)
         if display:
-            ds9.mtv(exposure, title="Original", frame=0)
+            afwDisplay.Display(frame=0).mtv(exposure, title="Original")
 
         footprintSet.makeSources(catalog)
 
@@ -245,10 +246,11 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         chi /= var
 
         if display:
-            ds9.mtv(subtracted, title="Subtracted", frame=1)
-            ds9.mtv(chi, title="Chi", frame=2)
+            afwDisplay.Display(frame=1).mtv(subtracted, title="Subtracted")
+            afwDisplay.Display(frame=2).mtv(chi, title="Chi")
             xc, yc = exposure.getWidth()//2, exposure.getHeight()//2
-            ds9.mtv(psf.computeImage(afwGeom.Point2D(xc, yc)), title="Psf %.1f,%.1f" % (xc, yc), frame=3)
+            afwDisplay.Display(frame=3).mtv(psf.computeImage(afwGeom.Point2D(xc, yc)),
+                                            title="Psf %.1f,%.1f" % (xc, yc))
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
         if False:

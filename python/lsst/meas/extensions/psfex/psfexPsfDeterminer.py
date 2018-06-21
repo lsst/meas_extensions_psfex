@@ -26,7 +26,7 @@ import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
 import lsst.afw.geom as afwGeom
 import lsst.afw.geom.ellipses as afwEll
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
@@ -176,6 +176,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         displayPsfMosaic = display and \
             lsstDebug.Info(__name__).displayPsfMosaic     # show mosaic of reconstructed PSF(x,y)
         normalizeResiduals = lsstDebug.Info(__name__).normalizeResiduals
+        afwDisplay.setDefaultMaskTransparency(75)
         # Normalise residuals by object amplitude
 
         mi = exposure.getMaskedImage()
@@ -285,7 +286,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         if display:
             frame = 0
             if displayExposure:
-                ds9.mtv(exposure, frame=frame, title="psf determination")
+                disp = afwDisplay.Display(frame=frame)
+                disp.mtv(exposure, title="psf determination")
 
         badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
         fluxName = prefs.getPhotfluxRkey()
@@ -345,8 +347,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             ypos.append(yc)
 
         if displayExposure:
-            with ds9.Buffering():
-                ds9.dot("o", xc, yc, ctype=ds9.CYAN, size=4, frame=frame)
+            with disp.Buffering():
+                disp.dot("o", xc, yc, ctype=afwDisplay.CYAN, size=4)
 
         if set.getNsample() == 0:
             raise RuntimeError("No good PSF candidates to pass to PSFEx")
@@ -416,16 +418,20 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
             if displayExposure:
                 maUtils.showPsfSpatialCells(exposure, psfCellSet, showChi2=True,
-                                            symb="o", ctype=ds9.YELLOW, ctypeBad=ds9.RED, size=8, frame=frame)
+                                            symb="o", ctype=afwDisplay.YELLOW, ctypeBad=afwDisplay.RED,
+                                            size=8, display=disp)
             if displayResiduals:
-                maUtils.showPsfCandidates(exposure, psfCellSet, psf=psf, frame=4,
+                disp4 = afwDisplay.Display(frame=4)
+                maUtils.showPsfCandidates(exposure, psfCellSet, psf=psf, display=disp4,
                                           normalize=normalizeResiduals,
                                           showBadCandidates=showBadCandidates)
             if displayPsfComponents:
-                maUtils.showPsf(psf, frame=6)
+                disp6 = afwDisplay.Display(frame=6)
+                maUtils.showPsf(psf, display=disp6)
             if displayPsfMosaic:
-                maUtils.showPsfMosaic(exposure, psf, frame=7, showFwhm=True)
-                ds9.scale('linear', 0, 1, frame=7)
+                disp7 = afwDisplay.Display(frame=7)
+                maUtils.showPsfMosaic(exposure, psf, display=disp7, showFwhm=True)
+                disp.scale('linear', 0, 1)
         #
         # Generate some QA information
         #
