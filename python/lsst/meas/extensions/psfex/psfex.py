@@ -13,11 +13,13 @@ import lsst.afw.geom as afwGeom
 from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 from lsst.daf.base import PropertySet
 from . import psfexLib
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+afwDisplay.setDefaultMaskTransparency(75)
 
 
 def splitFitsCard(line):
@@ -554,7 +556,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
 def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             diagnostics=False, outDir="", frame=None, title=None):
-    """Show a PSF on ds9
+    """Show a PSF on display (e.g., ds9)
     """
 
     if ext is not None:
@@ -574,13 +576,12 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             cmin, cmax = [set.getContextOffset(i) + d*set.getContextScale(i) for d in (-0.5, 0.5)]
             naxis[i] = cmax + cmin          # a decent guess
 
-    import lsst.afw.display.utils as ds9Utils
     if naxis[0] > naxis[1]:
         nx, ny = int(nspot*naxis[0]/float(naxis[1]) + 0.5), nspot
     else:
         nx, ny = nspot, int(nspot*naxis[1]/float(naxis[0]) + 0.5)
 
-    mos = ds9Utils.Mosaic(gutter=2, background=0.02)
+    mos = afwDisplay.utils.Mosaic(gutter=2, background=0.02)
 
     xpos, ypos = np.linspace(0, naxis[0], nx), np.linspace(0, naxis[1], ny)
     for y in ypos:
@@ -600,7 +601,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 
     mosaic = mos.makeMosaic(mode=nx)
     if frame is not None:
-        ds9.mtv(mosaic, frame=frame, title=title)
+        afwDisplay.Display(frame=frame).mtv(mosaic, title=title)
     #
     # Figure out the WCS for the mosaic
     #
@@ -627,7 +628,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
         title = "%s-%d" % (title, ext)
 
     if frame is not None:
-        ds9.mtv(mosaic, frame=frame, title=title, wcs=mosWcs)
+        afwDisplay.Display(frame=frame).mtv(mosaic, title=title, wcs=mosWcs)
 
     if diagnostics:
         outFile = "%s-mod.fits" % title
@@ -637,13 +638,13 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-    mos = ds9Utils.Mosaic(gutter=4, background=0.002)
+    mos = afwDisplay.utils.Mosaic(gutter=4, background=0.002)
     for i in range(set.getNsample()):
         s = set.getSample(i)
         if ext is not None and s.getExtindex() != ext:
             continue
 
-        smos = ds9Utils.Mosaic(gutter=2, background=-0.003)
+        smos = afwDisplay.utils.Mosaic(gutter=2, background=-0.003)
         for func in [s.getVig, s.getVigResi]:
             arr = func()
             if func == s.getVig:
@@ -659,7 +660,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     mosaic = mos.makeMosaic(title=title)
 
     if frame is not None:
-        ds9.mtv(mosaic, title=title, frame=frame+1)
+        afwDisplay.Display(frame=frame + 1).mtv(mosaic, title=title)
 
     if diagnostics:
         outFile = "%s-psfstars.fits" % title
@@ -883,8 +884,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
         if False:
             pstamp = afwImage.ImageF(*vignet[i].shape)
             pstamp.getArray()[:] = sample.getVig()
-
-            ds9.mtv(pstamp)
+            afwDisplay.Display().mtv(pstamp)
 
         sample.setNorm(float(flux[i]))
         sample.setBacknoise2(backnoise2)
