@@ -260,7 +260,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 pc += 1
             elif key[0] == ':':
                 try:
-                    contextvalp.append(exposure.getMetadata().get(key[1:]))
+                    contextvalp.append(exposure.getMetadata().getScalar(key[1:]))
                 except KeyError:
                     raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
                                        (key[1:], prefs.getContextName()))

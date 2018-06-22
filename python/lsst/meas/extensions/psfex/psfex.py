@@ -715,11 +715,11 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
                                          crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
                                          cdMatrix=cdMatrix)
 
-            naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
+            naxis1, naxis2 = md.getScalar("NAXIS1"), md.getScalar("NAXIS2")
             # Find how many rows there are in the catalogue
             md = readMetadata(cat)
 
-            field.addExt(wcs, naxis1, naxis2, md.get("NAXIS2"))
+            field.addExt(wcs, naxis1, naxis2, md.getScalar("NAXIS2"))
             if saveWcs:
                 wcss.append((wcs, naxis1, naxis2))
 
@@ -1029,9 +1029,9 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
                     if not md.exists("CRPIX1"):  # no WCS; try WCSA
                         for k in md.names():
                             if re.search(r"A$", k):
-                                md.set(k[:-1], md.get(k))
+                                md.set(k[:-1], md.getScalar(k))
                     wcs = afwGeom.makeSkyWcs(md)
-                    naxis1, naxis2 = md.get("NAXIS1"), md.get("NAXIS2")
+                    naxis1, naxis2 = md.getScalar("NAXIS1"), md.getScalar("NAXIS2")
                 elif hdu.name == "LDAC_OBJECTS":
                     nobj = len(hdu.data)
 
