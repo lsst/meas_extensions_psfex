@@ -66,7 +66,7 @@ public:
               lsst::afw::geom::Point2D(std::numeric_limits<double>::quiet_NaN())) const;
 
     /// Is this object persistable?
-    virtual bool isPersistable() const { return true; }
+    virtual bool isPersistable() const noexcept override { return true; }
     
     void write(lsst::afw::table::io::OutputArchiveHandle & handle) const;
 private:
