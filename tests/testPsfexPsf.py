@@ -173,8 +173,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
                     I = I0*psfVal(ix, iy, x + dx, y + dy, sigma1, sigma2, b)
                     Isample = rand.poisson(I) if addNoise else I
-                    self.mi.getImage().set(ix, iy, self.mi.getImage().get(ix, iy) + Isample)
-                    self.mi.getVariance().set(ix, iy, self.mi.getVariance().get(ix, iy) + I)
+                    self.mi.image[ix, iy, afwImage.LOCAL] += Isample
+                    self.mi.variance[ix, iy, afwImage.LOCAL] += I
 
         bbox = afwGeom.BoxI(afwGeom.PointI(0, 0), afwGeom.ExtentI(width, height))
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
