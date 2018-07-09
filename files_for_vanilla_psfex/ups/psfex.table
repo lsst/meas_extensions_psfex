@@ -1,6 +1,6 @@
 setupRequired(meas_algorithms)
 setupOptional(atlas)
-setupOptional(pyfits)
+setupOptional(astropy)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
 

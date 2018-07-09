@@ -1,13 +1,13 @@
 import re
 import numpy as np
-import pyfits
+from astropy.io import fits
 import lsst.afw.image as afwImage
 import lsst.afw.display.ds9 as ds9
 import lsst.meas.extensions.psfex as psfex
 
 
 def readSExtractor(filename):
-    with pyfits.open(filename) as pf:
+    with fits.open(filename) as pf:
         for hdu in pf:
             if hdu.name == "PRIMARY":
                 pass
