@@ -3,7 +3,7 @@ import re
 import sys
 
 import numpy as np
-import pyfits
+from astropy.io import fits
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -114,7 +114,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
     #
     # Read data
     #
-    with pyfits.open(filename) as cat:
+    with fits.open(filename) as cat:
         extCtr = -1
         for tab in cat:
             if tab.name == "LDAC_IMHEAD":
@@ -415,7 +415,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
             #---- Read input catalog
             backnoises = []
-            with pyfits.open(fileName) as cat:
+            with fits.open(fileName) as cat:
                 extCtr = -1
                 for tab in cat:
                     if tab.name == "LDAC_IMHEAD":
@@ -702,7 +702,7 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
-        with pyfits.open(cat):
+        with fits.open(cat):
             # Hack: I want the WCS so I'll guess where the calexp is to be found
             calexpFile = guessCalexp(cat)
             md = readMetadata(calexpFile)
@@ -1013,7 +1013,7 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
         field = psfexLib.Field(cat)
         wcss = []
         wcssList.append(wcss)
-        with pyfits.open(cat) as pf:
+        with fits.open(cat) as pf:
             for hdu in pf:
                 if hdu.name == "PRIMARY":
                     pass
