@@ -35,9 +35,7 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(field) {
-    py::module mod("field");
-
+PYBIND11_MODULE(field, mod) {
     py::class_<Field, std::shared_ptr<Field>> clsField(mod, "Field");
 
     clsField.def(py::init<std::string const&>(),
@@ -50,8 +48,6 @@ PYBIND11_PLUGIN(field) {
 
     mod.def("makeit", makeit,
             "fields"_a, "sets"_a);
-
-    return mod.ptr();
 }
 
 }  // fieldex
