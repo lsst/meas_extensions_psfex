@@ -47,11 +47,9 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(psfexPsf) {
+PYBIND11_MODULE(psfexPsf, mod) {
     py::module::import("lsst.afw.table");
     py::module::import("lsst.meas.algorithms");
-
-    py::module mod("psfexPsf");
 
     mod.attr("BIG") = py::cast(BIG);
     mod.attr("INTERPFAC") = py::cast(INTERPFAC);
@@ -60,19 +58,15 @@ PYBIND11_PLUGIN(psfexPsf) {
 
     py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::afw::table::io::PersistableFacade<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod, "PsfexPsf");
 
-    /* Constructors */
     clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::afw::geom::Point2D const &>(),
             "psf"_a, "averagePosition"_a=lsst::afw::geom::Point2D());
 
-    /* Members */
     clsPsfexPsf.def("clone", &PsfexPsf::clone);
     clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
     clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
             "position"_a=lsst::afw::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
     clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
     clsPsfexPsf.def("write", &PsfexPsf::write);
-
-    return mod.ptr();
 }
 
 }  // psfex

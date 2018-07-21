@@ -34,9 +34,7 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(psf) {
-    py::module mod("psf");
-
+PYBIND11_MODULE(psf, mod) {
     py::class_<Context> clsContext(mod, "Context");
 
     clsContext.attr("KEEPHIDDEN") = py::cast(static_cast<int>(Context::KEEPHIDDEN));
@@ -117,8 +115,6 @@ PYBIND11_PLUGIN(psf) {
     clsPsf.def("build", &Psf::build,
             "x"_a, "y"_a, "other"_a=std::vector<double>());
     clsPsf.def("clip", &Psf::clip);
-
-    return mod.ptr();
 }
 
 }  // psfex

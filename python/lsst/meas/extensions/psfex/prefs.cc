@@ -35,9 +35,7 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_PLUGIN(prefs) {
-    py::module mod("prefs");
-
+PYBIND11_MODULE(prefs, mod) {
     py::class_<Prefs> clsPrefs(mod, "Prefs");
 
     clsPrefs.attr("ALL_EXTENSIONS") = py::cast(static_cast<int>(Prefs::ALL_EXTENSIONS));
@@ -71,8 +69,6 @@ PYBIND11_PLUGIN(prefs) {
     clsPrefs.def("getGroupDeg", &Prefs::getGroupDeg);
     clsPrefs.def("addCatalog", &Prefs::addCatalog);
     clsPrefs.def("getCatalogs", &Prefs::getCatalogs);
-
-    return mod.ptr();
 }
 
 }  // psfex
