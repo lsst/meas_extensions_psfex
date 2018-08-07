@@ -12,7 +12,7 @@ PSF_ACCURACY    0.01            # Accuracy to expect from PSF "pixel" values
  
 CENTER_KEYS     slot_Centroid_x,slot_Centroid_y # Catalogue parameters for source pre-centering
 PHOTFLUX_KEY    base_CircularApertureFlux_9_0_flux      # Catalogue parameter for photometric norm
-PHOTFLUXERR_KEY base_CircularApertureFlux_9_0_fluxSigma # Catalogue parameter for photometric error
+PHOTFLUXERR_KEY base_CircularApertureFlux_9_0_fluxErr   # Catalogue parameter for photometric error
  
 #----------------------------- PSF variability -------------------------------
  
