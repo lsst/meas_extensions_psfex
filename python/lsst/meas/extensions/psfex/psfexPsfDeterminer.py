@@ -85,7 +85,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         allowed={
             "PIXEL": "Always use requested samplingSize",
             "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
-            },
+        },
         default='PIXEL',
         optional=False,
     )
@@ -231,7 +231,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
-        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
+        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
         #
         # Insert the good candidates into the set
         #
@@ -304,7 +304,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
             try:
                 pstamp = psfCandidate.getMaskedImage().clone()
-            except Exception as e:
+            except Exception:
                 continue
 
             if fluxFlagName in source.schema and source.get(fluxFlagName):
@@ -353,7 +353,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         if set.getNsample() == 0:
             raise RuntimeError("No good PSF candidates to pass to PSFEx")
 
-        #---- Update min and max and then the scaling
+        # ---- Update min and max and then the scaling
         for i in range(set.getNcontext()):
             cmin = contextvalp[i].min()
             cmax = contextvalp[i].max()
@@ -363,7 +363,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # Don't waste memory!
         set.trimMemory()
 
-        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
+        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
         #
         # Do a PSFEX decomposition of those PSF candidates
         #
@@ -445,7 +445,5 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             metadata.set("avgY", avgY)
 
         return psf, psfCellSet
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 measAlg.psfDeterminerRegistry.register("psfex", PsfexPsfDeterminerTask)

@@ -32,10 +32,10 @@ import lsst.afw.math as afwMath
 import lsst.afw.table as afwTable
 import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
+from lsst.meas.base import SingleFrameMeasurementTask
 # register the PSF determiner
 import lsst.meas.extensions.psfex.psfexPsfDeterminer
 assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
-from lsst.meas.base import SingleFrameMeasurementTask
 
 try:
     display
@@ -44,8 +44,6 @@ except NameError:
 else:
     import lsst.afw.display as afwDisplay
     afwDisplay.setDefaultMaskTransparency(75)
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 def psfVal(ix, iy, x, y, sigma1, sigma2, b):
@@ -161,7 +159,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             k = exactKernel.getSpatialFunction(1)(x, y)  # functional variation of Kernel ...
             b = (k*sigma1**2/((1 - k)*sigma2**2))       # ... converted double Gaussian's "b"
 
-            #flux = 80000 - 20*x - 10*(y/float(height))**2
+            # flux = 80000 - 20*x - 10*(y/float(height))**2
             flux = 80000*(1 + 0.1*(rand.uniform() - 0.5))
             I0 = flux*(1 + b)/(2*np.pi*(sigma1**2 + b*sigma2**2))
             for iy in range(y - self.ksize//2, y + self.ksize//2 + 1):
@@ -277,8 +275,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         # Test PsfexPsf.computeBBox
         self.assertEqual(psf.computeBBox(), psf.computeKernelImage().getBBox())
         self.assertEqual(psf.computeBBox(), psf.getKernel().getBBox())
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):

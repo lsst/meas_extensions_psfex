@@ -109,7 +109,7 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
             "base_PixelFlags_flag_bad",
             "base_PixelFlags_flag_suspectCenter",
             "base_PsfFlux_flag",
-            #"parent",            # actually this is a test on deblend_nChild
+            # "parent",            # actually this is a test on deblend_nChild
         ]
 
 
@@ -145,8 +145,6 @@ class EventHandler():
             disp.flush()
         else:
             pass
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewidth=0, ltype='-',
@@ -297,8 +295,6 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
             lsstDebug.Info(__name__).plotRejection  # Plot why sources are rejected
         afwDisplay.setDefaultMaskTransparency(75)
 
-        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-        #
         fluxName = self.config.fluxName
         fluxErrName = self.config.fluxErrName
         minFwhm = self.config.minFwhm
@@ -338,11 +334,11 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         fwhmMode, fwhmMin, fwhmMax = compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
                                                        plot=dict(fwhmHistogram=plotFwhmHistogram))
 
-        #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
         # Here's select_candidates
         #
-        #---- Apply some selection over flags, fluxes...
+        # ---- Apply some selection over flags, fluxes...
 
         bad = (flags != 0)
         # set.setBadFlags(int(sum(bad)))
@@ -375,7 +371,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         if plotRejection:
             selectionVectors.append((dbad, "elong %d" % sum(dbad)))
 
-        #-- ... and check the integrity of the sample
+        # -- ... and check the integrity of the sample
         if maxbadflag:
             nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
             dbad = nbad > maxbad
