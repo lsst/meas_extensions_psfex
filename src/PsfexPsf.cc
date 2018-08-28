@@ -36,6 +36,7 @@
 #include "lsst/pex/exceptions.h"
 #include "lsst/afw/image/ImageUtils.h"
 #include "lsst/afw/math/Statistics.h"
+#include "lsst/afw/table/io/Persistable.cc"
 extern "C" {
 #include "vignet.h"
 }
@@ -43,7 +44,20 @@ extern "C" {
 #include "lsst/meas/algorithms/KernelPsfFactory.h"
 #include "lsst/afw/table/aggregates.h"
 
-namespace lsst { namespace meas { namespace extensions { namespace psfex {
+namespace lsst {
+namespace afw {
+namespace table {
+namespace io {
+
+template std::shared_ptr<meas::extensions::psfex::PsfexPsf>
+PersistableFacade<meas::extensions::psfex::PsfexPsf>::dynamicCast(std::shared_ptr<Persistable> const&);
+
+}  // namespace io
+}  // namespace table
+}  // namespace afw
+namespace meas {
+namespace extensions {
+namespace psfex {
 
 namespace afw = lsst::afw;
 
