@@ -261,14 +261,24 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
     usesMatches = False  # selectStars does not use its matches argument
 
     def selectStars(self, exposure, sourceCat, matches=None):
-        """!Select stars from source catalog
+        """Select stars from source catalog
 
-        @param[in] exposure  the exposure containing the sources
-        @param[in] sourceCat  catalog of sources that may be stars (an lsst.afw.table.SourceCatalog)
-        @param[in] matches  astrometric matches; ignored by this star selector
+        Parameters
+        ----------
+        exposure :
+            the exposure containing the sources
+        sourceCat :
+            catalog of sources that may be stars (an lsst.afw.table.SourceCatalog)
+        matches :
+            astrometric matches; ignored by this star selector
 
-        @return a Struct containing:
-        - starCat  a subset of sourceCat containing the selected stars
+        Returns
+        -------
+        result :
+            a Struct containing:
+
+            - ``starCat`` :  a subset of sourceCat containing the selected stars
+
         """
         import lsstDebug
         display = lsstDebug.Info(__name__).display

@@ -42,16 +42,19 @@ def splitFitsCard(line):
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
     """
-        PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
-        INPUT   Pointer to an array of FWHMs,
-        maximum allowed FWHM variation,
-        minimum allowed FWHM,
-        maximum allowed FWHM,
+    PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
 
-        OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
-        NOTES   -.
-        AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
-        VERSION 20/03/2008
+    Notes
+    -----
+    INPUT   Pointer to an array of FWHMs,
+    maximum allowed FWHM variation,
+    minimum allowed FWHM,
+    maximum allowed FWHM,
+
+    OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
+    NOTES   -.
+    AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
+    VERSION 20/03/2008
         """
     nfwhm = len(fwhm)
     fwhm.sort()
