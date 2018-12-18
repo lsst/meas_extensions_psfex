@@ -143,16 +143,26 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
 
     def determinePsf(self, exposure, psfCandidateList, metadata=None, flagKey=None):
-        """Determine a PSFEX PSF model for an exposure given a list of PSF candidates
+        """Determine a PSFEX PSF model for an exposure given a list of PSF candidates.
 
-        @param[in] exposure: exposure containing the psf candidates (lsst.afw.image.Exposure)
-        @param[in] psfCandidateList: a sequence of PSF candidates (each an lsst.meas.algorithms.PsfCandidate);
-            typically obtained by detecting sources and then running them through a star selector
-        @param[in,out] metadata  a home for interesting tidbits of information
-        @param[in] flagKey: schema key used to mark sources actually used in PSF determination
+        Parameters
+        ----------
+        exposure: `lsst.afw.image.Exposure`
+            Exposure containing the PSF candidates.
+        psfCandidateList: iterable of `lsst.meas.algorithms.PsfCandidate`
+            Sequence of PSF candidates typically obtained by detecting sources and then running them through a 
+            star selector.
+        metadata: metadata, optional
+            A home for interesting tidbits of information.
+        flagKey: `lsst.afw.table.Key`, optional
+            Schema key used to mark sources actually used in PSF determination.
 
-        @return psf: a meas.extensions.psfex.PsfexPsf
+        Returns
+        -------
+        psf: `lsst.meas.extensions.psfex.PsfexPsf`
+            The determined PSF.
         """
+
         import lsstDebug
         display = lsstDebug.Info(__name__).display
         displayExposure = display and \
