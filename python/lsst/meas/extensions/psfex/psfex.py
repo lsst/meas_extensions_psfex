@@ -21,7 +21,21 @@ from . import psfexLib
 
 
 def splitFitsCard(line):
-    """Split a fits header, returning (key, value)"""
+    """Split a FITS header, returning (key, value).
+
+    Parameters
+    ----------
+    line: `string`
+        A string from a FITS header.
+
+    Returns
+    -------
+    key: `string`
+        The header key.
+    value: `string`
+        The header value.
+    """
+
     try:
         k, v = re.search(r"(\S+)\s*=\s*'?((?:\S+|'))", line).groups()
     except AttributeError:
@@ -41,18 +55,33 @@ def splitFitsCard(line):
 
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
-    """
-        PURPOSE Compute the FWHM range associated to a series of FWHM measurements.
-        INPUT   Pointer to an array of FWHMs,
-        maximum allowed FWHM variation,
-        minimum allowed FWHM,
-        maximum allowed FWHM,
-
-        OUTPUT  FWHM mode, lower FWHM range, upper FWHM range
-        NOTES   -.
+    """Compute the FWHM range associated to a series of FWHM measurements.
         AUTHOR  E. Bertin (IAP, Leiden observatory & ESO)
         VERSION 20/03/2008
-        """
+
+    Parameters
+    ----------
+    fwhm: iterable of `float`
+        Iterable of full width half-maxima.
+    maxvar: `float`
+        Maximum allowed FWHM variation.
+    minin: `float`
+        Minimum allowed FWHM.
+    maxin: `float`
+        Maximum allowed FWHM.
+    plot: `dict`, optional
+        Dict of plotting options.
+
+    Returns
+    -------
+    fmin: `float`
+        FWHM mode.
+    minout: `float`
+        Lower FWHM range.
+    maxout: `float`
+        Upper FWHM range.
+    """
+
     nfwhm = len(fwhm)
     fwhm.sort()
 
@@ -525,7 +554,8 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
 def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             diagnostics=False, outDir="", frame=None, title=None):
-    """Show a PSF on ds9"""
+    """Show a PSF on ds9
+    """
 
     if ext is not None:
         psf = psf[ext]
@@ -689,7 +719,8 @@ def guessCalexp(fileName):
 
 
 def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
-    """This is the python wrapper that reads lsst tables"""
+    """This is the python wrapper that reads lsst tables
+    """
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())
@@ -1000,7 +1031,8 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 def makeit(prefs, context, saveWcs=False, plot=dict()):
-    """This is the python wrapper for the original psfex that reads SExtractor outputs"""
+    """This is the python wrapper for the original psfex that reads SExtractor outputs
+    """
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())

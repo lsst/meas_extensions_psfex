@@ -115,7 +115,8 @@ class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
 
 
 class EventHandler():
-    """A class to handle key strokes with matplotlib displays"""
+    """A class to handle key strokes with matplotlib displays
+    """
 
     def __init__(self, axes, xs, ys, x, y, frames=[0]):
         self.axes = axes
@@ -197,7 +198,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 
 
 class PsfexStarSelectorTask(BaseStarSelectorTask):
-    """!A star selector whose algorithm is not yet documented
+    """A star selector whose algorithm is not yet documented.
 
     @anchor PsfexStarSelectorTask_
 
