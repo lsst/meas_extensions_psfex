@@ -29,18 +29,17 @@ try:
 except ImportError:
     plt = None
 
-from lsst.afw.table import SourceCatalog
 from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
 import lsst.afw.display.ds9 as ds9
-from lsst.meas.algorithms import BaseStarSelectorTask, starSelectorRegistry
+from lsst.meas.algorithms import BaseSourceSelectorTask, sourceSelectorRegistry
 from . import psfexLib
 from .psfex import compute_fwhmrange
 
 __all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
 
-class PsfexStarSelectorConfig(BaseStarSelectorTask.ConfigClass):
+class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
     fluxName = pexConfig.Field(
         dtype=str,
         doc="Name of photometric flux key ",
@@ -197,7 +196,8 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 ## \}
 
 
-class PsfexStarSelectorTask(BaseStarSelectorTask):
+@pexConfig.registerConfigurable("psfex", sourceSelectorRegistry)
+class PsfexStarSelectorTask(BaseSourceSelectorTask):
     """A star selector whose algorithm is not yet documented.
 
     @anchor PsfexStarSelectorTask_
@@ -261,15 +261,27 @@ class PsfexStarSelectorTask(BaseStarSelectorTask):
     ConfigClass = PsfexStarSelectorConfig
     usesMatches = False  # selectStars does not use its matches argument
 
-    def selectStars(self, exposure, sourceCat, matches=None):
-        """!Select stars from source catalog
+    def selectSources(self, sourceCat, matches=None, exposure=None):
+        """Return a selection of psf-like objects.
 
-        @param[in] exposure  the exposure containing the sources
-        @param[in] sourceCat  catalog of sources that may be stars (an lsst.afw.table.SourceCatalog)
-        @param[in] matches  astrometric matches; ignored by this star selector
+        Parameters
+        ----------
+        sourceCat : `lsst.afw.table.SourceCatalog`
+            Catalog of sources to select from.
+            This catalog must be contiguous in memory.
+        matches : `list` of `lsst.afw.table.ReferenceMatch` or None
+            Ignored by this source selector.
+        exposure : `lsst.afw.image.Exposure` or None
+            The exposure the catalog was built from; used for debug display.
 
-        @return a Struct containing:
-        - starCat  a subset of sourceCat containing the selected stars
+        Return
+        ------
+        struct : `lsst.pipe.base.Struct`
+            The struct contains the following data:
+
+            - selected : `numpy.ndarray` of `bool``
+                Boolean array of sources that were selected, same length as
+                sourceCat.
         """
         import lsstDebug
         display = lsstDebug.Info(__name__).display
@@ -455,13 +467,4 @@ If you put the cursor on a point in the matplotlib scatter plot and hit 'p' you'
                 else:
                     break
 
-        starCat = SourceCatalog(sourceCat.schema)
-        for source, isGood in zip(sourceCat, good):
-            if isGood:
-                starCat.append(source)
-
-        return Struct(
-            starCat=starCat,
-        )
-
-starSelectorRegistry.register("psfex", PsfexStarSelectorTask)
+        return Struct(selected=good)
