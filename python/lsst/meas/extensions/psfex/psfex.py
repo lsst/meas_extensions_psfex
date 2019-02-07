@@ -15,7 +15,7 @@ import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
 import lsst.afw.display as afwDisplay
 from lsst.daf.base import PropertySet
-from . import psfexLib
+import lsst.meas.extensions.psfex as psfex
 
 afwDisplay.setDefaultMaskTransparency(75)
 
@@ -87,7 +87,7 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
     nw = nfwhm//4
     if nw < 4:
         nw = 1
-    dfmin = psfexLib.BIG
+    dfmin = psfex.BIG
     fmin = 0.0
     for i in range(nfwhm - nw):
         df = fwhm[i + nw] - fwhm[i]
@@ -123,7 +123,7 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                  plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-        set = psfexLib.Set(context)
+        set = psfex.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
@@ -134,8 +134,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] = psfexLib.BIG
-                cmax[i] = -psfexLib.BIG
+                cmin[i] = psfex.BIG
+                cmax[i] = -psfex.BIG
     #
     # Read data
     #
@@ -298,7 +298,7 @@ def select_candidates(set, prefs, frmin, frmax,
     minsn = prefs.getMinsn()
 
     sn = flux/np.where(fluxerr > 0, fluxerr, 1)
-    sn[fluxerr <= 0] = -psfexLib.BIG
+    sn[fluxerr <= 0] = -psfex.BIG
     # ---- Apply some selection over flags, fluxes...
     plotFlags = plot.get("showFlags") if plt else False
     plotRejection = plot.get("showRejection") if plt else False
@@ -336,7 +336,7 @@ def select_candidates(set, prefs, frmin, frmax,
 
     # -- ... and check the integrity of the sample
     if maxbadflag:
-        nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
+        nbad = np.array([(v <= -psfex.BIG).sum() for v in vignet])
         dbad = nbad > maxbad
         set.setBadPix(int(sum(dbad)))
         bad = np.logical_or(bad, dbad)
@@ -405,7 +405,7 @@ def getFlags():
         return getSexFlags(None)
 
 
-def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samples(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -430,7 +430,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
 
-            if prefs.getVerboseType() != prefs.QUIET:
+            if prefs.getVerboseType() != 0:  # prefs.QUIET:
                 print("Examining Catalog #%d" % (i+1))
 
             # ---- Read input catalog
@@ -457,7 +457,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                                 continue
 
                             if k == "SEXBKDEV":
-                                if v < 1/psfexLib.BIG:
+                                if v < 1/psfex.BIG:
                                     v = 1.0
 
                                 backnoises.append(v)
@@ -478,7 +478,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                         good = np.logical_and(good, fwhm < max)
                         fwhms[i] = fwhm[good]
 
-        if prefs.getVarType() == prefs.VAR_NONE:
+        if prefs.getVarType() == 0:  # prefs.VAR_NONE:
             if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
@@ -490,7 +490,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                                                    plot=plot)
             else:
                 raise RuntimeError("No source with appropriate FWHM found!!")
-                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                mode = min = max = 2.35/(1.0 - 1.0/psfex.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
@@ -508,10 +508,10 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
                 else:
                     raise RuntimeError("No source with appropriate FWHM found!!")
-                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.INTERPFAC)
 
     # Read the samples
-    mode = psfexLib.BIG               # mode of FWHM distribution
+    mode = psfex.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -530,7 +530,7 @@ def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot
 
         set.setFwhm(mode)
 
-        if prefs.getVerboseType() != prefs.QUIET:
+        if prefs.getVerboseType() != 0:  # prefs.QUIET:
             if set.getNsample():
                 print("%d samples loaded." % set.getNsample())
             else:
@@ -690,12 +690,10 @@ def getLsstFlags(tab=None):
 
 
 def guessCalexp(fileName):
-    for guess in [
-        re.sub("/src", r"", fileName),
-        re.sub("(SRC([^.]+))", r"CORR\2-exp", fileName),
-    ]:
-        if guess != fileName and os.path.exists(guess):
-            return guess
+    guess = re.sub("/output", r"/corr", fileName)
+    guess = re.sub("/SRC", r"/CORR", guess)
+    if guess != fileName and os.path.exists(guess):
+        return guess
 
     raise RuntimeError("Unable to find a calexp to go with %s" % fileName)
 
@@ -704,15 +702,15 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper that reads lsst tables
     """
     # Create an array of PSFs (one PSF for each extension)
-    if prefs.getVerboseType() != prefs.QUIET:
+    if prefs.getVerboseType() != 0:  # prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfexLib.vectorField()
+    fields = []
     for cat in prefs.getCatalogs():
-        field = psfexLib.Field(cat)
+        field = psfex.Field(cat)
         wcss = []
         wcssList.append(wcss)
         with fits.open(cat):
@@ -743,11 +741,11 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
 
     prefs.getPsfStep()
 
-    sets = psfexLib.vectorSet()
+    sets = []
     for set in load_samplesLsst(prefs, context, plot=plot):
         sets.append(set)
 
-    psfexLib.makeit(fields, sets)
+    psfex.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:
@@ -760,7 +758,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                      plot=dict(showFlags=False, showRejection=False)):
     # allocate a new set iff set is None
     if not set:
-        set = psfexLib.Set(context)
+        set = psfex.Set(context)
 
     cmin, cmax = None, None
     if set.getNcontext():
@@ -771,20 +769,20 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
                 cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
                 cmax[i] = cmin[i] + set.getContextScale(i)
             else:
-                cmin[i] = psfexLib.BIG
-                cmax[i] = -psfexLib.BIG
+                cmin[i] = psfex.BIG
+                cmax[i] = -psfex.BIG
     #
     # Read data
     #
     tab = afwTable.SourceCatalog.readFits(filename)
 
     centroid = tab.getCentroidDefinition()
-    xm = tab.get("%s.x" % centroid)
-    ym = tab.get("%s.y" % centroid)
+    xm = tab.get("%s_x" % centroid)
+    ym = tab.get("%s_y" % centroid)
 
     shape = tab.getShapeDefinition()
-    ixx = tab.get("%s.xx" % shape)
-    iyy = tab.get("%s.yy" % shape)
+    ixx = tab.get("%s_xx" % shape)
+    iyy = tab.get("%s_yy" % shape)
 
     rmsSize = np.sqrt(0.5*(ixx + iyy))
     elong = 0.5*(ixx - iyy)/(ixx + iyy)
@@ -875,7 +873,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
         for j in range(set.getNcontext()):
             sample.setContext(j, float(contextvalp[j][i]))
 
-        set.finiSample(sample, prefs.getProfAccuracy())
+        set.finiSample(sample)  # , prefs.getProfAccuracy())
 
     # ---- Update min and max
     for j in range(set.getNcontext()):
@@ -894,7 +892,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     return set
 
 
-def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
+def load_samplesLsst(prefs, context, ext=psfex.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
     minsn = prefs.getMinsn()
     maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
     min = prefs.getFwhmrange()[0]
@@ -919,7 +917,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
         for i, fileName in enumerate(filenames):
             fwhms[i] = []
 
-            if prefs.getVerboseType() != prefs.QUIET:
+            if prefs.getVerboseType() != 0:  # prefs.QUIET:
                 print("Examining Catalog #%d" % (i+1))
 
             # ---- Read input catalog
@@ -927,8 +925,8 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
             # -------- Fill the FWHM array
             shape = tab.getShapeDefinition()
-            ixx = tab.get("%s.xx" % shape)
-            iyy = tab.get("%s.yy" % shape)
+            ixx = tab.get("%s_xx" % shape)
+            iyy = tab.get("%s_yy" % shape)
 
             rmsSize = np.sqrt(0.5*(ixx + iyy))
             elong = 0.5*(ixx - iyy)/(ixx + iyy)
@@ -946,7 +944,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
             good = np.logical_and(good, fwhm < max)
             fwhms[i] = fwhm[good]
 
-        if prefs.getVarType() == prefs.VAR_NONE:
+        if prefs.getVarType() == 0:  # prefs.VAR_NONE:
             if nobj:
                 fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
                 i = 0
@@ -958,7 +956,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
                                                    plot=plot)
             else:
                 raise RuntimeError("No source with appropriate FWHM found!!")
-                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                mode = min = max = 2.35/(1.0 - 1.0/psfex.INTERPFAC)
 
                 fwhmmin = np.zeros(ncat) + min
                 fwhmmax = np.zeros(ncat) + max
@@ -976,10 +974,10 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
                                           prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
                 else:
                     raise RuntimeError("No source with appropriate FWHM found!!")
-                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
+                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfex.INTERPFAC)
 
     # Read the samples
-    mode = psfexLib.BIG               # mode of FWHM distribution
+    mode = psfex.BIG               # mode of FWHM distribution
 
     sets = []
     for i, fileName in enumerate(filenames):
@@ -994,7 +992,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
         set.setFwhm(mode)
 
-        if prefs.getVerboseType() != prefs.QUIET:
+        if prefs.getVerboseType() != 0:  # prefs.QUIET:
             if set.getNsample():
                 print("%d samples loaded." % set.getNsample())
             else:
@@ -1009,15 +1007,15 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
     """This is the python wrapper for the original psfex that reads SExtractor outputs
     """
     # Create an array of PSFs (one PSF for each extension)
-    if prefs.getVerboseType() != prefs.QUIET:
+    if prefs.getVerboseType() != 0:  # prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())
 
     if saveWcs:                         # only needed for making plots
         wcssList = []
 
-    fields = psfexLib.vectorField()
+    fields = []
     for cat in prefs.getCatalogs():
-        field = psfexLib.Field(cat)
+        field = psfex.Field(cat)
         wcss = []
         wcssList.append(wcss)
         with fits.open(cat) as pf:
@@ -1051,11 +1049,11 @@ def makeit(prefs, context, saveWcs=False, plot=dict()):
         field.finalize()
         fields.append(field)
 
-    sets = psfexLib.vectorSet()
+    sets = []
     for set in load_samples(prefs, context, plot=plot):
         sets.append(set)
 
-    psfexLib.makeit(fields, sets)
+    psfex.makeit(fields, sets)
 
     ret = [[f.getPsfs() for f in fields], sets]
     if saveWcs:

@@ -33,8 +33,8 @@ from lsst.pipe.base import Struct
 import lsst.pex.config as pexConfig
 import lsst.afw.display as afwDisplay
 from lsst.meas.algorithms import BaseSourceSelectorTask, sourceSelectorRegistry
-from . import psfexLib
-from .psfex import compute_fwhmrange
+import lsst.meas.extentions.psfex as psfex
+from lsst.meas.extentions.psfex.psfex import compute_fwhmrange
 
 __all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
@@ -318,7 +318,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         flux = sourceCat.get(fluxName)
         fluxErr = sourceCat.get(fluxErrName)
         sn = flux/np.where(fluxErr > 0, fluxErr, 1)
-        sn[fluxErr <= 0] = -psfexLib.BIG
+        sn[fluxErr <= 0] = -psfex.BIG
 
         flags = 0x0
         for i, f in enumerate(self.config.badFlags):
@@ -373,7 +373,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
 
         # -- ... and check the integrity of the sample
         if maxbadflag:
-            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
+            nbad = np.array([(v <= -psfex.BIG).sum() for v in vignet])
             dbad = nbad > maxbad
             # set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)

@@ -2,7 +2,9 @@
 import argparse
 import os
 import sys
-from lsst.meas.extensions.psfex import psfex, readPrefs, makeitLsst, makeit, showPsf, dafBase
+import lsst.daf.base as dafBase
+from lsst.meas.extensions.psfex.psfex import setDataType, makeitLsst
+import lsst.meas.extensions.psfex as psfex
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
@@ -48,11 +50,11 @@ if __name__ == "__main__":
             plot[k] = True
 
     if args.lsst:
-        psfex.psfex.setDataType("LSST")
+        setDataType("LSST")
     #
     # To work
     #
-    prefs = readPrefs(args.defaultsFile, args_md)
+    prefs = psfex.Prefs(args.defaultsFile, args_md)
     prefs.setCommandLine(argv)
 
     for f in args.catalogs:
@@ -64,8 +66,8 @@ if __name__ == "__main__":
                             prefs.getGroupDeg(),
                             psfex.Context.REMOVEHIDDEN if False else psfex.Context.KEEPHIDDEN)
 
-    psfs, sets, wcss = makeitLsst(prefs, context, saveWcs=True, plot=plot) if args.lsst else \
-        makeit(prefs, context, saveWcs=True, plot=plot)
+    psfs, sets, wcss = (makeitLsst(prefs, context, saveWcs=True, plot=plot) if args.lsst else
+                        psfex.makeit(prefs, context, saveWcs=True, plot=plot))
 
     if args.diagnostics or args.doDisplay is not None:
         dispFrame = args.doDisplay
