@@ -17,8 +17,8 @@ if __name__ == "__main__":
                         help="Overrides for default parameters", default=[])
     parser.add_argument('--plot', type=str, nargs="+",
                         help="Desired plots", default=[])
-    parser.add_argument('--ds9', type=int,
-                        help="Show the PSF on ds9", default=None)
+    parser.add_argument('--doDisplay', type=int,
+                        help="Show the PSF on the display", default=None)
     parser.add_argument('--diagnostics', action="store_true",
                         help="Write output diagnostic plots to outDir")
     parser.add_argument('--verbose', action="store_true", help="How chatty should I be?", default=False)
@@ -67,15 +67,15 @@ if __name__ == "__main__":
     psfs, sets, wcss = makeitLsst(prefs, context, saveWcs=True, plot=plot) if args.lsst else \
         makeit(prefs, context, saveWcs=True, plot=plot)
 
-    if args.diagnostics or args.ds9 is not None:
-        ds9Frame = args.ds9
+    if args.diagnostics or args.doDisplay is not None:
+        dispFrame = args.doDisplay
         for i in range(len(sets)):
             for ext in range(len(psfs[i])):
                 catDir, catFile = os.path.split(prefs.getCatalogs()[i])
 
                 showPsf(psfs[i], sets[i], ext, wcss[i], nspot=3, trim=5,
-                        frame=ds9Frame, diagnostics=args.diagnostics,
+                        frame=dispFrame, diagnostics=args.diagnostics,
                         outDir=catDir, title=os.path.splitext(catFile)[0])
 
-                if ds9Frame is not None:
-                    ds9Frame += 2
+                if dispFrame is not None:
+                    dispFrame += 2

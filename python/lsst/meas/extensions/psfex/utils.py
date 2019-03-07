@@ -2,8 +2,10 @@ import re
 import numpy as np
 from astropy.io import fits
 import lsst.afw.image as afwImage
-import lsst.afw.display.ds9 as ds9
+import lsst.afw.display as afwDisplay
 import lsst.meas.extensions.psfex as psfex
+
+afwDisplay.setDefaultMaskTransparency(75)
 
 
 def readSExtractor(filename):
@@ -33,7 +35,7 @@ def readSExtractor(filename):
                     msk = mi.getMask().getArray()
                     msk[bad] = afwImage.MaskU.getPlaneBitMask("BAD")
                     msk[sat] = afwImage.MaskU.getPlaneBitMask("SAT")
-                    ds9.mtv(mi, title=row)
+                    afwDisplay.Display().mtv(mi, title=row)
                     input("Next ")
 
 

@@ -30,21 +30,20 @@ import lsst.afw.detection as afwDetection
 import lsst.afw.geom as afwGeom
 import lsst.afw.math as afwMath
 import lsst.afw.table as afwTable
-import lsst.afw.display.ds9 as ds9
 import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
+from lsst.meas.base import SingleFrameMeasurementTask
 # register the PSF determiner
 import lsst.meas.extensions.psfex.psfexPsfDeterminer
 assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
-from lsst.meas.base import SingleFrameMeasurementTask
 
 try:
-    type(verbose)
+    display
 except NameError:
-    verbose = 0
     display = False
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+else:
+    import lsst.afw.display as afwDisplay
+    afwDisplay.setDefaultMaskTransparency(75)
 
 
 def psfVal(ix, iy, x, y, sigma1, sigma2, b):
@@ -69,7 +68,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         """Measure a set of Footprints, returning a SourceCatalog"""
         catalog = afwTable.SourceCatalog(self.schema)
         if display:
-            ds9.mtv(exposure, title="Original", frame=0)
+            afwDisplay.Display(frame=0).mtv(exposure, title="Original")
 
         footprintSet.makeSources(catalog)
 
@@ -160,7 +159,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             k = exactKernel.getSpatialFunction(1)(x, y)  # functional variation of Kernel ...
             b = (k*sigma1**2/((1 - k)*sigma2**2))       # ... converted double Gaussian's "b"
 
-            #flux = 80000 - 20*x - 10*(y/float(height))**2
+            # flux = 80000 - 20*x - 10*(y/float(height))**2
             flux = 80000*(1 + 0.1*(rand.uniform() - 0.5))
             I0 = flux*(1 + b)/(2*np.pi*(sigma1**2 + b*sigma2**2))
             for iy in range(y - self.ksize//2, y + self.ksize//2 + 1):
@@ -245,10 +244,11 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         chi /= var
 
         if display:
-            ds9.mtv(subtracted, title="Subtracted", frame=1)
-            ds9.mtv(chi, title="Chi", frame=2)
+            afwDisplay.Display(frame=1).mtv(subtracted, title="Subtracted")
+            afwDisplay.Display(frame=2).mtv(chi, title="Chi")
             xc, yc = exposure.getWidth()//2, exposure.getHeight()//2
-            ds9.mtv(psf.computeImage(afwGeom.Point2D(xc, yc)), title="Psf %.1f,%.1f" % (xc, yc), frame=3)
+            afwDisplay.Display(frame=3).mtv(psf.computeImage(afwGeom.Point2D(xc, yc)),
+                                            title="Psf %.1f,%.1f" % (xc, yc))
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
         if False:
@@ -275,8 +275,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         # Test PsfexPsf.computeBBox
         self.assertEqual(psf.computeBBox(), psf.computeKernelImage().getBBox())
         self.assertEqual(psf.computeBBox(), psf.getKernel().getBBox())
-
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):
