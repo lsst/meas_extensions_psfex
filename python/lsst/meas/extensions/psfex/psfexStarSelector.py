@@ -95,11 +95,12 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
         if self.fluxErrName == "":
             self.fluxErrName = self.fluxName + ".err"
         elif self.fluxErrName != self.fluxName + ".err":
-            raise pexConfig.FieldValidationError("fluxErrName (%s) doesn't correspond to fluxName (%s)"
-                                                 % (self.fluxErrName, self.fluxName))
+            msg = f"fluxErrName ({self.fluxErrName}) doesn't correspond to fluxName ({self.fluxName})"
+            raise pexConfig.FieldValidationError(PsfexStarSelectorConfig.fluxName, self, msg)
 
         if self.minFwhm > self.maxFwhm:
-            raise pexConfig.FieldValidationError("minFwhm (%f) > maxFwhm (%f)" % (self.minFwhm, self.maxFwhm))
+            raise pexConfig.FieldValidationError(PsfexStarSelectorConfig.minFwhm, self,
+                                                 f"minFwhm ({self.minFwhm}) > maxFwhm ({self.maxFwhm})")
 
     def setDefaults(self):
         self.badFlags = [
