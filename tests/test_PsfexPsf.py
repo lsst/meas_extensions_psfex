@@ -33,6 +33,8 @@ import lsst.afw.table as afwTable
 import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
 from lsst.meas.base import SingleFrameMeasurementTask
+
+from lsst.meas.base import SincCoeffsD
 # register the PSF determiner
 import lsst.meas.extensions.psfex.psfexPsfDeterminer
 assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
@@ -200,6 +202,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         del self.schema
         del self.measureSources
 
+    @unittest.skipIf(SincCoeffsD.DISABLED_AT_COMPILE_TIME, "Sinc photometry is disabled.")
     def setupDeterminer(self, exposure):
         """Setup the starSelector and psfDeterminer"""
         starSelectorClass = measAlg.sourceSelectorRegistry["objectSize"]
@@ -225,6 +228,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         self.psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
+    @unittest.skipIf(SincCoeffsD.DISABLED_AT_COMPILE_TIME, "Sinc photometry is disabled.")
     def subtractStars(self, exposure, catalog, chi_lim=-1):
         """Subtract the exposure's PSF from all the sources in catalog"""
         mi, psf = exposure.getMaskedImage(), exposure.getPsf()
@@ -258,6 +262,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             self.assertGreater(chi_min, -chi_lim)
             self.assertLess(chi_max, chi_lim)
 
+    @unittest.skipIf(SincCoeffsD.DISABLED_AT_COMPILE_TIME, "Sinc photometry is disabled.")
     def testPsfexDeterminer(self):
         """Test the (Psfex) psfDeterminer on subImages"""
 
