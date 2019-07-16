@@ -24,7 +24,7 @@ import numpy as np
 
 import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
-import lsst.afw.geom as afwGeom
+import lsst.geom as geom
 import lsst.afw.geom.ellipses as afwEll
 import lsst.afw.display as afwDisplay
 import lsst.afw.image as afwImage
@@ -402,7 +402,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         numGoodStars = len(good_indices)
         avgX, avgY = np.mean(xpos), np.mean(ypos)
 
-        psf = psfex.PsfexPsf(psfs[0], afwGeom.Point2D(avgX, avgY))
+        psf = psfex.PsfexPsf(psfs[0], geom.Point2D(avgX, avgY))
 
         if False and (displayResiduals or displayPsfMosaic):
             ext = 0

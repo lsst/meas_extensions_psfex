@@ -2,7 +2,7 @@
 #include <cstring>
 #include "lsst/meas/extensions/psfex/Field.hh"
 #undef PI
-#include "lsst/afw/geom/Point.h"
+#include "lsst/geom/Point.h"
 #include "lsst/afw/geom/SkyWcs.h"
 
 extern "C" {
@@ -104,7 +104,7 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
 
     auto const crval = wcs_.getSkyOrigin();
     // crpix using the FITS standard = pixel origin using the LSST standard + 1
-    auto const crpix = wcs_.getPixelOrigin() + afw::geom::Extent2D(1, 1);
+    auto const crpix = wcs_.getPixelOrigin() + geom::Extent2D(1, 1);
     auto const cdMatrix = wcs_.getCdMatrix();
     std::string const cunit("DEG");
     auto metadata = wcs_.getFitsMetadata();
@@ -128,14 +128,14 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
     wcs->lat = 1;
     wcs->equinox = 2000;
 
-    auto center = wcs_.pixelToSky(afw::geom::Point2D(0.5*naxis1, 0.5*naxis2));
+    auto center = wcs_.pixelToSky(geom::Point2D(0.5*naxis1, 0.5*naxis2));
     wcs->wcsscalepos[0] = center.getLongitude().asDegrees();
     wcs->wcsscalepos[1] = center.getLatitude().asDegrees();
 
     double maxradius = 0.0;             // Maximum distance to wcsscalepos
     for (int x = 0; x <= 1; ++x) {
         for (int y = 0; y <= 1; ++y) {
-            afw::geom::Point2D point(x*naxis1, y*naxis2); // Corner
+            geom::Point2D point(x*naxis1, y*naxis2); // Corner
             double const radius = center.separation(wcs_.pixelToSky(point)).asDegrees();
             if (radius > maxradius) {
                 maxradius = radius;

@@ -9,6 +9,7 @@ try:
 except ImportError:
     plt = None
 
+import lsst.geom as geom
 import lsst.afw.geom as afwGeom
 from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
@@ -599,10 +600,10 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             bbox = mos.getBBox(i)
             mosx = bbox.getMinX() + 0.5*(bbox.getWidth() - 1)
             mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
-            pos.append([afwGeom.PointD(mosx, mosy), wcs.pixelToSky(afwGeom.PointD(x, y))])
+            pos.append([geom.PointD(mosx, mosy), wcs.pixelToSky(geom.PointD(x, y))])
     else:
-        pos.append([afwGeom.PointD(0, 0), wcs.pixelToSky(afwGeom.PointD(0, 0))])
-        pos.append([afwGeom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(afwGeom.PointD(naxis1, naxis2))])
+        pos.append([geom.PointD(0, 0), wcs.pixelToSky(geom.PointD(0, 0))])
+        pos.append([geom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(geom.PointD(naxis1, naxis2))])
 
     CD = []
     for i in range(2):
@@ -726,8 +727,8 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
             if not wcs:
                 cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
                 cdMatrix.shape = (2, 2)
-                wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
-                                         crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
+                wcs = afwGeom.makeSkyWcs(crpix=geom.PointD(0, 0),
+                                         crval=geom.SpherePoint(0.0, 0.0, geom.degrees),
                                          cdMatrix=cdMatrix)
 
             naxis1, naxis2 = md.getScalar("NAXIS1"), md.getScalar("NAXIS2")

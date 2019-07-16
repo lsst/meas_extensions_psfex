@@ -1,4 +1,4 @@
-/* 
+/*
  * LSST Data Management System
  *
  * This product includes software developed by the
@@ -58,13 +58,13 @@ PYBIND11_MODULE(psfexPsf, mod) {
 
     py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::afw::table::io::PersistableFacade<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod, "PsfexPsf");
 
-    clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::afw::geom::Point2D const &>(),
-            "psf"_a, "averagePosition"_a=lsst::afw::geom::Point2D());
+    clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::geom::Point2D const &>(),
+            "psf"_a, "averagePosition"_a=lsst::geom::Point2D());
 
     clsPsfexPsf.def("clone", &PsfexPsf::clone);
     clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
     clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
-            "position"_a=lsst::afw::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
+            "position"_a=lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
     clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
     clsPsfexPsf.def("write", &PsfexPsf::write);
 }
