@@ -238,7 +238,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
     # Insert the good candidates into the set
     #
     if not vignet.dtype.isnative:
-        # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
+        # without the swap setVig fails with
+        # "ValueError: 'unaligned arrays cannot be converted to C++'"
         vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
@@ -395,7 +396,7 @@ except NameError:
 
 
 def setDataType(t):
-    _dataType = _dataTypes[t]
+    _dataType = _dataTypes[t]  # noqa: F841
 
 
 def getFlags():
@@ -716,7 +717,8 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         wcss = []
         wcssList.append(wcss)
         with fits.open(cat):
-            # Hack: I want the WCS so I'll guess where the calexp is to be found
+            # Hack: I want the WCS so I'll guess where the calexp is to be
+            # found
             calexpFile = guessCalexp(cat)
             md = readMetadata(calexpFile)
             wcs = afwGeom.makeSkyWcs(md)
@@ -851,7 +853,8 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     # Insert the good candidates into the set
     #
     if not vignet.dtype.isnative:
-        # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
+        # without the swap setVig fails with
+        # "ValueError: 'unaligned arrays cannot be converted to C++'"
         vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
@@ -1006,8 +1009,8 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
 
 def makeit(prefs, context, saveWcs=False, plot=dict()):
-    """This is the python wrapper for the original psfex that reads SExtractor outputs
-    """
+    """This is the python wrapper for the original psfex that reads SExtractor
+    outputs"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())

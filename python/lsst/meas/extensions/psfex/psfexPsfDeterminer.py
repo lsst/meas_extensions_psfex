@@ -143,15 +143,16 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
 
     def determinePsf(self, exposure, psfCandidateList, metadata=None, flagKey=None):
-        """Determine a PSFEX PSF model for an exposure given a list of PSF candidates.
+        """Determine a PSFEX PSF model for an exposure given a list of PSF
+        candidates.
 
         Parameters
         ----------
         exposure: `lsst.afw.image.Exposure`
             Exposure containing the PSF candidates.
         psfCandidateList: iterable of `lsst.meas.algorithms.PsfCandidate`
-            Sequence of PSF candidates typically obtained by detecting sources and then running them through a 
-            star selector.
+            Sequence of PSF candidates typically obtained by detecting sources
+            and then running them through a star selector.
         metadata: metadata, optional
             A home for interesting tidbits of information.
         flagKey: `lsst.afw.table.Key`, optional
@@ -221,7 +222,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 rms = np.median(sizes)
                 print("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms))
 
-        # If we manually set the resolution then we need the size in pixel units
+        # If we manually set the resolution then we need the size in pixel
+        # units
         pixKernelSize = actualKernelSize
         if self.config.samplingSize > 0:
             pixKernelSize = int(actualKernelSize*self.config.samplingSize)
@@ -231,7 +233,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         psfCandidateList[0].setHeight(pixKernelSize)
         psfCandidateList[0].setWidth(pixKernelSize)
 
-        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
+        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
         #
         # Insert the good candidates into the set
         #
@@ -264,6 +266,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             gain = 1.0
             self.log.warn("Setting gain to %g" % (gain,))
 
+        pc = 0
         contextvalp = []
         for i, key in enumerate(context.getName()):
             if context.getPcflag(i):
@@ -314,9 +317,10 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             if flux < 0 or np.isnan(flux):
                 continue
 
-            # From this point, we're configuring the "sample" (PSFEx's version of a PSF candidate).
-            # Having created the sample, we must proceed to configure it, and then fini (finalize),
-            # or it will be malformed.
+            # From this point, we're configuring the "sample" (PSFEx's version
+            # of a PSF candidate).
+            # Having created the sample, we must proceed to configure it, and
+            # then fini (finalize), or it will be malformed.
             try:
                 sample = set.newSample()
                 sample.setCatindex(catindex)
@@ -363,7 +367,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # Don't waste memory!
         set.trimMemory()
 
-        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
+        # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
         #
         # Do a PSFEX decomposition of those PSF candidates
         #
@@ -445,5 +449,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             metadata.set("avgY", avgY)
 
         return psf, psfCellSet
+
 
 measAlg.psfDeterminerRegistry.register("psfex", PsfexPsfDeterminerTask)

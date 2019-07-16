@@ -106,7 +106,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.exposure.setWcs(wcs)
 
         #
-        # Make a kernel with the exactly correct basis functions.  Useful for debugging
+        # Make a kernel with the exactly correct basis functions.
+        # Useful for debugging
         #
         basisKernelList = []
         for sigma in (sigma1, sigma2):
@@ -170,10 +171,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     if ix < 0 or ix >= self.mi.getWidth():
                         continue
 
-                    I = I0*psfVal(ix, iy, x + dx, y + dy, sigma1, sigma2, b)
-                    Isample = rand.poisson(I) if addNoise else I
+                    II = I0*psfVal(ix, iy, x + dx, y + dy, sigma1, sigma2, b)
+                    Isample = rand.poisson(II) if addNoise else II
                     self.mi.image[ix, iy, afwImage.LOCAL] += Isample
-                    self.mi.variance[ix, iy, afwImage.LOCAL] += I
+                    self.mi.variance[ix, iy, afwImage.LOCAL] += II
 
         bbox = afwGeom.BoxI(afwGeom.PointI(0, 0), afwGeom.ExtentI(width, height))
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
@@ -236,7 +237,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             if bbox.contains(afwGeom.PointI(int(xc), int(yc))):
                 try:
                     measAlg.subtractPsf(psf, subtracted, xc, yc)
-                except:
+                except Exception:
                     pass
         chi = subtracted.Factory(subtracted, True)
         var = subtracted.getVariance()
@@ -283,6 +284,7 @@ class TestMemory(lsst.utils.tests.MemoryTestCase):
 
 def setup_module(module):
     lsst.utils.tests.init()
+
 
 if __name__ == "__main__":
     lsst.utils.tests.init()
