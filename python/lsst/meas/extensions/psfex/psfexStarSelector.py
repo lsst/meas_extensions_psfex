@@ -374,7 +374,8 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
 
         # -- ... and check the integrity of the sample
         if maxbadflag:
-            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
+            raise RuntimeError("vignet variable not defined. Code is broken.")
+            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])  # noqa: F821
             dbad = nbad > maxbad
             # set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)

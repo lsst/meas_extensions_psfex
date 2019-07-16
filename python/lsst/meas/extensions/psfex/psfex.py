@@ -183,8 +183,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 
                 n = prefs.getPhotfluxNum() - 1
                 if n:
-                    assert False, "Code to handle e.g. FLUX_APER(3) isn't yet converted"
-                    if key.naxis == 1 and n < key.naxisn[0]:
+                    raise RuntimeError("Code to handle e.g. FLUX_APER(3) isn't yet converted")
+                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
                         flux += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" %
@@ -192,7 +192,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 
                 n = prefs.getPhotfluxerrNum() - 1
                 if n:
-                    if key.naxis == 1 and n < key.naxisn[0]:
+                    raise RuntimeError("Code for getPhotfluxerrNum is broken")
+                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
                         fluxerr += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" %

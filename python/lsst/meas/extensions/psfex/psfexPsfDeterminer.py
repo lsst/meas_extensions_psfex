@@ -270,7 +270,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         contextvalp = []
         for i, key in enumerate(context.getName()):
             if context.getPcflag(i):
-                contextvalp.append(pcval[pc])
+                raise RuntimeError("Principal Components can not be accessed")
+                contextvalp.append(pcval[pc])  # noqa: F821
                 pc += 1
             elif key[0] == ':':
                 try:
