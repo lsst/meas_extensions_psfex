@@ -58,7 +58,7 @@ public:
 
     /// Return average position of stars; used as default position.
     virtual lsst::afw::geom::Point2D getAveragePosition() const { return _averagePosition; }
-    
+
     /// Return the PSF's basis functions as a spatially-invariant LinearCombinationKernel
     /// with unit weights
     PTR(lsst::afw::math::LinearCombinationKernel const)
@@ -67,7 +67,7 @@ public:
 
     /// Is this object persistable?
     virtual bool isPersistable() const noexcept override { return true; }
-    
+
     void write(lsst::afw::table::io::OutputArchiveHandle & handle) const;
 private:
     lsst::afw::geom::Point2D _averagePosition;

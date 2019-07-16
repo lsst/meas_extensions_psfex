@@ -34,7 +34,7 @@ class Context {
     friend class Set;
 public:
     enum { KEEPHIDDEN=CONTEXT_KEEPHIDDEN, REMOVEHIDDEN=CONTEXT_REMOVEHIDDEN };
-        
+
     Context(std::vector<std::string> const& names, ///< names of fields to use
             std::vector<int> const& group,         ///< tags for each member of names
             std::vector<int> const& degree,        ///< polynomial degree for each group
@@ -77,7 +77,7 @@ public:
     ndarray::Array<float,2,2> getVigWeight() const;
     std::pair<double, double> getXY() const { return std::pair<double,double>(impl->x, impl->y); }
     float getNorm() const { return impl->norm; }
-    
+
 private:
     Sample(samplestruct *s, bool recentroid, int *vigsize) : impl(s), _recentroid(recentroid),
                                                              _fluxrad(0.0), _vigsize(vigsize) { }
@@ -89,7 +89,7 @@ private:
 };
 
 /************************************************************************************************************/
-    
+
 class Set {
     friend class Psf;
     friend void makeit(std::vector<std::shared_ptr<Field> > &fields,
@@ -163,7 +163,7 @@ public:
     Psf() : impl(0) {}
     explicit Psf(psfstruct *psf) : impl(psf) {}
     ~Psf();
-    
+
     ndarray::Array<float,2,2> getLoc() const;
     ndarray::Array<float,2,2> getResi() const;
 #if 0
@@ -179,7 +179,7 @@ public:
     void clip() {
 	psf_clip(impl);
     }
-    
+
 protected:
     psfstruct *impl;
 };

@@ -16,7 +16,7 @@ Field::Field(std::string const& ident) :
 {
     QCALLOC(impl, fieldstruct, 1);
     impl->next = 0;
-    
+
     strcpy(impl->catname, ident.c_str());
     impl->rcatname = impl->catname;
 #if 0
@@ -36,10 +36,10 @@ Field::Field(std::string const& ident) :
             *pstr = '\0';
         }
     }
-    
+
     strncpy(impl->ident, "??", sizeof(impl->ident) - 1);
 #endif
-    
+
     impl->ndet = 0;
     impl->psf = NULL;
     impl->wcs = NULL;
@@ -56,7 +56,7 @@ Field::~Field()
     field_end(impl);
     impl = NULL;
 }
-        
+
 /************************************************************************************************************/
 
 void
@@ -69,7 +69,7 @@ Field::_finalize(bool force)
 }
 
 /************************************************************************************************************/
-        
+
 std::vector<Psf>
 Field::getPsfs() const
 {
@@ -97,7 +97,7 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
      */
     QMALLOC(impl->wcs[impl->next], wcsstruct, 1);
     wcsstruct *wcs = impl->wcs[impl->next];
-    
+
     wcs->naxis = 2;
     wcs->naxisn[0] = naxis1;
     wcs->naxisn[1] = naxis2;
@@ -145,7 +145,7 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
     wcs->wcsmaxradius = maxradius;
 
     impl->ndet += nobj;
-    
+
     ++impl->next;
 }
 

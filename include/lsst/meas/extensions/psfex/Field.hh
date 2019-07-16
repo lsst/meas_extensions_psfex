@@ -40,15 +40,15 @@ public:
          );
     ~Field();
     //
-    void finalize() { _finalize(true); }        
-    
+    void finalize() { _finalize(true); }
+
     void addExt(lsst::afw::geom::SkyWcs const& wcs, int const naxis1, int const naxis2, int const nobj=0);
-    
+
     /// Return the number of extensions
     int getNext() const { return impl->next; }
     /// Return the Psfs
     std::vector<Psf> getPsfs() const;
-    
+
 private:
    fieldstruct* impl;
    mutable std::vector<Psf> _psfs;

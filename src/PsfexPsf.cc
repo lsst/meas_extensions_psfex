@@ -1,9 +1,9 @@
 // -*- LSST-C++ -*-
 
-/* 
+/*
  * LSST Data Management System
  * Copyright 2008, 2009, 2010 LSST Corporation.
- * 
+ *
  * This product includes software developed by the
  * LSST Project (http://www.lsst.org/).
  *
@@ -11,17 +11,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the LSST License Statement and 
- * the GNU General Public License along with this program.  If not, 
+ *
+ * You should have received a copy of the LSST License Statement and
+ * the GNU General Public License along with this program.  If not,
  * see <http://www.lsstcorp.org/LegalNotices/>.
  */
- 
+
 /*!
  * @brief Represent a PSF using the representation from Emmanuel's PSFEX code
  *
@@ -68,7 +68,7 @@ PsfexPsf::PsfexPsf(
                       _size(psf.impl->dim),
                       _comp(psf.impl->npix),
                       _context(psf.impl->poly->ndim)
-                      
+
 {
     _poly = poly_copy(psf.impl->poly);
 
@@ -185,7 +185,7 @@ PsfexPsf::doComputeImage(afw::geom::Point2D const & position,
                          afw::image::Color const & color) const {
     return _doComputeImage(position, color, position);
 }
-    
+
 PTR(afw::detection::Psf::Image)
 PsfexPsf::doComputeKernelImage(afw::geom::Point2D const& position,
                                afw::image::Color const& color) const
@@ -338,7 +338,7 @@ class PsfexPsfSchema2 {
 public:
     PsfexPsfSchema2(int const ndim, int const ngroup, int const ncoeff,
                     int size_size, int comp_size, int context_size) :
-                    
+
         schema(),
         group(schema.addField<table::Array<int> >("group", "Groups (of coefficients?)", ndim)),
         degree(schema.addField<table::Array<int> >("degree", "Degree in each group", ngroup)),
@@ -390,7 +390,7 @@ read(InputArchive const & archive, CatalogVector const & catalogs) const {
         LSST_ARCHIVE_ASSERT(catalogs[0].size() == 1u);
         LSST_ARCHIVE_ASSERT(catalogs[0].getSchema() == keys.schema);
         table::BaseRecord const & record = catalogs[0].front();
-        
+
         // fields in _poly
         ndim = record.get(keys.ndim);
         ngroup = record.get(keys.ngroup);
@@ -483,7 +483,7 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
         PsfexPsfSchema1 const keys;
         afw::table::BaseCatalog cat = handle.makeCatalog(keys.schema);
         PTR(afw::table::BaseRecord) record = cat.addNew();
-        
+
         // Sizes in _poly
         record->set(keys.ndim, _poly->ndim);
         record->set(keys.ngroup, _poly->ngroup);

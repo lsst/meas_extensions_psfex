@@ -79,7 +79,7 @@ RETURN_IMAGE_FIELD(Sample::getVig,       vig,       _vigsize)
 RETURN_IMAGE_FIELD(Sample::getVigResi,   vigresi,   _vigsize)
 RETURN_IMAGE_FIELD(Sample::getVigChi,    vigchi,    _vigsize)
 RETURN_IMAGE_FIELD(Sample::getVigWeight, vigweight, _vigsize)
-        
+
 /************************************************************************************************************/
 
 Set::Set(Context &c) {
@@ -140,13 +140,13 @@ Psf::build(double x, double y,
     pos[0] = x; pos[1] = y;
 
     pos.insert(pos.end(), other.begin(), other.end());
-    
+
     for (unsigned int i = 0; i != pos.size(); ++i) {
         pos[i] = (pos[i] - impl->contextoffset[i])/impl->contextscale[i];
     }
 
     psf_build(impl, &pos[0]);
-}	
+}
 
 RETURN_IMAGE_FIELD(Psf::getLoc,  loc,  impl->size)
 RETURN_IMAGE_FIELD(Psf::getResi, resi, impl->size)
