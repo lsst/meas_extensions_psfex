@@ -24,7 +24,7 @@
 # if !defined(LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H)
 #define LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H 1
 
-#include "lsst/afw/geom/Box.h"
+#include "lsst/geom/Box.h"
 #include "lsst/meas/algorithms/ImagePsf.h"
 #include "lsst/meas/extensions/psfex/psf.hh"
 
@@ -45,7 +45,7 @@ public:
      */
     explicit PsfexPsf(
         lsst::meas::extensions::psfex::Psf const& psf, ///< [in] Psfex PSF model to be wrapped into an LSST Psf
-        lsst::afw::geom::Point2D const & averagePosition=lsst::afw::geom::Point2D()
+        lsst::geom::Point2D const & averagePosition=lsst::geom::Point2D()
                                         ///< [in] Average position of stars used to construct the Psf.
     );
     virtual ~PsfexPsf();
@@ -57,20 +57,20 @@ public:
     virtual PTR(afw::detection::Psf) resized(int width, int height) const;
 
     /// Return average position of stars; used as default position.
-    virtual lsst::afw::geom::Point2D getAveragePosition() const { return _averagePosition; }
-    
+    virtual lsst::geom::Point2D getAveragePosition() const { return _averagePosition; }
+
     /// Return the PSF's basis functions as a spatially-invariant LinearCombinationKernel
     /// with unit weights
     PTR(lsst::afw::math::LinearCombinationKernel const)
-    getKernel(lsst::afw::geom::Point2D =
-              lsst::afw::geom::Point2D(std::numeric_limits<double>::quiet_NaN())) const;
+    getKernel(lsst::geom::Point2D =
+              lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN())) const;
 
     /// Is this object persistable?
     virtual bool isPersistable() const noexcept override { return true; }
-    
+
     void write(lsst::afw::table::io::OutputArchiveHandle & handle) const;
 private:
-    lsst::afw::geom::Point2D _averagePosition;
+    lsst::geom::Point2D _averagePosition;
     // Here are the unpacked fields from the psfex psf struct
     struct poly *_poly;                 // Polynom describing the PSF variations
     float _pixstep;                     // Mask oversampling (pixel)
@@ -84,35 +84,35 @@ private:
 
     /// Compute an image of the Psf at the specified position/colour, at pixel position in the output image
     virtual PTR(lsst::afw::detection::Psf::Image) _doComputeImage(
-        lsst::afw::geom::Point2D const & position, ///< position within the chip
+        lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color,      ///< colour of object
-        lsst::afw::geom::Point2D const& center     ///< position of center of image in the output image
+        lsst::geom::Point2D const& center     ///< position of center of image in the output image
     ) const;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel (0.0, 0.0) in the output image
     virtual PTR(lsst::afw::detection::Psf::Image) doComputeKernelImage(
-        lsst::afw::geom::Point2D const & position, ///< position within the chip
+        lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
     ) const;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel position in the output image
     virtual PTR(lsst::afw::detection::Psf::Image) doComputeImage(
-        lsst::afw::geom::Point2D const & position, ///< position within the chip
+        lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
     ) const;
 
     /// Compute the bbox of the kernel image at the specified position/color
-    virtual lsst::afw::geom::Box2I doComputeBBox(
-        lsst::afw::geom::Point2D const & position,
+    virtual lsst::geom::Box2I doComputeBBox(
+        lsst::geom::Point2D const & position,
         lsst::afw::image::Color const & color
     ) const;
 
     /// Compute bbox of either image or kernel image, depending on provided center
     /// Does not depend on color, which is left out of parameter list to permit reuse
     /// by doComputeBBox, doCompute[Kernel]Image, and getKernel.
-    lsst::afw::geom::Box2I _doComputeBBox(
-        lsst::afw::geom::Point2D const & position, ///< position within the chip
-        lsst::afw::geom::Point2D const & center ///< center of output image. Use (0., 0.) for a kernel image
+    lsst::geom::Box2I _doComputeBBox(
+        lsst::geom::Point2D const & position, ///< position within the chip
+        lsst::geom::Point2D const & center ///< center of output image. Use (0., 0.) for a kernel image
     ) const;
 
     /// Name used in table persistence

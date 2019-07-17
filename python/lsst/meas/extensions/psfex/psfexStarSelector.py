@@ -174,12 +174,12 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
         if k == 0:
             axes.plot(axes.get_xlim(), (mean, mean,), "k%s" % ltype)
 
-        l = (clusterId == k)
-        axes.plot(mag[l], width[l], marker, markersize=markersize, markeredgewidth=markeredgewidth,
+        ll = (clusterId == k)
+        axes.plot(mag[ll], width[ll], marker, markersize=markersize, markeredgewidth=markeredgewidth,
                   color=colors[k%len(colors)])
 
-    l = (clusterId == -1)
-    axes.plot(mag[l], width[l], marker, markersize=markersize, markeredgewidth=markeredgewidth,
+    ll = (clusterId == -1)
+    axes.plot(mag[ll], width[ll], marker, markersize=markersize, markeredgewidth=markeredgewidth,
               color='k')
 
     if newFig:
@@ -198,7 +198,7 @@ def plot(mag, width, centers, clusterId, marker="o", markersize=2, markeredgewid
 
 @pexConfig.registerConfigurable("psfex", sourceSelectorRegistry)
 class PsfexStarSelectorTask(BaseSourceSelectorTask):
-    """A star selector whose algorithm is not yet documented.
+    r"""A star selector whose algorithm is not yet documented.
 
     @anchor PsfexStarSelectorTask_
 
@@ -257,7 +257,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         lsstDebug.Info = DebugInfo
     @endcode
     into your `debug.py` file and run your task with the `--debug` flag.
-    """
+    """  # noqa: W505
     ConfigClass = PsfexStarSelectorConfig
     usesMatches = False  # selectStars does not use its matches argument
 
@@ -335,7 +335,7 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         fwhmMode, fwhmMin, fwhmMax = compute_fwhmrange(fwhm[good], maxFwhmVariability, minFwhm, maxFwhm,
                                                        plot=dict(fwhmHistogram=plotFwhmHistogram))
 
-        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+        # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
         #
         # Here's select_candidates
         #
@@ -374,7 +374,8 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
 
         # -- ... and check the integrity of the sample
         if maxbadflag:
-            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])
+            raise RuntimeError("vignet variable not defined. Code is broken.")
+            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])  # noqa: F821
             dbad = nbad > maxbad
             # set.setBadPix(int(sum(dbad)))
             bad = np.logical_or(bad, dbad)

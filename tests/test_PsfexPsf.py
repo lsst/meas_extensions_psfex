@@ -28,6 +28,7 @@ import lsst.utils.tests
 import lsst.afw.image as afwImage
 import lsst.afw.detection as afwDetection
 import lsst.afw.geom as afwGeom
+import lsst.geom as geom
 import lsst.afw.math as afwMath
 import lsst.afw.table as afwTable
 import lsst.daf.base as dafBase
@@ -84,7 +85,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         width, height = 110, 301
 
-        self.mi = afwImage.MaskedImageF(afwGeom.ExtentI(width, height))
+        self.mi = afwImage.MaskedImageF(geom.ExtentI(width, height))
         self.mi.set(0)
         sd = 3                          # standard deviation of image
         self.mi.getVariance().set(sd*sd)
@@ -100,13 +101,14 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                                        1.5*sigma1, 1, 0.1))
         cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
         cdMatrix.shape = (2, 2)
-        wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
-                                 crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
+        wcs = afwGeom.makeSkyWcs(crpix=geom.PointD(0, 0),
+                                 crval=geom.SpherePoint(0.0, 0.0, geom.degrees),
                                  cdMatrix=cdMatrix)
         self.exposure.setWcs(wcs)
 
         #
-        # Make a kernel with the exactly correct basis functions.  Useful for debugging
+        # Make a kernel with the exactly correct basis functions.
+        # Useful for debugging
         #
         basisKernelList = []
         for sigma in (sigma1, sigma2):
@@ -170,12 +172,12 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                     if ix < 0 or ix >= self.mi.getWidth():
                         continue
 
-                    I = I0*psfVal(ix, iy, x + dx, y + dy, sigma1, sigma2, b)
-                    Isample = rand.poisson(I) if addNoise else I
+                    II = I0*psfVal(ix, iy, x + dx, y + dy, sigma1, sigma2, b)
+                    Isample = rand.poisson(II) if addNoise else II
                     self.mi.image[ix, iy, afwImage.LOCAL] += Isample
-                    self.mi.variance[ix, iy, afwImage.LOCAL] += I
+                    self.mi.variance[ix, iy, afwImage.LOCAL] += II
 
-        bbox = afwGeom.BoxI(afwGeom.PointI(0, 0), afwGeom.ExtentI(width, height))
+        bbox = geom.BoxI(geom.PointI(0, 0), geom.ExtentI(width, height))
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
 
         self.footprintSet = afwDetection.FootprintSet(self.mi, afwDetection.Threshold(100), "DETECTED")
@@ -233,10 +235,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         for s in catalog:
             xc, yc = s.getX(), s.getY()
             bbox = subtracted.getBBox(afwImage.PARENT)
-            if bbox.contains(afwGeom.PointI(int(xc), int(yc))):
+            if bbox.contains(geom.PointI(int(xc), int(yc))):
                 try:
                     measAlg.subtractPsf(psf, subtracted, xc, yc)
-                except:
+                except Exception:
                     pass
         chi = subtracted.Factory(subtracted, True)
         var = subtracted.getVariance()
@@ -247,7 +249,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             afwDisplay.Display(frame=1).mtv(subtracted, title="Subtracted")
             afwDisplay.Display(frame=2).mtv(chi, title="Chi")
             xc, yc = exposure.getWidth()//2, exposure.getHeight()//2
-            afwDisplay.Display(frame=3).mtv(psf.computeImage(afwGeom.Point2D(xc, yc)),
+            afwDisplay.Display(frame=3).mtv(psf.computeImage(geom.Point2D(xc, yc)),
                                             title="Psf %.1f,%.1f" % (xc, yc))
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
@@ -283,6 +285,7 @@ class TestMemory(lsst.utils.tests.MemoryTestCase):
 
 def setup_module(module):
     lsst.utils.tests.init()
+
 
 if __name__ == "__main__":
     lsst.utils.tests.init()

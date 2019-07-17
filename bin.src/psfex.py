@@ -4,7 +4,6 @@ import os
 import sys
 from lsst.meas.extensions.psfex import psfex, readPrefs, makeitLsst, makeit, showPsf, dafBase
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Wrapper for Point Spread Function Extractor (PSFEX)")

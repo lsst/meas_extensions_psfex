@@ -87,7 +87,7 @@ public:
    int   getPhotfluxerrNum() const { return prefs.photfluxerr_num; }
    double getProfAccuracy() const { return prefs.prof_accuracy; }
    int   getVerboseType() const { return prefs.verbose_type; }
-   
+
    std::vector<std::string> const& getContextName() const { return _context_names; }
    std::vector<int> const& getContextGroup() const { return _context_groups; }
    std::vector<int> const& getGroupDeg() const { return _group_degs; }

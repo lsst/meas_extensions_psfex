@@ -9,6 +9,7 @@ try:
 except ImportError:
     plt = None
 
+import lsst.geom as geom
 import lsst.afw.geom as afwGeom
 from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
@@ -182,8 +183,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 
                 n = prefs.getPhotfluxNum() - 1
                 if n:
-                    assert False, "Code to handle e.g. FLUX_APER(3) isn't yet converted"
-                    if key.naxis == 1 and n < key.naxisn[0]:
+                    raise RuntimeError("Code to handle e.g. FLUX_APER(3) isn't yet converted")
+                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
                         flux += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" %
@@ -191,7 +192,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
 
                 n = prefs.getPhotfluxerrNum() - 1
                 if n:
-                    if key.naxis == 1 and n < key.naxisn[0]:
+                    raise RuntimeError("Code for getPhotfluxerrNum is broken")
+                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
                         fluxerr += n
                     else:
                         print("Not enough apertures for %s in catalogue %s: using first aperture" %
@@ -238,7 +240,8 @@ def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, contex
     # Insert the good candidates into the set
     #
     if not vignet.dtype.isnative:
-        # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
+        # without the swap setVig fails with
+        # "ValueError: 'unaligned arrays cannot be converted to C++'"
         vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
@@ -395,7 +398,7 @@ except NameError:
 
 
 def setDataType(t):
-    _dataType = _dataTypes[t]
+    _dataType = _dataTypes[t]  # noqa: F841
 
 
 def getFlags():
@@ -598,10 +601,10 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
             bbox = mos.getBBox(i)
             mosx = bbox.getMinX() + 0.5*(bbox.getWidth() - 1)
             mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
-            pos.append([afwGeom.PointD(mosx, mosy), wcs.pixelToSky(afwGeom.PointD(x, y))])
+            pos.append([geom.PointD(mosx, mosy), wcs.pixelToSky(geom.PointD(x, y))])
     else:
-        pos.append([afwGeom.PointD(0, 0), wcs.pixelToSky(afwGeom.PointD(0, 0))])
-        pos.append([afwGeom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(afwGeom.PointD(naxis1, naxis2))])
+        pos.append([geom.PointD(0, 0), wcs.pixelToSky(geom.PointD(0, 0))])
+        pos.append([geom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(geom.PointD(naxis1, naxis2))])
 
     CD = []
     for i in range(2):
@@ -716,7 +719,8 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
         wcss = []
         wcssList.append(wcss)
         with fits.open(cat):
-            # Hack: I want the WCS so I'll guess where the calexp is to be found
+            # Hack: I want the WCS so I'll guess where the calexp is to be
+            # found
             calexpFile = guessCalexp(cat)
             md = readMetadata(calexpFile)
             wcs = afwGeom.makeSkyWcs(md)
@@ -724,8 +728,8 @@ def makeitLsst(prefs, context, saveWcs=False, plot=dict()):
             if not wcs:
                 cdMatrix = np.array([1.0, 0.0, 0.0, 1.0])
                 cdMatrix.shape = (2, 2)
-                wcs = afwGeom.makeSkyWcs(crpix=afwGeom.PointD(0, 0),
-                                         crval=afwGeom.SpherePoint(0.0, 0.0, afwGeom.degrees),
+                wcs = afwGeom.makeSkyWcs(crpix=geom.PointD(0, 0),
+                                         crval=geom.SpherePoint(0.0, 0.0, geom.degrees),
                                          cdMatrix=cdMatrix)
 
             naxis1, naxis2 = md.getScalar("NAXIS1"), md.getScalar("NAXIS2")
@@ -851,7 +855,8 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
     # Insert the good candidates into the set
     #
     if not vignet.dtype.isnative:
-        # without the swap setVig fails with "ValueError: 'unaligned arrays cannot be converted to C++'"
+        # without the swap setVig fails with
+        # "ValueError: 'unaligned arrays cannot be converted to C++'"
         vignet = vignet.byteswap()
 
     for i in np.where(good)[0]:
@@ -1006,8 +1011,8 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
 
 def makeit(prefs, context, saveWcs=False, plot=dict()):
-    """This is the python wrapper for the original psfex that reads SExtractor outputs
-    """
+    """This is the python wrapper for the original psfex that reads SExtractor
+    outputs"""
     # Create an array of PSFs (one PSF for each extension)
     if prefs.getVerboseType() != prefs.QUIET:
         print("----- %d input catalogues:" % prefs.getNcat())

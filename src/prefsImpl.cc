@@ -27,7 +27,7 @@ Prefs::Prefs(std::string const& filename, lsst::daf::base::PropertySet const* va
             paramvalues[i] = values->getAsString(name);
             argval[i] = const_cast<char *>(paramvalues[i].c_str());
         }
-    
+
         readprefs(cfilename, &argkey[0], &argval[0], narg);
     }
 

@@ -124,7 +124,7 @@ makeit(std::vector<std::shared_ptr<Field> > &fields_,
     if (context->npc) {
         context_end(fullcontext);
     }
-    context_end(context);   
+    context_end(context);
 }
 
 }}}}

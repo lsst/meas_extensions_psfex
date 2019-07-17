@@ -1,9 +1,9 @@
 // -*- LSST-C++ -*-
 
-/* 
+/*
  * LSST Data Management System
  * Copyright 2008, 2009, 2010 LSST Corporation.
- * 
+ *
  * This product includes software developed by the
  * LSST Project (http://www.lsst.org/).
  *
@@ -11,17 +11,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the LSST License Statement and 
- * the GNU General Public License along with this program.  If not, 
+ *
+ * You should have received a copy of the LSST License Statement and
+ * the GNU General Public License along with this program.  If not,
  * see <http://www.lsstcorp.org/LegalNotices/>.
  */
- 
+
 /*!
  * @brief Represent a PSF using the representation from Emmanuel's PSFEX code
  *
@@ -63,12 +63,12 @@ namespace afw = lsst::afw;
 
 PsfexPsf::PsfexPsf(
     lsst::meas::extensions::psfex::Psf const& psf,
-    afw::geom::Point2D const & averagePosition
+    geom::Point2D const & averagePosition
                   ) : ImagePsf(), _averagePosition(averagePosition),
                       _size(psf.impl->dim),
                       _comp(psf.impl->npix),
                       _context(psf.impl->poly->ndim)
-                      
+
 {
     _poly = poly_copy(psf.impl->poly);
 
@@ -85,7 +85,7 @@ PsfexPsf::PsfexPsf(
 }
 
     PsfexPsf::PsfexPsf() : ImagePsf(),
-                           _averagePosition(afw::geom::Point2I(0, 0)),
+                           _averagePosition(geom::Point2I(0, 0)),
                            _poly(0),
                            _pixstep(0.0),
                            _size(),
@@ -111,7 +111,7 @@ PsfexPsf::resized(int width, int height) const {
 }
 
 PTR(afw::math::LinearCombinationKernel const)
-PsfexPsf::getKernel(afw::geom::Point2D position) const
+PsfexPsf::getKernel(geom::Point2D position) const
 {
     double pos[MAXCONTEXT];
     int const ndim = _context.size();
@@ -144,7 +144,7 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
     float const vigstep = 1/_pixstep;
     float const dx = 0.0, dy = 0.0;
 
-    afw::geom::Box2I bbox = _doComputeBBox(position, afw::geom::Point2D(0, 0));
+    geom::Box2I bbox = _doComputeBBox(position, geom::Point2D(0, 0));
     afw::detection::Psf::Image kim(bbox); // a basis function image, to be copied into a FixedKernel
 
     int sampleW = bbox.getWidth();
@@ -181,25 +181,25 @@ PsfexPsf::getKernel(afw::geom::Point2D position) const
 }
 
 PTR(afw::detection::Psf::Image)
-PsfexPsf::doComputeImage(afw::geom::Point2D const & position,
+PsfexPsf::doComputeImage(geom::Point2D const & position,
                          afw::image::Color const & color) const {
     return _doComputeImage(position, color, position);
 }
-    
+
 PTR(afw::detection::Psf::Image)
-PsfexPsf::doComputeKernelImage(afw::geom::Point2D const& position,
+PsfexPsf::doComputeKernelImage(geom::Point2D const& position,
                                afw::image::Color const& color) const
 {
-    return _doComputeImage(position, color, afw::geom::Point2D(0, 0));
+    return _doComputeImage(position, color, geom::Point2D(0, 0));
 }
 
-afw::geom::Box2I PsfexPsf::doComputeBBox(afw::geom::Point2D const & position,
+geom::Box2I PsfexPsf::doComputeBBox(geom::Point2D const & position,
                                afw::image::Color const & color) const {
-    return _doComputeBBox(position, afw::geom::Point2D(0, 0));
+    return _doComputeBBox(position, geom::Point2D(0, 0));
 }
 
-afw::geom::Box2I PsfexPsf::_doComputeBBox(afw::geom::Point2D const & position,
-                               afw::geom::Point2D const & center) const {
+geom::Box2I PsfexPsf::_doComputeBBox(geom::Point2D const & position,
+                               geom::Point2D const & center) const {
     int const w = _size[0], h = _size[1];
     int sampleW = static_cast<int>(w*_pixstep);
     int sampleH = static_cast<int>(h*_pixstep);
@@ -215,16 +215,16 @@ afw::geom::Box2I PsfexPsf::_doComputeBBox(afw::geom::Point2D const & position,
     if (dy > 0.5) dy -= 1.0;
     // N.b. center[0] - dx == (int)center[x] until we reduced dx to (-0.5, 0.5].
     // The + 0.5 is to handle floating point imprecision in this calculation
-    afw::geom::Box2I bbox(afw::geom::Point2I(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,
+    geom::Box2I bbox(geom::Point2I(static_cast<int>(center[0] - dx + 0.5) - sampleW/2,
                                              static_cast<int>(center[1] - dy + 0.5) - sampleH/2),
-                          afw::geom::Extent2I(sampleW, sampleH));
+                          geom::Extent2I(sampleW, sampleH));
     return bbox;
 }
 
 PTR(afw::detection::Psf::Image)
-PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
+PsfexPsf::_doComputeImage(geom::Point2D const& position,
                           afw::image::Color const& color,
-                          afw::geom::Point2D const& center
+                          geom::Point2D const& center
         ) const
 {
     double pos[MAXCONTEXT];
@@ -269,7 +269,7 @@ PsfexPsf::_doComputeImage(afw::geom::Point2D const& position,
     //
     // And copy it into place
     //
-    afw::geom::Box2I bbox = _doComputeBBox(position, center);
+    geom::Box2I bbox = _doComputeBBox(position, center);
     PTR(afw::detection::Psf::Image) im = std::make_shared<afw::detection::Psf::Image>(bbox);
 
     int sampleW = bbox.getWidth();
@@ -338,7 +338,7 @@ class PsfexPsfSchema2 {
 public:
     PsfexPsfSchema2(int const ndim, int const ngroup, int const ncoeff,
                     int size_size, int comp_size, int context_size) :
-                    
+
         schema(),
         group(schema.addField<table::Array<int> >("group", "Groups (of coefficients?)", ndim)),
         degree(schema.addField<table::Array<int> >("degree", "Degree in each group", ngroup)),
@@ -390,7 +390,7 @@ read(InputArchive const & archive, CatalogVector const & catalogs) const {
         LSST_ARCHIVE_ASSERT(catalogs[0].size() == 1u);
         LSST_ARCHIVE_ASSERT(catalogs[0].getSchema() == keys.schema);
         table::BaseRecord const & record = catalogs[0].front();
-        
+
         // fields in _poly
         ndim = record.get(keys.ndim);
         ngroup = record.get(keys.ngroup);
@@ -483,7 +483,7 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
         PsfexPsfSchema1 const keys;
         afw::table::BaseCatalog cat = handle.makeCatalog(keys.schema);
         PTR(afw::table::BaseRecord) record = cat.addNew();
-        
+
         // Sizes in _poly
         record->set(keys.ndim, _poly->ndim);
         record->set(keys.ngroup, _poly->ngroup);
