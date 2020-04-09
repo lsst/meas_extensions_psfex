@@ -58,8 +58,8 @@ def psfVal(ix, iy, x, y, sigma1, sigma2, b):
     c, s = np.cos(theta), np.sin(theta)
     u, v = c*dx - s*dy, s*dx + c*dy
 
-    return (math.exp(-0.5*(u**2 + (v*ab)**2)/sigma1**2) +
-            b*math.exp(-0.5*(u**2 + (v*ab)**2)/sigma2**2))/(1 + b)
+    return (math.exp(-0.5*(u**2 + (v*ab)**2)/sigma1**2)
+            + b*math.exp(-0.5*(u**2 + (v*ab)**2)/sigma2**2))/(1 + b)
 
 
 class SpatialModelPsfTestCase(unittest.TestCase):
