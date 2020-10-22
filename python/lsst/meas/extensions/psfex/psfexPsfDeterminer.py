@@ -375,16 +375,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         psf = psfex.PsfexPsf(psfs[0], geom.Point2D(avgX, avgY))
 
-        if False and (displayResiduals or displayPsfMosaic):
-            ext = 0
-            frame = 1
-            diagnostics = True
-            catDir = "."
-            title = "psfexPsfDeterminer"
-            psfex.psfex.showPsf(psfs, set, ext,
-                                [(exposure.getWcs(), exposure.getWidth(), exposure.getHeight())],
-                                nspot=3, trim=5, frame=frame, diagnostics=diagnostics, outDir=catDir,
-                                title=title)
         #
         # Display code for debugging
         #

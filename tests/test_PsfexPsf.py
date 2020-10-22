@@ -253,8 +253,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                             title="Psf %.1f,%.1f" % (xc, yc))
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
-        if False:
-            print(chi_min, chi_max)
 
         if chi_lim > 0:
             self.assertGreater(chi_min, -chi_lim)

@@ -596,15 +596,8 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
     # Figure out the WCS for the mosaic
     #
     pos = []
-    if False:
-        for x, y, i in zip((xpos[0], xpos[-1]), (ypos[0], ypos[-1]), (0, mos.nImage - 1)):
-            bbox = mos.getBBox(i)
-            mosx = bbox.getMinX() + 0.5*(bbox.getWidth() - 1)
-            mosy = bbox.getMinY() + 0.5*(bbox.getHeight() - 1)
-            pos.append([geom.PointD(mosx, mosy), wcs.pixelToSky(geom.PointD(x, y))])
-    else:
-        pos.append([geom.PointD(0, 0), wcs.pixelToSky(geom.PointD(0, 0))])
-        pos.append([geom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(geom.PointD(naxis1, naxis2))])
+    pos.append([geom.PointD(0, 0), wcs.pixelToSky(geom.PointD(0, 0))])
+    pos.append([geom.PointD(*mosaic.getDimensions()), wcs.pixelToSky(geom.PointD(naxis1, naxis2))])
 
     CD = []
     for i in range(2):
@@ -865,11 +858,6 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
         sample.setExtindex(ext)
 
         sample.setVig(vignet[i])
-        if False:
-            pstamp = afwImage.ImageF(*vignet[i].shape)
-            pstamp.getArray()[:] = sample.getVig()
-            afwDisplay.Display().mtv(pstamp)
-
         sample.setNorm(float(flux[i]))
         sample.setBacknoise2(backnoise2)
         sample.setGain(gain)
