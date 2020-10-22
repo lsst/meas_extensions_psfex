@@ -35,11 +35,6 @@ import lsst.meas.extensions.psfex as psfex
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
-    __nEigenComponents = pexConfig.Field(
-        doc="number of eigen components for PSF kernel creation",
-        dtype=int,
-        default=4,
-    )
     spatialOrder = pexConfig.Field(
         doc="specify spatial order for PSF kernel creation",
         dtype=int,
@@ -59,11 +54,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         default=sizeCellX.default,
         #        minValue = 10,
         check=lambda x: x >= 10,
-    )
-    __nStarPerCell = pexConfig.Field(
-        doc="number of stars per psf cell for PSF kernel creation",
-        dtype=int,
-        default=3,
     )
     samplingSize = pexConfig.Field(
         doc="Resolution of the internal PSF model relative to the pixel size; "
@@ -88,26 +78,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         },
         default='PIXEL',
         optional=False,
-    )
-    __borderWidth = pexConfig.Field(
-        doc="Number of pixels to ignore around the edge of PSF candidate postage stamps",
-        dtype=int,
-        default=0,
-    )
-    __nStarPerCellSpatialFit = pexConfig.Field(
-        doc="number of stars per psf Cell for spatial fitting",
-        dtype=int,
-        default=5,
-    )
-    __constantWeight = pexConfig.Field(
-        doc="Should each PSF candidate be given the same weight, independent of magnitude?",
-        dtype=bool,
-        default=True,
-    )
-    __nIterForPsf = pexConfig.Field(
-        doc="number of iterations of PSF candidate star list",
-        dtype=int,
-        default=3,
     )
     tolerance = pexConfig.Field(
         doc="tolerance of spatial fitting",
