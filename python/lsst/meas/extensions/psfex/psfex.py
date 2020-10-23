@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 
 import numpy as np
 from astropy.io import fits
@@ -15,42 +14,9 @@ from lsst.afw.fits import readMetadata
 import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
 import lsst.afw.display as afwDisplay
-from lsst.daf.base import PropertySet
 from . import psfexLib
 
 afwDisplay.setDefaultMaskTransparency(75)
-
-
-def splitFitsCard(line):
-    """Split a FITS header, returning (key, value).
-
-    Parameters
-    ----------
-    line: `string`
-        A string from a FITS header.
-
-    Returns
-    -------
-    key: `string`
-        The header key.
-    value: `string`
-        The header value.
-    """
-
-    try:
-        k, v = re.search(r"(\S+)\s*=\s*'?((?:\S+|'))", line).groups()
-    except AttributeError:
-        raise
-
-    try:
-        v = int(v)
-    except ValueError:
-        try:
-            v = float(v)
-        except ValueError:
-            pass
-
-    return k, v
 
 
 def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)):
@@ -118,178 +84,6 @@ def compute_fwhmrange(fwhm, maxvar, minin, maxin, plot=dict(fwhmHistogram=False)
         input("Continue? ")
 
     return fmin, minout, maxout
-
-
-def read_samples(prefs, set, filename, frmin, frmax, ext, next, catindex, context, pcval,
-                 plot=dict(showFlags=False, showRejection=False)):
-    # allocate a new set iff set is None
-    if not set:
-        set = psfexLib.Set(context)
-
-    cmin, cmax = None, None
-    if set.getNcontext():
-        cmin = np.empty(set.getNcontext())
-        cmax = np.empty(set.getNcontext())
-        for i in range(set.getNcontext()):
-            if set.getNsample():
-                cmin[i] = set.getContextOffset(i) - set.getContextScale(i)/2.0
-                cmax[i] = cmin[i] + set.getContextScale(i)
-            else:
-                cmin[i] = psfexLib.BIG
-                cmax[i] = -psfexLib.BIG
-    #
-    # Read data
-    #
-    with fits.open(filename) as cat:
-        extCtr = -1
-        for tab in cat:
-            if tab.name == "LDAC_IMHEAD":
-                extCtr += 1
-
-            if extCtr < ext:
-                continue
-            elif extCtr > ext:
-                break
-
-            if tab.name == "PRIMARY":
-                pass
-            elif tab.name == "LDAC_IMHEAD":
-                hdr = tab.data[0][0]    # the fits header from the original fits image
-                foundCards = 0          # how many of our desired cards have we found?
-
-                for line in hdr:
-                    try:
-                        k, v = splitFitsCard(line)
-                    except AttributeError:
-                        continue
-
-                    if k == "SEXBKDEV":
-                        backnoise2 = v**2
-                        foundCards += 1
-                    elif k == "SEXGAIN":
-                        gain = v
-                        foundCards += 1
-
-                    if foundCards == 2:
-                        break
-            elif tab.name == "LDAC_OBJECTS":
-                xm = tab.data[prefs.getCenterKey(0)]
-                ym = tab.data[prefs.getCenterKey(1)]
-                fluxrad = tab.data["FLUX_RADIUS"]
-                flux = tab.data[prefs.getPhotfluxRkey()]
-                fluxerr = tab.data[prefs.getPhotfluxerrRkey()]
-                elong = tab.data["ELONGATION"]
-                flags = tab.data["FLAGS"]
-
-                n = prefs.getPhotfluxNum() - 1
-                if n:
-                    raise RuntimeError("Code to handle e.g. FLUX_APER(3) isn't yet converted")
-                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
-                        flux += n
-                    else:
-                        print("Not enough apertures for %s in catalogue %s: using first aperture" %
-                              (prefs.getPhotfluxRkey(), filename), file=sys.stderr)
-
-                n = prefs.getPhotfluxerrNum() - 1
-                if n:
-                    raise RuntimeError("Code for getPhotfluxerrNum is broken")
-                    if key.naxis == 1 and n < key.naxisn[0]:  # noqa: F821
-                        fluxerr += n
-                    else:
-                        print("Not enough apertures for %s in catalogue %s: using first aperture" %
-                              (prefs.getPhotfluxerrRkey(), filename), file=sys.stderr)
-                #
-                # Now the VIGNET data
-                #
-                vignet = tab.data["VIGNET"]
-
-                try:
-                    vigw, vigh = vignet[0].shape
-                except ValueError:
-                    raise RuntimeError("*Error*: VIGNET should be a 2D vector; saw %s" % str(vignet[0].shape))
-
-                if set.empty():
-                    set.setVigSize(vigw, vigh)
-
-                # Try to load the set of context keys
-                pc = 0
-                contextvalp = []
-                for i, key in enumerate(context.getName()):
-                    if context.getPcflag(i):
-                        contextvalp.append(pcval[pc])
-                        pc += 1
-                    elif key[0] == ':':
-                        try:
-                            contextvalp.append(tab.header[key[1:]])
-                        except KeyError:
-                            raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
-                                               (key[1:], filename))
-                    else:
-                        try:
-                            contextvalp.append(tab.data[key])
-                        except KeyError:
-                            raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
-                                               (key, filename))
-                        set.setContextname(i, key)
-
-    # Now examine each vector of the shipment
-    good = select_candidates(set, prefs, frmin, frmax,
-                             flags, flux, fluxerr, fluxrad, elong, vignet,
-                             plot=plot, title="%s[%d]" % (filename, ext + 1))
-    #
-    # Insert the good candidates into the set
-    #
-    if not vignet.dtype.isnative:
-        # without the swap setVig fails with
-        # "ValueError: 'unaligned arrays cannot be converted to C++'"
-        vignet = vignet.byteswap()
-
-    for i in np.where(good)[0]:
-        sample = set.newSample()
-        sample.setCatindex(catindex)
-        sample.setExtindex(ext)
-
-        sample.setVig(vignet[i])
-
-        sample.setNorm(float(flux[i]))
-        sample.setBacknoise2(backnoise2)
-        sample.setGain(gain)
-        sample.setX(float(xm[i]))
-        sample.setY(float(ym[i]))
-        sample.setFluxrad(float(fluxrad[i]))
-
-        for j in range(set.getNcontext()):
-            sample.setContext(j, float(contextvalp[j][i]))
-
-        set.finiSample(sample, prefs.getProfAccuracy())
-
-    # ---- Update min and max
-    for j in range(set.getNcontext()):
-        cmin[j] = contextvalp[j][good].min()
-        cmax[j] = contextvalp[j][good].max()
-
-    # Update the scaling
-    if set.getNsample():
-        for i in range(set.getNcontext()):
-            set.setContextScale(i, cmax[i] - cmin[i])
-            set.setContextOffset(i, (cmin[i] + cmax[i])/2.0)
-
-    # Don't waste memory!
-    set.trimMemory()
-
-    return set
-
-
-def getSexFlags(*args):
-    return {1: "flux blended",
-            2: "blended",
-            4: "saturated",
-            8: "edge",
-            16: "bad aperture",
-            32: "bad isophotal",
-            64: "memory error (deblend)",
-            128: "memory error (extract)",
-            }
 
 
 def select_candidates(set, prefs, frmin, frmax,
@@ -380,168 +174,6 @@ def select_candidates(set, prefs, frmin, frmax,
         input("Continue? ")
 
     return good
-
-
-try:
-    _dataType
-except NameError:
-    class _SExtractor():
-        pass
-
-    class _LSST():
-        pass
-
-    _dataTypes = dict(LSST=_LSST,
-                      SExtractor=_SExtractor
-                      )
-    _dataType = _SExtractor
-
-
-def setDataType(t):
-    _dataType = _dataTypes[t]  # noqa: F841
-
-
-def getFlags():
-    if _dataType == _LSST:
-        return getLsstFlags(None)
-    else:
-        return getSexFlags(None)
-
-
-def load_samples(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, plot=dict()):
-    minsn = prefs.getMinsn()
-    maxelong = (prefs.getMaxellip() + 1.0)/(1.0 - prefs.getMaxellip()) if prefs.getMaxellip() < 1.0 else 100
-    min = prefs.getFwhmrange()[0]
-    max = prefs.getFwhmrange()[1]
-
-    filenames = prefs.getCatalogs()
-
-    ncat = len(filenames)
-    fwhmmin = np.empty(ncat)
-    fwhmmax = np.empty(ncat)
-
-    if not prefs.getAutoselectFlag():
-        fwhmmin = np.zeros(ncat) + prefs.getFwhmrange()[0]
-        fwhmmax = np.zeros(ncat) + prefs.getFwhmrange()[1]
-        fwhmmode = (fwhmmin + fwhmmax)/2.0
-    else:
-        fwhms = {}
-
-        # -- Try to estimate the most appropriate Half-light Radius range
-        # -- Get the Half-light radii
-        nobj = 0
-        for i, fileName in enumerate(filenames):
-            fwhms[i] = []
-
-            if prefs.getVerboseType() != prefs.QUIET:
-                print("Examining Catalog #%d" % (i+1))
-
-            # ---- Read input catalog
-            backnoises = []
-            with fits.open(fileName) as cat:
-                extCtr = -1
-                for tab in cat:
-                    if tab.name == "LDAC_IMHEAD":
-                        extCtr += 1
-
-                    if extCtr != ext and ext != prefs.ALL_EXTENSIONS:
-                        if extCtr > ext:
-                            break
-                        continue
-
-                    if tab.name == "PRIMARY":
-                        pass
-                    elif tab.name == "LDAC_IMHEAD":
-                        hdr = tab.data[0][0]    # the fits header from the original fits image
-                        for line in hdr:
-                            try:
-                                k, v = splitFitsCard(line)
-                            except AttributeError:
-                                continue
-
-                            if k == "SEXBKDEV":
-                                if v < 1/psfexLib.BIG:
-                                    v = 1.0
-
-                                backnoises.append(v)
-                                break
-                    elif tab.name == "LDAC_OBJECTS":
-                        # -------- Fill the FWHM array
-                        rmsSize = tab.data["FLUX_RADIUS"]
-                        fmax = tab.data["FLUX_MAX"]
-                        flags = tab.data["FLAGS"]
-                        elong = tab.data["ELONGATION"]
-                        backnoise = backnoises[-1]
-
-                        good = np.logical_and(fmax/backnoise > minsn,
-                                              np.logical_not(flags & prefs.getFlagMask()))
-                        good = np.logical_and(good, elong < maxelong)
-                        fwhm = 2.0*rmsSize
-                        good = np.logical_and(good, fwhm >= min)
-                        good = np.logical_and(good, fwhm < max)
-                        fwhms[i] = fwhm[good]
-
-        if prefs.getVarType() == prefs.VAR_NONE:
-            if nobj:
-                fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
-                i = 0
-                for l in fwhms.values():
-                    fwhms_all[i:len(l)] = l
-                    i += len(l)
-                mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
-                                                   prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
-                                                   plot=plot)
-            else:
-                raise RuntimeError("No source with appropriate FWHM found!!")
-                mode = min = max = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
-
-                fwhmmin = np.zeros(ncat) + min
-                fwhmmax = np.zeros(ncat) + max
-                fwhmmode = np.zeros(ncat) + mode
-        else:
-            fwhmmode = np.empty(ncat)
-            fwhmmin = np.empty(ncat)
-            fwhmmax = np.empty(ncat)
-
-            for i in range(ncat):
-                nobj = len(fwhms[i])
-                if (nobj):
-                    fwhmmode[i], fwhmmin[i], fwhmmax[i] = \
-                        compute_fwhmrange(fwhms[i], prefs.getMaxvar(),
-                                          prefs.getFwhmrange()[0], prefs.getFwhmrange()[1], plot=plot)
-                else:
-                    raise RuntimeError("No source with appropriate FWHM found!!")
-                    fwhmmode[i] = fwhmmin[i] = fwhmmax[i] = 2.35/(1.0 - 1.0/psfexLib.cvar.INTERPFAC)
-
-    # Read the samples
-    mode = psfexLib.BIG               # mode of FWHM distribution
-
-    sets = []
-    for i, fileName in enumerate(filenames):
-        set = None
-        if ext == prefs.ALL_EXTENSIONS:
-            extensions = list(range(len(backnoises)))
-        else:
-            extensions = [ext]
-
-        for e in extensions:
-            set = read_samples(prefs, set, fileName, fwhmmin[i]/2.0, fwhmmax[i]/2.0,
-                               e, next, i, context, context.getPc(i) if context.getNpc() else None, plot=plot)
-
-        if fwhmmode[i] < mode:
-            mode = fwhmmode[i]
-
-        set.setFwhm(mode)
-
-        if prefs.getVerboseType() != prefs.QUIET:
-            if set.getNsample():
-                print("%d samples loaded." % set.getNsample())
-            else:
-                raise RuntimeError("No appropriate source found!!")
-
-        sets.append(set)
-
-    return sets
 
 
 def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
@@ -651,7 +283,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
         mosaic.writeFits(outFile)
 
 
-def getLsstFlags(tab=None):
+def getFlags(tab=None):
     flagKeys = [
         "base_PixelFlags_flag_edge",
         # "base_PixelFlags_flag_interpolated",
@@ -788,7 +420,7 @@ def read_samplesLsst(prefs, set, filename, frmin, frmax, ext, next, catindex, co
 
     flux = tab.get(prefs.getPhotfluxRkey())
     fluxErr = tab.get(prefs.getPhotfluxerrRkey())
-    flags = getLsstFlags(tab)
+    flags = getFlags(tab)
 
     #
     # Now the VIGNET data
@@ -929,7 +561,7 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
             flux = tab.get(prefs.getPhotfluxRkey())
             fluxErr = tab.get(prefs.getPhotfluxerrRkey())
 
-            flags = getLsstFlags(tab)
+            flags = getFlags(tab)
 
             good = np.logical_and(flux/fluxErr > minsn,
                                   np.logical_not(flags & prefs.getFlagMask()))
@@ -996,62 +628,3 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
         sets.append(set)
 
     return sets
-
-
-def makeit(prefs, context, saveWcs=False, plot=dict()):
-    """This is the python wrapper for the original psfex that reads SExtractor
-    outputs"""
-    # Create an array of PSFs (one PSF for each extension)
-    if prefs.getVerboseType() != prefs.QUIET:
-        print("----- %d input catalogues:" % prefs.getNcat())
-
-    if saveWcs:                         # only needed for making plots
-        wcssList = []
-
-    fields = psfexLib.vectorField()
-    for cat in prefs.getCatalogs():
-        field = psfexLib.Field(cat)
-        wcss = []
-        wcssList.append(wcss)
-        with fits.open(cat) as pf:
-            for hdu in pf:
-                if hdu.name == "PRIMARY":
-                    pass
-                elif hdu.name == "LDAC_IMHEAD":
-                    hdr = hdu.data[0][0]    # the fits header from the original fits image
-                    md = PropertySet()
-                    for line in hdr:
-                        try:
-                            md.set(*splitFitsCard(line))
-                        except AttributeError:
-                            continue
-
-                    if not md.exists("CRPIX1"):  # no WCS; try WCSA
-                        for k in md.names():
-                            if re.search(r"A$", k):
-                                md.set(k[:-1], md.getScalar(k))
-                    wcs = afwGeom.makeSkyWcs(md)
-                    naxis1, naxis2 = md.getScalar("NAXIS1"), md.getScalar("NAXIS2")
-                elif hdu.name == "LDAC_OBJECTS":
-                    nobj = len(hdu.data)
-
-                    assert wcs, "LDAC_OBJECTS comes after LDAC_IMHEAD"
-                    field.addExt(wcs, naxis1, naxis2, nobj)
-                    if saveWcs:
-                        wcss.append((wcs, naxis1, naxis2))
-                    wcs = None
-
-        field.finalize()
-        fields.append(field)
-
-    sets = psfexLib.vectorSet()
-    for set in load_samples(prefs, context, plot=plot):
-        sets.append(set)
-
-    psfexLib.makeit(fields, sets)
-
-    ret = [[f.getPsfs() for f in fields], sets]
-    if saveWcs:
-        ret.append(wcssList)
-
-    return ret
