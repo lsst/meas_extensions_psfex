@@ -171,7 +171,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception as e:
-                self.log.debug("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
+                self.log.error("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
                 continue
 
             source = psfCandidate.getSource()
@@ -310,7 +310,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 for j in range(set.getNcontext()):
                     sample.setContext(j, float(contextvalp[j][i]))
             except Exception as e:
-                self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
+                self.log.error("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                 continue
             else:
                 set.finiSample(sample)
