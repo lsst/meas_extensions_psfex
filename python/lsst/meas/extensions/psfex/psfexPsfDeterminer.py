@@ -310,7 +310,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 for j in range(set.getNcontext()):
                     sample.setContext(j, float(contextvalp[j][i]))
             except Exception as e:
-                self.log.error("Exception when processing sample at (%f,%f): %s", xc, yc, e)
+                self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                 continue
             else:
                 set.finiSample(sample)
