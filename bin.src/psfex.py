@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from lsst.meas.extensions.psfex import psfex, readPrefs, makeitLsst, makeit, showPsf, dafBase
+from lsst.meas.extensions.psfex import psfex, makeitLsst, makeit, showPsf, dafBase
 
 
 if __name__ == "__main__":
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     #
     # To work
     #
-    prefs = readPrefs(args.defaultsFile, args_md)
+    prefs = psfex.Prefs(args.defaultsFile, args_md)
     prefs.setCommandLine(argv)
 
     for f in args.catalogs:
