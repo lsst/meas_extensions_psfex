@@ -270,20 +270,20 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         xpos, ypos = [], []
         for i, psfCandidate in enumerate(psfCandidateList):
             source = psfCandidate.getSource()
+
+            # skip sources with bad centroids
             xc, yc = source.getX(), source.getY()
-            try:
-                int(xc), int(yc)
-            except ValueError:
+            if not np.isfinite(xc) or not np.isfinite(yc):
                 continue
-
-            pstamp = psfCandidate.getMaskedImage().clone()
-
+            # skip flagged sources
             if fluxFlagName in source.schema and source.get(fluxFlagName):
                 continue
-
+            # skip nonfinite and negative sources
             flux = source.get(fluxName)
             if flux < 0 or np.isnan(flux):
                 continue
+
+            pstamp = psfCandidate.getMaskedImage().clone()
 
             # From this point, we're configuring the "sample" (PSFEx's version
             # of a PSF candidate).
