@@ -222,10 +222,10 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                                                if False else psfex.Context.KEEPHIDDEN)
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
                                 prefs.getGroupDeg(), principalComponentExclusionFlag)
-        set = psfex.Set(context)
-        set.setVigSize(pixKernelSize, pixKernelSize)
-        set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
-        set.setRecentroid(self.config.recentroid)
+        psfSet = psfex.Set(context)
+        psfSet.setVigSize(pixKernelSize, pixKernelSize)
+        psfSet.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
+        psfSet.setRecentroid(self.config.recentroid)
 
         catindex, ext = 0, 0
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
@@ -255,7 +255,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                                                  for _ in range(nCand)]))
                 except KeyError:
                     raise RuntimeError("*Error*: %s parameter not found" % (key,))
-                set.setContextname(i, key)
+                psfSet.setContextname(i, key)
 
         if display:
             frame = 0
@@ -290,7 +290,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             # Having created the sample, we must proceed to configure it, and
             # then fini (finalize), or it will be malformed.
             try:
-                sample = set.newSample()
+                sample = psfSet.newSample()
                 sample.setCatindex(catindex)
                 sample.setExtindex(ext)
                 sample.setObjindex(i)
@@ -307,13 +307,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 sample.setY(yc)
                 sample.setFluxrad(sizes[i])
 
-                for j in range(set.getNcontext()):
+                for j in range(psfSet.getNcontext()):
                     sample.setContext(j, float(contextvalp[j][i]))
             except Exception as e:
                 self.log.error("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                 continue
             else:
-                set.finiSample(sample)
+                psfSet.finiSample(sample)
 
             xpos.append(xc)  # for QA
             ypos.append(yc)
@@ -322,18 +322,18 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             with disp.Buffering():
                 disp.dot("o", xc, yc, ctype=afwDisplay.CYAN, size=4)
 
-        if set.getNsample() == 0:
+        if psfSet.getNsample() == 0:
             raise RuntimeError("No good PSF candidates to pass to PSFEx")
 
         # ---- Update min and max and then the scaling
-        for i in range(set.getNcontext()):
+        for i in range(psfSet.getNcontext()):
             cmin = contextvalp[i].min()
             cmax = contextvalp[i].max()
-            set.setContextScale(i, cmax - cmin)
-            set.setContextOffset(i, (cmin + cmax)/2.0)
+            psfSet.setContextScale(i, cmax - cmin)
+            psfSet.setContextOffset(i, (cmin + cmax)/2.0)
 
         # Don't waste memory!
-        set.trimMemory()
+        psfSet.trimMemory()
 
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
         #
@@ -341,13 +341,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         #
         fields = []
         field = psfex.Field("Unknown")
-        field.addExt(exposure.getWcs(), exposure.getWidth(), exposure.getHeight(), set.getNsample())
+        field.addExt(exposure.getWcs(), exposure.getWidth(), exposure.getHeight(), psfSet.getNsample())
         field.finalize()
 
         fields.append(field)
 
         sets = []
-        sets.append(set)
+        sets.append(psfSet)
 
         psfex.makeit(fields, sets)
         psfs = field.getPsfs()
