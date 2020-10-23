@@ -1,0 +1,5 @@
+# meas_extensions_psfex
+
+An LSST Science Pipelines wrapper for the PSF Extractor from Astromatic:
+
+https://www.astromatic.net/software/psfex
