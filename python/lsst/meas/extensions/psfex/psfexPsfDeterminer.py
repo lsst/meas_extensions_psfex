@@ -236,14 +236,9 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             gain = 1.0
             self.log.warn("Setting gain to %g" % (gain,))
 
-        pc = 0
         contextvalp = []
         for i, key in enumerate(context.getName()):
-            if context.getPcflag(i):
-                raise RuntimeError("Principal Components can not be accessed")
-                contextvalp.append(pcval[pc])  # noqa: F821
-                pc += 1
-            elif key[0] == ':':
+            if key[0] == ':':
                 try:
                     contextvalp.append(exposure.getMetadata().getScalar(key[1:]))
                 except KeyError:
