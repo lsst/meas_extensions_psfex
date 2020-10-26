@@ -104,9 +104,13 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         dtype=bool,
         default=False,
     )
-
-    def setDefaults(self):
-        self.kernelSize = 41
+    kernelSize = pexConfig.Field(
+        doc=("Size of the postage stamp around each star that is extracted for fitting."
+             "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
+             "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
+        dtype=int,
+        default=81,
+    )
 
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
@@ -181,7 +185,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         if self.config.kernelSize >= 15:
             self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
-            actualKernelSize = int(self.config.kernelSize)
+            actualKernelSize = self.config.kernelSize
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
             if actualKernelSize < self.config.kernelSizeMin:
