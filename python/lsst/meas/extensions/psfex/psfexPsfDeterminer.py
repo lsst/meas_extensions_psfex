@@ -59,7 +59,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         doc="Resolution of the internal PSF model relative to the pixel size; "
         "e.g. 0.5 is equal to 2x oversampling",
         dtype=float,
-        default=1,
+        default=0.5,
     )
     badMaskBits = pexConfig.ListField(
         doc="List of mask bits which cause a source to be rejected as bad "
@@ -76,7 +76,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
             "PIXEL": "Always use requested samplingSize",
             "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
         },
-        default='PIXEL',
+        default='PIXEL_AUTO',
         optional=False,
     )
     tolerance = pexConfig.Field(
