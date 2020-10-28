@@ -276,7 +276,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 continue
             # skip nonfinite and negative sources
             flux = source.get(fluxName)
-            if flux < 0 or np.isnan(flux):
+            if flux < 0 or not np.isfinite(flux):
                 continue
 
             pstamp = psfCandidate.getMaskedImage().clone()
