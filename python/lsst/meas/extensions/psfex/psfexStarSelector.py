@@ -70,13 +70,13 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
         doc="Max number of bad pixels ",
         default=0,
         check=lambda x: x >= 0,
-        deprecated="This field has never worked. Will be removed after v21."
+        deprecated="This field has never worked and its code is gone. Will be removed after v21."
     )
     maxbadflag = pexConfig.Field(
         dtype=bool,
         doc="Filter bad pixels? ",
         default=True,
-        deprecated="This field has never worked. Will be removed after v21."
+        deprecated="This field has never worked and its code is gone. Will be removed after v21."
     )
     maxellip = pexConfig.Field(
         dtype=float,
