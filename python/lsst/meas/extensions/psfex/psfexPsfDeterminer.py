@@ -35,11 +35,6 @@ import lsst.meas.extensions.psfex as psfex
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
-    __nEigenComponents = pexConfig.Field(
-        doc="number of eigen components for PSF kernel creation",
-        dtype=int,
-        default=4,
-    )
     spatialOrder = pexConfig.Field(
         doc="specify spatial order for PSF kernel creation",
         dtype=int,
@@ -59,11 +54,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         default=sizeCellX.default,
         #        minValue = 10,
         check=lambda x: x >= 10,
-    )
-    __nStarPerCell = pexConfig.Field(
-        doc="number of stars per psf cell for PSF kernel creation",
-        dtype=int,
-        default=3,
     )
     samplingSize = pexConfig.Field(
         doc="Resolution of the internal PSF model relative to the pixel size; "
@@ -88,26 +78,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         },
         default='PIXEL',
         optional=False,
-    )
-    __borderWidth = pexConfig.Field(
-        doc="Number of pixels to ignore around the edge of PSF candidate postage stamps",
-        dtype=int,
-        default=0,
-    )
-    __nStarPerCellSpatialFit = pexConfig.Field(
-        doc="number of stars per psf Cell for spatial fitting",
-        dtype=int,
-        default=5,
-    )
-    __constantWeight = pexConfig.Field(
-        doc="Should each PSF candidate be given the same weight, independent of magnitude?",
-        dtype=bool,
-        default=True,
-    )
-    __nIterForPsf = pexConfig.Field(
-        doc="number of iterations of PSF candidate star list",
-        dtype=int,
-        default=3,
     )
     tolerance = pexConfig.Field(
         doc="tolerance of spatial fitting",
@@ -201,7 +171,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 if psfCellSet:
                     psfCellSet.insertCandidate(psfCandidate)
             except Exception as e:
-                self.log.debug("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
+                self.log.error("Skipping PSF candidate %d of %d: %s", i, len(psfCandidateList), e)
                 continue
 
             source = psfCandidate.getSource()
@@ -220,7 +190,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 actualKernelSize = self.config.kernelSizeMax
             if display:
                 rms = np.median(sizes)
-                print("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms))
+                msg = "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
+                self.log.debug(msg)
 
         # If we manually set the resolution then we need the size in pixel
         # units
@@ -252,10 +223,10 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                                                if False else psfex.Context.KEEPHIDDEN)
         context = psfex.Context(prefs.getContextName(), prefs.getContextGroup(),
                                 prefs.getGroupDeg(), principalComponentExclusionFlag)
-        set = psfex.Set(context)
-        set.setVigSize(pixKernelSize, pixKernelSize)
-        set.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
-        set.setRecentroid(self.config.recentroid)
+        psfSet = psfex.Set(context)
+        psfSet.setVigSize(pixKernelSize, pixKernelSize)
+        psfSet.setFwhm(2*np.sqrt(2*np.log(2))*np.median(sizes))
+        psfSet.setRecentroid(self.config.recentroid)
 
         catindex, ext = 0, 0
         backnoise2 = afwMath.makeStatistics(mi.getImage(), afwMath.VARIANCECLIP).getValue()
@@ -266,26 +237,21 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             gain = 1.0
             self.log.warn("Setting gain to %g" % (gain,))
 
-        pc = 0
         contextvalp = []
         for i, key in enumerate(context.getName()):
-            if context.getPcflag(i):
-                raise RuntimeError("Principal Components can not be accessed")
-                contextvalp.append(pcval[pc])  # noqa: F821
-                pc += 1
-            elif key[0] == ':':
+            if key[0] == ':':
                 try:
                     contextvalp.append(exposure.getMetadata().getScalar(key[1:]))
-                except KeyError:
-                    raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
-                                       (key[1:], prefs.getContextName()))
+                except KeyError as e:
+                    raise RuntimeError("%s parameter not found in the header of %s" %
+                                       (key[1:], prefs.getContextName())) from e
             else:
                 try:
                     contextvalp.append(np.array([psfCandidateList[_].getSource().get(key)
                                                  for _ in range(nCand)]))
-                except KeyError:
-                    raise RuntimeError("*Error*: %s parameter not found" % (key,))
-                set.setContextname(i, key)
+                except KeyError as e:
+                    raise RuntimeError("%s parameter not found" % (key,)) from e
+                psfSet.setContextname(i, key)
 
         if display:
             frame = 0
@@ -300,30 +266,27 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         xpos, ypos = [], []
         for i, psfCandidate in enumerate(psfCandidateList):
             source = psfCandidate.getSource()
+
+            # skip sources with bad centroids
             xc, yc = source.getX(), source.getY()
-            try:
-                int(xc), int(yc)
-            except ValueError:
+            if not np.isfinite(xc) or not np.isfinite(yc):
                 continue
-
-            try:
-                pstamp = psfCandidate.getMaskedImage().clone()
-            except Exception:
-                continue
-
+            # skip flagged sources
             if fluxFlagName in source.schema and source.get(fluxFlagName):
                 continue
-
+            # skip nonfinite and negative sources
             flux = source.get(fluxName)
-            if flux < 0 or np.isnan(flux):
+            if flux < 0 or not np.isfinite(flux):
                 continue
+
+            pstamp = psfCandidate.getMaskedImage().clone()
 
             # From this point, we're configuring the "sample" (PSFEx's version
             # of a PSF candidate).
             # Having created the sample, we must proceed to configure it, and
             # then fini (finalize), or it will be malformed.
             try:
-                sample = set.newSample()
+                sample = psfSet.newSample()
                 sample.setCatindex(catindex)
                 sample.setExtindex(ext)
                 sample.setObjindex(i)
@@ -340,13 +303,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 sample.setY(yc)
                 sample.setFluxrad(sizes[i])
 
-                for j in range(set.getNcontext()):
+                for j in range(psfSet.getNcontext()):
                     sample.setContext(j, float(contextvalp[j][i]))
             except Exception as e:
-                self.log.debug("Exception when processing sample at (%f,%f): %s", xc, yc, e)
+                self.log.error("Exception when processing sample at (%f,%f): %s", xc, yc, e)
                 continue
             else:
-                set.finiSample(sample)
+                psfSet.finiSample(sample)
 
             xpos.append(xc)  # for QA
             ypos.append(yc)
@@ -355,18 +318,18 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             with disp.Buffering():
                 disp.dot("o", xc, yc, ctype=afwDisplay.CYAN, size=4)
 
-        if set.getNsample() == 0:
+        if psfSet.getNsample() == 0:
             raise RuntimeError("No good PSF candidates to pass to PSFEx")
 
         # ---- Update min and max and then the scaling
-        for i in range(set.getNcontext()):
+        for i in range(psfSet.getNcontext()):
             cmin = contextvalp[i].min()
             cmax = contextvalp[i].max()
-            set.setContextScale(i, cmax - cmin)
-            set.setContextOffset(i, (cmin + cmax)/2.0)
+            psfSet.setContextScale(i, cmax - cmin)
+            psfSet.setContextOffset(i, (cmin + cmax)/2.0)
 
         # Don't waste memory!
-        set.trimMemory()
+        psfSet.trimMemory()
 
         # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- END PSFEX
         #
@@ -374,13 +337,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         #
         fields = []
         field = psfex.Field("Unknown")
-        field.addExt(exposure.getWcs(), exposure.getWidth(), exposure.getHeight(), set.getNsample())
+        field.addExt(exposure.getWcs(), exposure.getWidth(), exposure.getHeight(), psfSet.getNsample())
         field.finalize()
 
         fields.append(field)
 
         sets = []
-        sets.append(set)
+        sets.append(psfSet)
 
         psfex.makeit(fields, sets)
         psfs = field.getPsfs()
@@ -405,16 +368,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         psf = psfex.PsfexPsf(psfs[0], geom.Point2D(avgX, avgY))
 
-        if False and (displayResiduals or displayPsfMosaic):
-            ext = 0
-            frame = 1
-            diagnostics = True
-            catDir = "."
-            title = "psfexPsfDeterminer"
-            psfex.psfex.showPsf(psfs, set, ext,
-                                [(exposure.getWcs(), exposure.getWidth(), exposure.getHeight())],
-                                nspot=3, trim=5, frame=frame, diagnostics=diagnostics, outDir=catDir,
-                                title=title)
         #
         # Display code for debugging
         #

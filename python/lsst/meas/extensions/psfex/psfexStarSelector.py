@@ -70,11 +70,13 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
         doc="Max number of bad pixels ",
         default=0,
         check=lambda x: x >= 0,
+        deprecated="This field has never worked and its code is gone. Will be removed after v21."
     )
     maxbadflag = pexConfig.Field(
         dtype=bool,
         doc="Filter bad pixels? ",
-        default=True
+        default=True,
+        deprecated="This field has never worked and its code is gone. Will be removed after v21."
     )
     maxellip = pexConfig.Field(
         dtype=float,
@@ -301,8 +303,6 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         minFwhm = self.config.minFwhm
         maxFwhm = self.config.maxFwhm
         maxFwhmVariability = self.config.maxFwhmVariability
-        maxbad = self.config.maxbad
-        maxbadflag = self.config.maxbadflag
         maxellip = self.config.maxellip
         minsn = self.config.minsn
 
@@ -371,16 +371,6 @@ class PsfexStarSelectorTask(BaseSourceSelectorTask):
         bad = np.logical_or(bad, dbad)
         if plotRejection:
             selectionVectors.append((dbad, "elong %d" % sum(dbad)))
-
-        # -- ... and check the integrity of the sample
-        if maxbadflag:
-            raise RuntimeError("vignet variable not defined. Code is broken.")
-            nbad = np.array([(v <= -psfexLib.BIG).sum() for v in vignet])  # noqa: F821
-            dbad = nbad > maxbad
-            # set.setBadPix(int(sum(dbad)))
-            bad = np.logical_or(bad, dbad)
-            if plotRejection:
-                selectionVectors.append((dbad, "badpix %d" % sum(dbad)))
 
         good = np.logical_not(bad)
         #

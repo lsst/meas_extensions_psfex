@@ -185,13 +185,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.catalog = self.measure(self.footprintSet, self.exposure)
 
         for source in self.catalog:
-            try:
-                cand = measAlg.makePsfCandidate(source, self.exposure)
-                self.cellSet.insertCandidate(cand)
-
-            except Exception as e:
-                print(e)
-                continue
+            cand = measAlg.makePsfCandidate(source, self.exposure)
+            self.cellSet.insertCandidate(cand)
 
     def tearDown(self):
         del self.cellSet
@@ -236,10 +231,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
             xc, yc = s.getX(), s.getY()
             bbox = subtracted.getBBox(afwImage.PARENT)
             if bbox.contains(geom.PointI(int(xc), int(yc))):
-                try:
-                    measAlg.subtractPsf(psf, subtracted, xc, yc)
-                except Exception:
-                    pass
+                measAlg.subtractPsf(psf, subtracted, xc, yc)
         chi = subtracted.Factory(subtracted, True)
         var = subtracted.getVariance()
         np.sqrt(var.getArray(), var.getArray())  # inplace sqrt
@@ -253,8 +245,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
                                             title="Psf %.1f,%.1f" % (xc, yc))
 
         chi_min, chi_max = np.min(chi.getImage().getArray()), np.max(chi.getImage().getArray())
-        if False:
-            print(chi_min, chi_max)
 
         if chi_lim > 0:
             self.assertGreater(chi_min, -chi_lim)

@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from lsst.meas.extensions.psfex import psfex, readPrefs, makeitLsst, makeit, showPsf, dafBase
+from lsst.meas.extensions.psfex import psfex, makeitLsst, makeit, showPsf, dafBase
 
 
 if __name__ == "__main__":
@@ -11,7 +11,6 @@ if __name__ == "__main__":
     parser.add_argument('catalogs', type=str, nargs="+", help="Input catalogues from SExtractor")
     parser.add_argument('-c', type=str, dest="defaultsFile",
                         help="File containing default parameters", default="default-lsst.psfex")
-    parser.add_argument('--lsst', action="store_true", help="Read LSST data")
     parser.add_argument('--overrides', type=str, nargs="+",
                         help="Overrides for default parameters", default=[])
     parser.add_argument('--plot', type=str, nargs="+",
@@ -46,12 +45,10 @@ if __name__ == "__main__":
                 sys.exit(1)
             plot[k] = True
 
-    if args.lsst:
-        psfex.psfex.setDataType("LSST")
     #
     # To work
     #
-    prefs = readPrefs(args.defaultsFile, args_md)
+    prefs = psfex.Prefs(args.defaultsFile, args_md)
     prefs.setCommandLine(argv)
 
     for f in args.catalogs:
