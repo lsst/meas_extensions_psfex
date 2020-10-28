@@ -242,15 +242,15 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             if key[0] == ':':
                 try:
                     contextvalp.append(exposure.getMetadata().getScalar(key[1:]))
-                except KeyError:
-                    raise RuntimeError("*Error*: %s parameter not found in the header of %s" %
-                                       (key[1:], prefs.getContextName()))
+                except KeyError as e:
+                    raise RuntimeError("%s parameter not found in the header of %s" %
+                                       (key[1:], prefs.getContextName())) from e
             else:
                 try:
                     contextvalp.append(np.array([psfCandidateList[_].getSource().get(key)
                                                  for _ in range(nCand)]))
-                except KeyError:
-                    raise RuntimeError("*Error*: %s parameter not found" % (key,))
+                except KeyError as e:
+                    raise RuntimeError("%s parameter not found" % (key,)) from e
                 psfSet.setContextname(i, key)
 
         if display:
