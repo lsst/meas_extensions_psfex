@@ -190,7 +190,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 actualKernelSize = self.config.kernelSizeMax
             if display:
                 rms = np.median(sizes)
-                print("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms))
+                msg = "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
+                self.log.debug(msg)
 
         # If we manually set the resolution then we need the size in pixel
         # units
