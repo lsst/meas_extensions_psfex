@@ -1,4 +1,4 @@
-/* 
+/*
  * LSST Data Management System
  *
  * This product includes software developed by the
@@ -38,8 +38,8 @@ PYBIND11_MODULE(prefs, mod) {
 
     clsPrefs.attr("ALL_EXTENSIONS") = py::cast(static_cast<int>(Prefs::ALL_EXTENSIONS));
 
-    clsPrefs.def(py::init<std::string const&, lsst::daf::base::PropertySet const*>(),
-            "filename"_a, "values"_a=nullptr);
+    clsPrefs.def(py::init<std::string const&, lsst::daf::base::PropertySet const*>(), "filename"_a,
+                 "values"_a = nullptr);
 
     clsPrefs.def("use", &Prefs::use);
     clsPrefs.def("setCommandLine", &Prefs::setCommandLine);
@@ -69,7 +69,7 @@ PYBIND11_MODULE(prefs, mod) {
     clsPrefs.def("getCatalogs", &Prefs::getCatalogs);
 }
 
-}  // psfex
-}  // extensions
-}  // meas
-}  // lsst
+}  // namespace psfex
+}  // namespace extensions
+}  // namespace meas
+}  // namespace lsst
