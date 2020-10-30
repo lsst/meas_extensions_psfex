@@ -22,8 +22,6 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
-#include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
-
 #include "lsst/meas/extensions/psfex/prefs.hh"
 #include "lsst/daf/base/PropertySet.h"
 

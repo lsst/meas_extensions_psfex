@@ -21,7 +21,7 @@
  */
 #include "pybind11/pybind11.h"
 
-#include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
+#include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
 #include "define.h"
 #include "vignet.h"
@@ -54,9 +54,10 @@ PYBIND11_MODULE(psfexPsf, mod) {
     mod.attr("BIG") = py::cast(BIG);
     mod.attr("INTERPFAC") = py::cast(INTERPFAC);
 
-    lsst::afw::table::io::python::declarePersistableFacade<PsfexPsf>(mod, "PsfexPsf");
+    py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod,
+                                                                                                  "PsfexPsf");
+    lsst::afw::table::io::python::addPersistableMethods<PsfexPsf>(clsPsfexPsf);
 
-    py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::afw::table::io::PersistableFacade<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod, "PsfexPsf");
 
     clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::geom::Point2D const &>(),
             "psf"_a, "averagePosition"_a=lsst::geom::Point2D());
