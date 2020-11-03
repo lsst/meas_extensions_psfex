@@ -59,7 +59,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         doc="Resolution of the internal PSF model relative to the pixel size; "
         "e.g. 0.5 is equal to 2x oversampling",
         dtype=float,
-        default=1,
+        default=0.5,
     )
     badMaskBits = pexConfig.ListField(
         doc="List of mask bits which cause a source to be rejected as bad "
@@ -76,7 +76,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
             "PIXEL": "Always use requested samplingSize",
             "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
         },
-        default='PIXEL',
+        default='PIXEL_AUTO',
         optional=False,
     )
     tolerance = pexConfig.Field(
@@ -104,9 +104,13 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         dtype=bool,
         default=False,
     )
-
-    def setDefaults(self):
-        self.kernelSize = 41
+    kernelSize = pexConfig.Field(
+        doc=("Size of the postage stamp around each star that is extracted for fitting."
+             "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
+             "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
+        dtype=int,
+        default=81,
+    )
 
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
@@ -181,7 +185,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         if self.config.kernelSize >= 15:
             self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
-            actualKernelSize = int(self.config.kernelSize)
+            actualKernelSize = self.config.kernelSize
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
             if actualKernelSize < self.config.kernelSizeMin:
