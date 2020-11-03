@@ -39,7 +39,3 @@ Python API reference
 .. .. automodapi:: lsst.meas.extensions.psfex.psfexStarSelector
 ..   :no-main-docstr:
 ..   :no-inheritance-diagram:
-
-.. automodapi:: lsst.meas.extensions.psfex.utils
-   :no-main-docstr:
-   :no-inheritance-diagram:
