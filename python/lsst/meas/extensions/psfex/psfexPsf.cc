@@ -21,11 +21,11 @@
  */
 #include "pybind11/pybind11.h"
 
-#include "lsst/afw/table/io/python.h"  // for declarePersistableFacade
+#include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
 #include "define.h"
 #include "vignet.h"
-static double PSFEX_SAVE_BIG = BIG;	// we'll #undef BIG and define a variable called BIG
+static double PSFEX_SAVE_BIG = BIG;  // we'll #undef BIG and define a variable called BIG
 static double PSFEX_SAVE_INTERPFAC = INTERPFAC;
 
 #undef PI
@@ -54,22 +54,22 @@ PYBIND11_MODULE(psfexPsf, mod) {
     mod.attr("BIG") = py::cast(BIG);
     mod.attr("INTERPFAC") = py::cast(INTERPFAC);
 
-    lsst::afw::table::io::python::declarePersistableFacade<PsfexPsf>(mod, "PsfexPsf");
+    py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod,
+                                                                                                  "PsfexPsf");
+    lsst::afw::table::io::python::addPersistableMethods<PsfexPsf>(clsPsfexPsf);
 
-    py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::afw::table::io::PersistableFacade<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod, "PsfexPsf");
-
-    clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const&, lsst::geom::Point2D const &>(),
-            "psf"_a, "averagePosition"_a=lsst::geom::Point2D());
+    clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const &, lsst::geom::Point2D const &>(),
+                    "psf"_a, "averagePosition"_a = lsst::geom::Point2D());
 
     clsPsfexPsf.def("clone", &PsfexPsf::clone);
     clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
     clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
-            "position"_a=lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
+                    "position"_a = lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
     clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
     clsPsfexPsf.def("write", &PsfexPsf::write);
 }
 
-}  // psfex
-}  // extensions
-}  // meas
-}  // lsst
+}  // namespace psfex
+}  // namespace extensions
+}  // namespace meas
+}  // namespace lsst
