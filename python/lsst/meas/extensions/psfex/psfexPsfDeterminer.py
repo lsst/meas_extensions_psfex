@@ -24,6 +24,7 @@ import numpy as np
 
 import lsst.daf.base as dafBase
 import lsst.pex.config as pexConfig
+import lsst.pex.exceptions as pexExcept
 import lsst.geom as geom
 import lsst.afw.geom.ellipses as afwEll
 import lsst.afw.display as afwDisplay
@@ -283,7 +284,12 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             if flux < 0 or not np.isfinite(flux):
                 continue
 
-            pstamp = psfCandidate.getMaskedImage().clone()
+            try:
+                pstamp = psfCandidate.getMaskedImage().clone()
+            except pexExcept.LengthError:
+                # Candidate is too close to the edge to get a stamp. Skip.
+                # TODO DM-27547: Replace with geometric condition
+                continue
 
             # From this point, we're configuring the "sample" (PSFEx's version
             # of a PSF candidate).
