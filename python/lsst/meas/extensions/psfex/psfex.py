@@ -573,11 +573,11 @@ def load_samplesLsst(prefs, context, ext=psfexLib.Prefs.ALL_EXTENSIONS, next=1, 
 
         if prefs.getVarType() == prefs.VAR_NONE:
             if nobj:
-                fwhms_all = np.empty(sum([len(l) for l in fwhms.values()]))
+                fwhms_all = np.empty(sum([len(f) for f in fwhms.values()]))
                 i = 0
-                for l in fwhms.values():
-                    fwhms_all[i:len(l)] = l
-                    i += len(l)
+                for f in fwhms.values():
+                    fwhms_all[i:len(f)] = f
+                    i += len(f)
                 mode, min, max = compute_fwhmrange(fwhms_all, prefs.getMaxvar(),
                                                    prefs.getFwhmrange()[0], prefs.getFwhmrange()[1],
                                                    plot=plot)
