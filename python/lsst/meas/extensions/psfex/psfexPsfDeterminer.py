@@ -40,7 +40,7 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         doc="specify spatial order for PSF kernel creation",
         dtype=int,
         default=2,
-        check=lambda x: x >= 0,
+        check=lambda x: x >= 1,
     )
     sizeCellX = pexConfig.Field(
         doc="size of cell used to determine PSF (pixels, column direction)",
