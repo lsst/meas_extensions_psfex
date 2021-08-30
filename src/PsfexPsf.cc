@@ -100,17 +100,17 @@ PsfexPsf::~PsfexPsf()
     poly_end(_poly);
 }
 
-PTR(afw::detection::Psf)
+std::shared_ptr<afw::detection::Psf>
 PsfexPsf::clone() const {
     return std::make_shared<PsfexPsf>(*this);
 }
 
-PTR(afw::detection::Psf)
+std::shared_ptr<afw::detection::Psf>
 PsfexPsf::resized(int width, int height) const {
     throw LSST_EXCEPT(pex::exceptions::LogicError, "Not Implemented");
 }
 
-PTR(afw::math::LinearCombinationKernel const)
+std::shared_ptr<afw::math::LinearCombinationKernel const>
 PsfexPsf::getKernel(geom::Point2D position) const
 {
     double pos[MAXCONTEXT];
@@ -180,13 +180,13 @@ PsfexPsf::getKernel(geom::Point2D position) const
     return _kernel;
 }
 
-PTR(afw::detection::Psf::Image)
+std::shared_ptr<afw::detection::Psf::Image>
 PsfexPsf::doComputeImage(geom::Point2D const & position,
                          afw::image::Color const & color) const {
     return _doComputeImage(position, color, position);
 }
 
-PTR(afw::detection::Psf::Image)
+std::shared_ptr<afw::detection::Psf::Image>
 PsfexPsf::doComputeKernelImage(geom::Point2D const& position,
                                afw::image::Color const& color) const
 {
@@ -221,7 +221,7 @@ geom::Box2I PsfexPsf::_doComputeBBox(geom::Point2D const & position,
     return bbox;
 }
 
-PTR(afw::detection::Psf::Image)
+std::shared_ptr<afw::detection::Psf::Image>
 PsfexPsf::_doComputeImage(geom::Point2D const& position,
                           afw::image::Color const& color,
                           geom::Point2D const& center
@@ -270,7 +270,7 @@ PsfexPsf::_doComputeImage(geom::Point2D const& position,
     // And copy it into place
     //
     geom::Box2I bbox = _doComputeBBox(position, center);
-    PTR(afw::detection::Psf::Image) im = std::make_shared<afw::detection::Psf::Image>(bbox);
+    std::shared_ptr<afw::detection::Psf::Image> im = std::make_shared<afw::detection::Psf::Image>(bbox);
 
     int sampleW = bbox.getWidth();
     int sampleH = bbox.getHeight();
@@ -377,11 +377,11 @@ namespace detail {                      // PsfexPsfFactory needs to be a friend 
 class PsfexPsfFactory : public table::io::PersistableFactory {
 public:
 
-virtual PTR(table::io::Persistable)
+virtual std::shared_ptr<table::io::Persistable>
 read(InputArchive const & archive, CatalogVector const & catalogs) const {
     LSST_ARCHIVE_ASSERT(catalogs.size() == 2u);
 
-    PTR(PsfexPsf) result(new PsfexPsf());
+    std::shared_ptr<PsfexPsf> result(new PsfexPsf());
 
     int ndim, ngroup, ncoeff;
     int size_size, comp_size, context_size;
@@ -482,7 +482,7 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
     {
         PsfexPsfSchema1 const keys;
         afw::table::BaseCatalog cat = handle.makeCatalog(keys.schema);
-        PTR(afw::table::BaseRecord) record = cat.addNew();
+        std::shared_ptr<afw::table::BaseRecord> record = cat.addNew();
 
         // Sizes in _poly
         record->set(keys.ndim, _poly->ndim);
@@ -503,7 +503,7 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
                                    _size.size(), _comp.size(), _context.size());
         afw::table::BaseCatalog cat = handle.makeCatalog(keys.schema);
         // _poly
-        PTR(afw::table::BaseRecord) record = cat.addNew();
+        std::shared_ptr<afw::table::BaseRecord> record = cat.addNew();
         {
             int *begin = record->getElement(keys.group);
             std::copy(_poly->group, _poly->group + _poly->ndim, begin);

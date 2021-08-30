@@ -51,17 +51,17 @@ public:
     virtual ~PsfexPsf();
 
     /// Polymorphic deep copy; should usually be unnecessary as Psfs are immutable.x
-    virtual PTR(lsst::afw::detection::Psf) clone() const;
+    virtual std::shared_ptr<lsst::afw::detection::Psf> clone() const;
 
     /// Return a clone with specified kernel dimensions
-    virtual PTR(afw::detection::Psf) resized(int width, int height) const;
+    virtual std::shared_ptr<afw::detection::Psf> resized(int width, int height) const;
 
     /// Return average position of stars; used as default position.
     virtual lsst::geom::Point2D getAveragePosition() const { return _averagePosition; }
 
     /// Return the PSF's basis functions as a spatially-invariant LinearCombinationKernel
     /// with unit weights
-    PTR(lsst::afw::math::LinearCombinationKernel const)
+    std::shared_ptr<lsst::afw::math::LinearCombinationKernel const>
     getKernel(lsst::geom::Point2D =
               lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN())) const;
 
@@ -77,26 +77,26 @@ private:
     std::vector<int> _size;             // PSF dimensions
     std::vector<float> _comp;           // Complete pix. data (PSF components)
     std::vector<std::pair<double, double> > _context; // Offset/scale to apply to context data
-    mutable PTR(lsst::afw::math::LinearCombinationKernel) _kernel; // keep a reference to getKernel()'s kernel
+    mutable std::shared_ptr<lsst::afw::math::LinearCombinationKernel> _kernel; // keep a reference to getKernel()'s kernel
 
     /// default ctor; needed for persistence
     explicit PsfexPsf();
 
     /// Compute an image of the Psf at the specified position/colour, at pixel position in the output image
-    virtual PTR(lsst::afw::detection::Psf::Image) _doComputeImage(
+    virtual std::shared_ptr<lsst::afw::detection::Psf::Image> _doComputeImage(
         lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color,      ///< colour of object
         lsst::geom::Point2D const& center     ///< position of center of image in the output image
     ) const;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel (0.0, 0.0) in the output image
-    virtual PTR(lsst::afw::detection::Psf::Image) doComputeKernelImage(
+    virtual std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeKernelImage(
         lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
     ) const;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel position in the output image
-    virtual PTR(lsst::afw::detection::Psf::Image) doComputeImage(
+    virtual std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeImage(
         lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
     ) const;
