@@ -48,16 +48,16 @@ public:
         lsst::geom::Point2D const & averagePosition=lsst::geom::Point2D()
                                         ///< [in] Average position of stars used to construct the Psf.
     );
-    virtual ~PsfexPsf();
+    ~PsfexPsf() override;
 
     /// Polymorphic deep copy; should usually be unnecessary as Psfs are immutable.x
-    virtual std::shared_ptr<lsst::afw::detection::Psf> clone() const;
+    std::shared_ptr<lsst::afw::detection::Psf> clone() const override;
 
     /// Return a clone with specified kernel dimensions
-    virtual std::shared_ptr<afw::detection::Psf> resized(int width, int height) const;
+    std::shared_ptr<afw::detection::Psf> resized(int width, int height) const override;
 
     /// Return average position of stars; used as default position.
-    virtual lsst::geom::Point2D getAveragePosition() const { return _averagePosition; }
+    lsst::geom::Point2D getAveragePosition() const override { return _averagePosition; }
 
     /// Return the PSF's basis functions as a spatially-invariant LinearCombinationKernel
     /// with unit weights
@@ -66,9 +66,9 @@ public:
               lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN())) const;
 
     /// Is this object persistable?
-    virtual bool isPersistable() const noexcept override { return true; }
+    bool isPersistable() const noexcept override { return true; }
 
-    void write(lsst::afw::table::io::OutputArchiveHandle & handle) const;
+    void write(lsst::afw::table::io::OutputArchiveHandle & handle) const override;
 private:
     lsst::geom::Point2D _averagePosition;
     // Here are the unpacked fields from the psfex psf struct
@@ -90,22 +90,22 @@ private:
     ) const;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel (0.0, 0.0) in the output image
-    virtual std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeKernelImage(
+    std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeKernelImage(
         lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
-    ) const;
+    ) const override;
 
     /// Compute an image of the Psf at the specified position/colour, at pixel position in the output image
-    virtual std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeImage(
+    std::shared_ptr<lsst::afw::detection::Psf::Image> doComputeImage(
         lsst::geom::Point2D const & position, ///< position within the chip
         lsst::afw::image::Color const& color       ///< colour of object
-    ) const;
+    ) const override;
 
     /// Compute the bbox of the kernel image at the specified position/color
-    virtual lsst::geom::Box2I doComputeBBox(
+    lsst::geom::Box2I doComputeBBox(
         lsst::geom::Point2D const & position,
         lsst::afw::image::Color const & color
-    ) const;
+    ) const override;
 
     /// Compute bbox of either image or kernel image, depending on provided center
     /// Does not depend on color, which is left out of parameter list to permit reuse
@@ -116,9 +116,9 @@ private:
     ) const;
 
     /// Name used in table persistence
-    virtual std::string getPersistenceName() const;
+    std::string getPersistenceName() const override;
     /// The python module name (for use in table persistence)
-    virtual std::string getPythonModule() const;
+    std::string getPythonModule() const override;
 };
 
 }}}}
