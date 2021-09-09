@@ -54,7 +54,7 @@ private:
 class Sample {
     friend class Set;
 public:
-    ~Sample() { }
+    ~Sample() = default;
 
     int getCatindex() const { return impl->catindex; }
     void setCatindex(int val) { impl->catindex = val; }
