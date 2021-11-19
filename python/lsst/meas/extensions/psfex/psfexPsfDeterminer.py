@@ -185,7 +185,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
+            self.log.warning("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = self.config.kernelSize
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
@@ -240,7 +240,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             gain = np.mean(np.array([a.getGain() for a in ccd]))
         else:
             gain = 1.0
-            self.log.warn("Setting gain to %g" % (gain,))
+            self.log.warning("Setting gain to %g", gain)
 
         contextvalp = []
         for i, key in enumerate(context.getName()):
