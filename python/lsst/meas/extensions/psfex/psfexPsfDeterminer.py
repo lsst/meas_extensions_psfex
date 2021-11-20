@@ -185,7 +185,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             sizes[i] = rmsSize
 
         if self.config.kernelSize >= 15:
-            self.log.warn("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
+            self.log.warning("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = self.config.kernelSize
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
@@ -195,8 +195,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 actualKernelSize = self.config.kernelSizeMax
             if display:
                 rms = np.median(sizes)
-                msg = "Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)" % (rms, 2*np.sqrt(2*np.log(2))*rms)
-                self.log.debug(msg)
+                self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
+                               rms, 2*np.sqrt(2*np.log(2))*rms)
 
         # If we manually set the resolution then we need the size in pixel
         # units
@@ -240,7 +240,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             gain = np.mean(np.array([a.getGain() for a in ccd]))
         else:
             gain = 1.0
-            self.log.warn("Setting gain to %g" % (gain,))
+            self.log.warning("Setting gain to %g", gain)
 
         contextvalp = []
         for i, key in enumerate(context.getName()):
