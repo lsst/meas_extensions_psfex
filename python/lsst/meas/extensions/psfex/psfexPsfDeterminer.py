@@ -406,11 +406,11 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # Count PSF stars
         #
         if metadata is not None:
-            metadata.set("spatialFitChi2", np.nan)
-            metadata.set("numAvailStars", nCand)
-            metadata.set("numGoodStars", numGoodStars)
-            metadata.set("avgX", avgX)
-            metadata.set("avgY", avgY)
+            metadata["spatialFitChi2"] = np.nan
+            metadata["numAvailStars"] = nCand
+            metadata["numGoodStars"] = numGoodStars
+            metadata["avgX"] = avgX
+            metadata["avgY"] = avgY
 
         return psf, psfCellSet
 
