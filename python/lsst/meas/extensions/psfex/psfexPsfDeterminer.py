@@ -110,7 +110,9 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
              "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
              "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
         dtype=int,
-        default=81,
+        default=None,
+        optional=True,
+        deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
     )
 
 
