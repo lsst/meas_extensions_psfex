@@ -115,6 +115,10 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
     )
 
+    def setDefaults(self):
+        super().setDefaults()
+        self.stampSize = 41
+
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
