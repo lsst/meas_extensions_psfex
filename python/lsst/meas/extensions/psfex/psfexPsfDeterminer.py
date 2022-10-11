@@ -291,7 +291,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 continue
 
             try:
-                pstamp = psfCandidate.getMaskedImage().clone()
+                pstamp = psfCandidate.getMaskedImage(pixKernelSize, pixKernelSize).clone()
             except pexExcept.LengthError:
                 # Candidate is too close to the edge to get a stamp. Skip.
                 # TODO DM-27547: Replace with geometric condition
