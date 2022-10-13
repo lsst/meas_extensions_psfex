@@ -36,43 +36,37 @@ import lsst.meas.extensions.psfex as psfex
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
-    spatialOrder = pexConfig.Field(
+    spatialOrder = pexConfig.Field[int](
         doc="specify spatial order for PSF kernel creation",
-        dtype=int,
         default=2,
         check=lambda x: x >= 1,
     )
-    sizeCellX = pexConfig.Field(
+    sizeCellX = pexConfig.Field[int](
         doc="size of cell used to determine PSF (pixels, column direction)",
-        dtype=int,
         default=256,
         #        minValue = 10,
         check=lambda x: x >= 10,
     )
-    sizeCellY = pexConfig.Field(
+    sizeCellY = pexConfig.Field[int](
         doc="size of cell used to determine PSF (pixels, row direction)",
-        dtype=int,
         default=sizeCellX.default,
         #        minValue = 10,
         check=lambda x: x >= 10,
     )
-    samplingSize = pexConfig.Field(
+    samplingSize = pexConfig.Field[float](
         doc="Resolution of the internal PSF model relative to the pixel size; "
         "e.g. 0.5 is equal to 2x oversampling",
-        dtype=float,
         default=0.5,
     )
-    badMaskBits = pexConfig.ListField(
+    badMaskBits = pexConfig.ListField[str](
         doc="List of mask bits which cause a source to be rejected as bad "
         "N.b. INTRP is used specially in PsfCandidateSet; it means \"Contaminated by neighbour\"",
-        dtype=str,
         default=["INTRP", "SAT"],
     )
-    psfexBasis = pexConfig.ChoiceField(
+    psfexBasis = pexConfig.ChoiceField[str](
         doc="BASIS value given to psfex.  PIXEL_AUTO will use the requested samplingSize only if "
         "the FWHM < 3 pixels.  Otherwise, it will use samplingSize=1.  PIXEL will always use the "
         "requested samplingSize",
-        dtype=str,
         allowed={
             "PIXEL": "Always use requested samplingSize",
             "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
@@ -80,36 +74,30 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         default='PIXEL_AUTO',
         optional=False,
     )
-    tolerance = pexConfig.Field(
+    tolerance = pexConfig.Field[float](
         doc="tolerance of spatial fitting",
-        dtype=float,
         default=1e-2,
     )
-    lam = pexConfig.Field(
+    lam = pexConfig.Field[float](
         doc="floor for variance is lam*data",
-        dtype=float,
         default=0.05,
     )
-    reducedChi2ForPsfCandidates = pexConfig.Field(
+    reducedChi2ForPsfCandidates = pexConfig.Field[float](
         doc="for psf candidate evaluation",
-        dtype=float,
         default=2.0,
     )
-    spatialReject = pexConfig.Field(
+    spatialReject = pexConfig.Field[float](
         doc="Rejection threshold (stdev) for candidates based on spatial fit",
-        dtype=float,
         default=3.0,
     )
-    recentroid = pexConfig.Field(
+    recentroid = pexConfig.Field[bool](
         doc="Should PSFEX be permitted to recentroid PSF candidates?",
-        dtype=bool,
         default=False,
     )
-    kernelSize = pexConfig.Field(
+    kernelSize = pexConfig.Field[int](
         doc=("Size of the postage stamp around each star that is extracted for fitting."
              "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
              "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
-        dtype=int,
         default=None,
         optional=True,
         deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
