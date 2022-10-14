@@ -265,8 +265,9 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.subtractStars(self.exposure, self.catalog, chi_lim=5.6)
 
         # Test PsfexPsf.computeBBox
-        self.assertEqual(psf.computeBBox(), psf.computeKernelImage().getBBox())
-        self.assertEqual(psf.computeBBox(), psf.getKernel().getBBox())
+        pos = psf.getAveragePosition()
+        self.assertEqual(psf.computeBBox(pos), psf.computeKernelImage(pos).getBBox())
+        self.assertEqual(psf.computeBBox(pos), psf.getKernel(pos).getBBox())
 
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):

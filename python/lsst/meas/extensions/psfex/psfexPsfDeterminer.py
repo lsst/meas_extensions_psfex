@@ -36,43 +36,37 @@ import lsst.meas.extensions.psfex as psfex
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
-    spatialOrder = pexConfig.Field(
+    spatialOrder = pexConfig.Field[int](
         doc="specify spatial order for PSF kernel creation",
-        dtype=int,
         default=2,
         check=lambda x: x >= 1,
     )
-    sizeCellX = pexConfig.Field(
+    sizeCellX = pexConfig.Field[int](
         doc="size of cell used to determine PSF (pixels, column direction)",
-        dtype=int,
         default=256,
         #        minValue = 10,
         check=lambda x: x >= 10,
     )
-    sizeCellY = pexConfig.Field(
+    sizeCellY = pexConfig.Field[int](
         doc="size of cell used to determine PSF (pixels, row direction)",
-        dtype=int,
         default=sizeCellX.default,
         #        minValue = 10,
         check=lambda x: x >= 10,
     )
-    samplingSize = pexConfig.Field(
+    samplingSize = pexConfig.Field[float](
         doc="Resolution of the internal PSF model relative to the pixel size; "
         "e.g. 0.5 is equal to 2x oversampling",
-        dtype=float,
         default=0.5,
     )
-    badMaskBits = pexConfig.ListField(
+    badMaskBits = pexConfig.ListField[str](
         doc="List of mask bits which cause a source to be rejected as bad "
         "N.b. INTRP is used specially in PsfCandidateSet; it means \"Contaminated by neighbour\"",
-        dtype=str,
         default=["INTRP", "SAT"],
     )
-    psfexBasis = pexConfig.ChoiceField(
+    psfexBasis = pexConfig.ChoiceField[str](
         doc="BASIS value given to psfex.  PIXEL_AUTO will use the requested samplingSize only if "
         "the FWHM < 3 pixels.  Otherwise, it will use samplingSize=1.  PIXEL will always use the "
         "requested samplingSize",
-        dtype=str,
         allowed={
             "PIXEL": "Always use requested samplingSize",
             "PIXEL_AUTO": "Only use requested samplingSize when FWHM < 3",
@@ -80,38 +74,38 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         default='PIXEL_AUTO',
         optional=False,
     )
-    tolerance = pexConfig.Field(
+    tolerance = pexConfig.Field[float](
         doc="tolerance of spatial fitting",
-        dtype=float,
         default=1e-2,
     )
-    lam = pexConfig.Field(
+    lam = pexConfig.Field[float](
         doc="floor for variance is lam*data",
-        dtype=float,
         default=0.05,
     )
-    reducedChi2ForPsfCandidates = pexConfig.Field(
+    reducedChi2ForPsfCandidates = pexConfig.Field[float](
         doc="for psf candidate evaluation",
-        dtype=float,
         default=2.0,
     )
-    spatialReject = pexConfig.Field(
+    spatialReject = pexConfig.Field[float](
         doc="Rejection threshold (stdev) for candidates based on spatial fit",
-        dtype=float,
         default=3.0,
     )
-    recentroid = pexConfig.Field(
+    recentroid = pexConfig.Field[bool](
         doc="Should PSFEX be permitted to recentroid PSF candidates?",
-        dtype=bool,
         default=False,
     )
-    kernelSize = pexConfig.Field(
+    kernelSize = pexConfig.Field[int](
         doc=("Size of the postage stamp around each star that is extracted for fitting."
              "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
              "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
-        dtype=int,
-        default=81,
+        default=None,
+        optional=True,
+        deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
     )
+
+    def setDefaults(self):
+        super().setDefaults()
+        self.stampSize = 41
 
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
@@ -184,30 +178,34 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             rmsSize = quad.getTraceRadius()
             sizes[i] = rmsSize
 
-        if self.config.kernelSize >= 15:
+        # TODO: Keep only the if block and remove the else blocks in DM-36311
+        if self.config.stampSize:
+            pixKernelSize = self.config.stampSize
+            actualKernelSize = int(2*np.floor(0.5*pixKernelSize/self.config.samplingSize) + 1)
+        elif self.config.kernelSize >= 15:
             self.log.warning("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
             actualKernelSize = self.config.kernelSize
+            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
+            if pixKernelSize % 2 == 0:
+                pixKernelSize += 1
         else:
             actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
+            # TODO: DM-36311 Remove deprecated kernelSizeMin and kernelSizeMax
             if actualKernelSize < self.config.kernelSizeMin:
                 actualKernelSize = self.config.kernelSizeMin
             if actualKernelSize > self.config.kernelSizeMax:
                 actualKernelSize = self.config.kernelSizeMax
+
+            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
+            if pixKernelSize % 2 == 0:
+                pixKernelSize += 1
+
             if display:
                 rms = np.median(sizes)
                 self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
                                rms, 2*np.sqrt(2*np.log(2))*rms)
 
-        # If we manually set the resolution then we need the size in pixel
-        # units
-        pixKernelSize = actualKernelSize
-        if self.config.samplingSize > 0:
-            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0:
-                pixKernelSize += 1
         self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize, pixKernelSize)
-        psfCandidateList[0].setHeight(pixKernelSize)
-        psfCandidateList[0].setWidth(pixKernelSize)
 
         # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- BEGIN PSFEX
         #
@@ -285,7 +283,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 continue
 
             try:
-                pstamp = psfCandidate.getMaskedImage().clone()
+                pstamp = psfCandidate.getMaskedImage(pixKernelSize, pixKernelSize).clone()
             except pexExcept.LengthError:
                 # Candidate is too close to the edge to get a stamp. Skip.
                 # TODO DM-27547: Replace with geometric condition
