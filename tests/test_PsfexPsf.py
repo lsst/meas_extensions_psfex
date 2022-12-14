@@ -144,6 +144,10 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         xarr, yarr = [], []
 
+        # NOTE: Warning to those trying to add sources near the edges here:
+        # self.subtractStars() assumes that every source is able to have the
+        # psf subtracted. That's not possible for sources on the edge, so the
+        # chi2 calculation that is asserted on will be off.
         for x, y in [(20, 20), (60, 20),
                      (30, 35),
                      (50, 50),
@@ -181,7 +185,6 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.cellSet = afwMath.SpatialCellSet(bbox, 100)
 
         self.footprintSet = afwDetection.FootprintSet(self.mi, afwDetection.Threshold(100), "DETECTED")
-
         self.catalog = self.measure(self.footprintSet, self.exposure)
 
         for source in self.catalog:
