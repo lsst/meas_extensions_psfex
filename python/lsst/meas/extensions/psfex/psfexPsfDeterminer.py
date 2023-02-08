@@ -285,8 +285,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             try:
                 pstamp = psfCandidate.getMaskedImage(pixKernelSize, pixKernelSize).clone()
             except pexExcept.LengthError:
-                # Candidate is too close to the edge to get a stamp. Skip.
-                # TODO DM-27547: Replace with geometric condition
+                self.log.warning("Could not get stamp image for psfCandidate: %s with kernel size: %s",
+                                 psfCandidate, pixKernelSize)
                 continue
 
             # From this point, we're configuring the "sample" (PSFEx's version
