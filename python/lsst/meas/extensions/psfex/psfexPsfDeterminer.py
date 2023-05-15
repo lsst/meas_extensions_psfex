@@ -376,6 +376,16 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         psf = psfex.PsfexPsf(psfs[0], geom.Point2D(avgX, avgY))
 
+        # If there are too few stars, the PSFEx psf model will reduce the order
+        # to 0, which the Science Pipelines code cannot handle (see
+        # https://github.com/lsst/meas_extensions_psfex/blob/f0d5218b5446faf5e39edc30e31d2e6f673ef294/src/PsfexPsf.cc#L118
+        # ).  The easiest way to test for this condition is trying to compute
+        # the PSF kernel and checking for an InvalidParameterError.
+        try:
+            _ = psf.getKernel(psf.getAveragePosition())
+        except pexExcept.InvalidParameterError:
+            raise RuntimeError("Failed to determine psfex psf: too few good stars.")
+
         #
         # Display code for debugging
         #
