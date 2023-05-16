@@ -272,6 +272,19 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         self.assertEqual(psf.computeBBox(pos), psf.computeKernelImage(pos).getBBox())
         self.assertEqual(psf.computeBBox(pos), psf.getKernel(pos).getBBox())
 
+    def testPsfexDeterminerTooFewStars(self):
+        """Test the (Psfex) psfDeterminer with too few stars."""
+        self.setupDeterminer(self.exposure)
+        metadata = dafBase.PropertyList()
+
+        stars = self.starSelector.run(self.catalog, exposure=self.exposure)
+        psfCandidateList = self.makePsfCandidates.run(stars.sourceCat, exposure=self.exposure).psfCandidates
+
+        psfCandidateListShort = psfCandidateList[0: 3]
+
+        with self.assertRaisesRegex(RuntimeError, "Failed to determine"):
+            psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateListShort, metadata)
+
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):
     pass
