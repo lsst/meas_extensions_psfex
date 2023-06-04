@@ -19,6 +19,7 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 #include "pybind11/pybind11.h"
+#include "lsst/cpputils/python.h"
 #include "pybind11/stl.h"
 
 #include "lsst/meas/extensions/psfex/Field.hh"
@@ -35,22 +36,24 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_MODULE(field, mod) {
-    py::class_<Field, std::shared_ptr<Field>> clsField(mod, "Field");
+void wrapField(lsst::cpputils::python::WrapperCollection &wrappers) {
+    using PyField =  py::class_<Field, std::shared_ptr<Field>>;
+    wrappers.wrapType(PyField(wrappers.module, "Field"), [](auto &mod, auto &clsField) {
 
-    clsField.def(py::init<std::string const&>(),
-            "ident"_a="unknown");
+        clsField.def(py::init<std::string const &>(),
+                     "ident"_a = "unknown");
 
-    clsField.def("finalize", &Field::finalize);
-    clsField.def("addExt", &Field::addExt);
-    clsField.def("getNext", &Field::getNext);
-    clsField.def("getPsfs", &Field::getPsfs);
+        clsField.def("finalize", &Field::finalize);
+        clsField.def("addExt", &Field::addExt);
+        clsField.def("getNext", &Field::getNext);
+        clsField.def("getPsfs", &Field::getPsfs);
 
-    mod.def("makeit", makeit,
-            "fields"_a, "sets"_a);
+        mod.def("makeit", makeit,
+                "fields"_a, "sets"_a);
+    });
 }
 
-}  // fieldex
+}
 }  // extensions
 }  // meas
 }  // lsst
