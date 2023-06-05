@@ -1,6 +1,9 @@
 # -*- python -*-
 from lsst.sconsUtils import scripts
-scripts.BasicSConscript.pybind11(["psfexPsf",
-                                  "psf",
-                                  "field",
-                                  "prefs"], addUnderscore=False)
+scripts.BasicSConscript.python(["_psfexLib"], [
+    "_psfexLib.cc",
+    "psfexPsf.cc",
+    "psf.cc",
+    "field.cc",
+    "prefs.cc"
+])

@@ -21,6 +21,7 @@
  */
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
+#include "lsst/cpputils/python.h"
 
 #include "lsst/meas/extensions/psfex/prefs.hh"
 #include "lsst/daf/base/PropertySet.h"
@@ -33,40 +34,41 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_MODULE(prefs, mod) {
-    py::class_<Prefs> clsPrefs(mod, "Prefs");
+void wrapPrefs(lsst::cpputils::python::WrapperCollection &wrappers) {
+    using PyPrefs = py::class_<Prefs> ;
+    wrappers.wrapType(PyPrefs(wrappers.module, "Prefs"), [](auto &mod, auto &clsPrefs) {
+        clsPrefs.attr("ALL_EXTENSIONS") = py::cast(static_cast<int>(Prefs::ALL_EXTENSIONS));
 
-    clsPrefs.attr("ALL_EXTENSIONS") = py::cast(static_cast<int>(Prefs::ALL_EXTENSIONS));
+        clsPrefs.def(py::init<std::string const &, lsst::daf::base::PropertySet const *>(), "filename"_a,
+                     "values"_a = nullptr);
 
-    clsPrefs.def(py::init<std::string const&, lsst::daf::base::PropertySet const*>(), "filename"_a,
-                 "values"_a = nullptr);
-
-    clsPrefs.def("use", &Prefs::use);
-    clsPrefs.def("setCommandLine", &Prefs::setCommandLine);
-    clsPrefs.def("getNcat", &Prefs::getNcat);
-    clsPrefs.def("getPsfStep", &Prefs::getPsfStep);
-    clsPrefs.def("getMinsn", &Prefs::getMinsn);
-    clsPrefs.def("getMaxellip", &Prefs::getMaxellip);
-    clsPrefs.def("getFwhmrange", &Prefs::getFwhmrange);
-    clsPrefs.def("getPsfsize", &Prefs::getPsfsize);
-    clsPrefs.def("getAutoselectFlag", &Prefs::getAutoselectFlag);
-    clsPrefs.def("getFlagMask", &Prefs::getFlagMask);
-    clsPrefs.def("getMaxvar", &Prefs::getMaxvar);
-    clsPrefs.def("getVarType", &Prefs::getVarType);
-    clsPrefs.def("getBadpixNmax", &Prefs::getBadpixNmax);
-    clsPrefs.def("getBadpixFlag", &Prefs::getBadpixFlag);
-    clsPrefs.def("getCenterKey", &Prefs::getCenterKey);
-    clsPrefs.def("getPhotfluxRkey", &Prefs::getPhotfluxRkey);
-    clsPrefs.def("getPhotfluxNum", &Prefs::getPhotfluxNum);
-    clsPrefs.def("getPhotfluxerrRkey", &Prefs::getPhotfluxerrRkey);
-    clsPrefs.def("getPhotfluxerrNum", &Prefs::getPhotfluxerrNum);
-    clsPrefs.def("getProfAccuracy", &Prefs::getProfAccuracy);
-    clsPrefs.def("getVerboseType", &Prefs::getVerboseType);
-    clsPrefs.def("getContextName", &Prefs::getContextName);
-    clsPrefs.def("getContextGroup", &Prefs::getContextGroup);
-    clsPrefs.def("getGroupDeg", &Prefs::getGroupDeg);
-    clsPrefs.def("addCatalog", &Prefs::addCatalog);
-    clsPrefs.def("getCatalogs", &Prefs::getCatalogs);
+        clsPrefs.def("use", &Prefs::use);
+        clsPrefs.def("setCommandLine", &Prefs::setCommandLine);
+        clsPrefs.def("getNcat", &Prefs::getNcat);
+        clsPrefs.def("getPsfStep", &Prefs::getPsfStep);
+        clsPrefs.def("getMinsn", &Prefs::getMinsn);
+        clsPrefs.def("getMaxellip", &Prefs::getMaxellip);
+        clsPrefs.def("getFwhmrange", &Prefs::getFwhmrange);
+        clsPrefs.def("getPsfsize", &Prefs::getPsfsize);
+        clsPrefs.def("getAutoselectFlag", &Prefs::getAutoselectFlag);
+        clsPrefs.def("getFlagMask", &Prefs::getFlagMask);
+        clsPrefs.def("getMaxvar", &Prefs::getMaxvar);
+        clsPrefs.def("getVarType", &Prefs::getVarType);
+        clsPrefs.def("getBadpixNmax", &Prefs::getBadpixNmax);
+        clsPrefs.def("getBadpixFlag", &Prefs::getBadpixFlag);
+        clsPrefs.def("getCenterKey", &Prefs::getCenterKey);
+        clsPrefs.def("getPhotfluxRkey", &Prefs::getPhotfluxRkey);
+        clsPrefs.def("getPhotfluxNum", &Prefs::getPhotfluxNum);
+        clsPrefs.def("getPhotfluxerrRkey", &Prefs::getPhotfluxerrRkey);
+        clsPrefs.def("getPhotfluxerrNum", &Prefs::getPhotfluxerrNum);
+        clsPrefs.def("getProfAccuracy", &Prefs::getProfAccuracy);
+        clsPrefs.def("getVerboseType", &Prefs::getVerboseType);
+        clsPrefs.def("getContextName", &Prefs::getContextName);
+        clsPrefs.def("getContextGroup", &Prefs::getContextGroup);
+        clsPrefs.def("getGroupDeg", &Prefs::getGroupDeg);
+        clsPrefs.def("addCatalog", &Prefs::addCatalog);
+        clsPrefs.def("getCatalogs", &Prefs::getCatalogs);
+    });
 }
 
 }  // namespace psfex

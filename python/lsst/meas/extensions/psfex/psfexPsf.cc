@@ -20,6 +20,7 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 #include "pybind11/pybind11.h"
+#include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
 
@@ -47,26 +48,24 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_MODULE(psfexPsf, mod) {
-    py::module::import("lsst.afw.table");
-    py::module::import("lsst.meas.algorithms");
+void wrapPsfexPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
+    wrappers.module.attr("BIG") = py::cast(BIG);
+    wrappers.module.attr("INTERPFAC") = py::cast(INTERPFAC);
 
-    mod.attr("BIG") = py::cast(BIG);
-    mod.attr("INTERPFAC") = py::cast(INTERPFAC);
+    using PyPsfexPsf = py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::meas::algorithms::ImagePsf>;
+    wrappers.wrapType(PyPsfexPsf(wrappers.module, "PsfexPsf"), [](auto &mod, auto &clsPsfexPsf) {
+        lsst::afw::table::io::python::addPersistableMethods<PsfexPsf>(clsPsfexPsf);
 
-    py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::meas::algorithms::ImagePsf> clsPsfexPsf(mod,
-                                                                                                  "PsfexPsf");
-    lsst::afw::table::io::python::addPersistableMethods<PsfexPsf>(clsPsfexPsf);
+        clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const &, lsst::geom::Point2D const &>(),
+                        "psf"_a, "averagePosition"_a = lsst::geom::Point2D());
 
-    clsPsfexPsf.def(py::init<lsst::meas::extensions::psfex::Psf const &, lsst::geom::Point2D const &>(),
-                    "psf"_a, "averagePosition"_a = lsst::geom::Point2D());
-
-    clsPsfexPsf.def("clone", &PsfexPsf::clone);
-    clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
-    clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
-                    "position"_a = lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
-    clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
-    clsPsfexPsf.def("write", &PsfexPsf::write);
+        clsPsfexPsf.def("clone", &PsfexPsf::clone);
+        clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
+        clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
+                        "position"_a = lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
+        clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
+        clsPsfexPsf.def("write", &PsfexPsf::write);
+    });
 }
 
 }  // namespace psfex

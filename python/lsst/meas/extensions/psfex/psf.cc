@@ -21,6 +21,8 @@
  */
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
+#include "lsst/cpputils/python.h"
+
 
 #include "ndarray/pybind11.h"
 
@@ -34,87 +36,95 @@ namespace meas {
 namespace extensions {
 namespace psfex {
 
-PYBIND11_MODULE(psf, mod) {
-    py::class_<Context> clsContext(mod, "Context");
+void wrapPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
+    using PyContext = py::class_<Context>;
 
-    clsContext.attr("KEEPHIDDEN") = py::cast(static_cast<int>(Context::KEEPHIDDEN));
-    clsContext.attr("REMOVEHIDDEN") = py::cast(static_cast<int>(Context::REMOVEHIDDEN));
+    wrappers.wrapType(PyContext(wrappers.module, "Context"), [](auto &mod, auto &clsContext) {
 
-    clsContext.def(py::init<std::vector<std::string> const&, std::vector<int> const&, std::vector<int> const&, bool>(),
-            "names"_a, "group"_a, "degree"_a, "pcexflag"_a);
+        clsContext.attr("KEEPHIDDEN") = py::cast(static_cast<int>(Context::KEEPHIDDEN));
+        clsContext.attr("REMOVEHIDDEN") = py::cast(static_cast<int>(Context::REMOVEHIDDEN));
 
-    clsContext.def("getName", &Context::getName);
-    clsContext.def("getNpc", &Context::getNpc);
-    clsContext.def("getPcflag", &Context::getPcflag);
-    clsContext.def("getPc", &Context::getPc);
+        clsContext.def(
+                py::init<std::vector<std::string> const &, std::vector<int> const &, std::vector<int> const &, bool>(),
+                "names"_a, "group"_a, "degree"_a, "pcexflag"_a);
 
-    py::class_<Sample> clsSample(mod, "Sample");
+        clsContext.def("getName", &Context::getName);
+        clsContext.def("getNpc", &Context::getNpc);
+        clsContext.def("getPcflag", &Context::getPcflag);
+        clsContext.def("getPc", &Context::getPc);
+    });
 
-    clsSample.def("getCatindex", &Sample::getCatindex);
-    clsSample.def("setCatindex", &Sample::setCatindex);
-    clsSample.def("getObjindex", &Sample::getObjindex);
-    clsSample.def("setObjindex", &Sample::setObjindex);
-    clsSample.def("getExtindex", &Sample::getExtindex);
-    clsSample.def("setExtindex", &Sample::setExtindex);
-    clsSample.def("setVig", &Sample::setVig);
-    clsSample.def("setNorm", &Sample::setNorm);
-    clsSample.def("setBacknoise2", &Sample::setBacknoise2);
-    clsSample.def("setGain", &Sample::setGain);
-    clsSample.def("setX", &Sample::setX);
-    clsSample.def("setY", &Sample::setY);
-    clsSample.def("setContext", &Sample::setContext);
-    clsSample.def("setFluxrad", &Sample::setFluxrad);
-    clsSample.def("getVig", &Sample::getVig);
-    clsSample.def("getVigResi", &Sample::getVigResi);
-    clsSample.def("getVigChi", &Sample::getVigChi);
-    clsSample.def("getVigWeight", &Sample::getVigWeight);
-    clsSample.def("getXY", &Sample::getXY);
-    clsSample.def("getNorm", &Sample::getNorm);
+    using PySample = py::class_<Sample>;
+    wrappers.wrapType(PySample(wrappers.module, "Sample"), [](auto &mod, auto &clsSample) {
 
-    py::class_<Set, std::shared_ptr<Set>> clsSet(mod, "Set");
+        clsSample.def("getCatindex", &Sample::getCatindex);
+        clsSample.def("setCatindex", &Sample::setCatindex);
+        clsSample.def("getObjindex", &Sample::getObjindex);
+        clsSample.def("setObjindex", &Sample::setObjindex);
+        clsSample.def("getExtindex", &Sample::getExtindex);
+        clsSample.def("setExtindex", &Sample::setExtindex);
+        clsSample.def("setVig", &Sample::setVig);
+        clsSample.def("setNorm", &Sample::setNorm);
+        clsSample.def("setBacknoise2", &Sample::setBacknoise2);
+        clsSample.def("setGain", &Sample::setGain);
+        clsSample.def("setX", &Sample::setX);
+        clsSample.def("setY", &Sample::setY);
+        clsSample.def("setContext", &Sample::setContext);
+        clsSample.def("setFluxrad", &Sample::setFluxrad);
+        clsSample.def("getVig", &Sample::getVig);
+        clsSample.def("getVigResi", &Sample::getVigResi);
+        clsSample.def("getVigChi", &Sample::getVigChi);
+        clsSample.def("getVigWeight", &Sample::getVigWeight);
+        clsSample.def("getXY", &Sample::getXY);
+        clsSample.def("getNorm", &Sample::getNorm);
+    });
 
-    clsSet.def(py::init<Context &>());
+    using PySet = py::class_<Set, std::shared_ptr<Set>>;
+    wrappers.wrapType(PySet(wrappers.module, "Set"), [](auto &mod, auto &clsSet) {
+        clsSet.def(py::init<Context &>());
 
-    clsSet.def("newSample", &Set::newSample);
-    clsSet.def("trimMemory", &Set::trimMemory);
-    clsSet.def("getFwhm", &Set::getFwhm);
-    clsSet.def("setFwhm", &Set::setFwhm);
-    clsSet.def("getNcontext", &Set::getNcontext);
-    clsSet.def("getNsample", &Set::getNsample);
-    clsSet.def("getContextOffset", &Set::getContextOffset);
-    clsSet.def("setContextOffset", &Set::setContextOffset);
-    clsSet.def("getContextScale", &Set::getContextScale);
-    clsSet.def("setContextScale", &Set::setContextScale);
-    clsSet.def("getRecentroid", &Set::getRecentroid);
-    clsSet.def("setRecentroid", &Set::setRecentroid);
-    clsSet.def("setVigSize", &Set::setVigSize);
-    clsSet.def("finiSample", &Set::finiSample);
-    clsSet.def("empty", &Set::empty);
-    clsSet.def("getContextNames", &Set::getContextNames);
-    clsSet.def("setContextname", &Set::setContextname);
-    clsSet.def("setBadFlags", &Set::setBadFlags);
-    clsSet.def("getBadFlags", &Set::getBadFlags);
-    clsSet.def("setBadSN", &Set::setBadSN);
-    clsSet.def("getBadSN", &Set::getBadSN);
-    clsSet.def("setBadFrmin", &Set::setBadFrmin);
-    clsSet.def("getBadFrmin", &Set::getBadFrmin);
-    clsSet.def("setBadFrmax", &Set::setBadFrmax);
-    clsSet.def("getBadFrmax", &Set::getBadFrmax);
-    clsSet.def("setBadElong", &Set::setBadElong);
-    clsSet.def("getBadElong", &Set::getBadElong);
-    clsSet.def("setBadPix", &Set::setBadPix);
-    clsSet.def("getBadPix", &Set::getBadPix);
-    clsSet.def("getSample", &Set::getSample);
+        clsSet.def("newSample", &Set::newSample);
+        clsSet.def("trimMemory", &Set::trimMemory);
+        clsSet.def("getFwhm", &Set::getFwhm);
+        clsSet.def("setFwhm", &Set::setFwhm);
+        clsSet.def("getNcontext", &Set::getNcontext);
+        clsSet.def("getNsample", &Set::getNsample);
+        clsSet.def("getContextOffset", &Set::getContextOffset);
+        clsSet.def("setContextOffset", &Set::setContextOffset);
+        clsSet.def("getContextScale", &Set::getContextScale);
+        clsSet.def("setContextScale", &Set::setContextScale);
+        clsSet.def("getRecentroid", &Set::getRecentroid);
+        clsSet.def("setRecentroid", &Set::setRecentroid);
+        clsSet.def("setVigSize", &Set::setVigSize);
+        clsSet.def("finiSample", &Set::finiSample);
+        clsSet.def("empty", &Set::empty);
+        clsSet.def("getContextNames", &Set::getContextNames);
+        clsSet.def("setContextname", &Set::setContextname);
+        clsSet.def("setBadFlags", &Set::setBadFlags);
+        clsSet.def("getBadFlags", &Set::getBadFlags);
+        clsSet.def("setBadSN", &Set::setBadSN);
+        clsSet.def("getBadSN", &Set::getBadSN);
+        clsSet.def("setBadFrmin", &Set::setBadFrmin);
+        clsSet.def("getBadFrmin", &Set::getBadFrmin);
+        clsSet.def("setBadFrmax", &Set::setBadFrmax);
+        clsSet.def("getBadFrmax", &Set::getBadFrmax);
+        clsSet.def("setBadElong", &Set::setBadElong);
+        clsSet.def("getBadElong", &Set::getBadElong);
+        clsSet.def("setBadPix", &Set::setBadPix);
+        clsSet.def("getBadPix", &Set::getBadPix);
+        clsSet.def("getSample", &Set::getSample);
+    });
 
-    py::class_<Psf> clsPsf(mod, "Psf");
+    using PyPsf =     py::class_<Psf>;
+    wrappers.wrapType(PyPsf(wrappers.module, "Psf"), [](auto &mod, auto &clsPsf) {
+        clsPsf.def(py::init<>());
 
-    clsPsf.def(py::init<>());
-
-    clsPsf.def("getLoc", &Psf::getLoc);
-    clsPsf.def("getResi", &Psf::getResi);
-    clsPsf.def("build", &Psf::build,
-            "x"_a, "y"_a, "other"_a=std::vector<double>());
-    clsPsf.def("clip", &Psf::clip);
+        clsPsf.def("getLoc", &Psf::getLoc);
+        clsPsf.def("getResi", &Psf::getResi);
+        clsPsf.def("build", &Psf::build,
+                   "x"_a, "y"_a, "other"_a = std::vector<double>());
+        clsPsf.def("clip", &Psf::clip);
+    });
 }
 
 }  // psfex
