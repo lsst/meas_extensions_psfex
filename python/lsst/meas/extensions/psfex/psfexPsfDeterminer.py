@@ -180,32 +180,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             rmsSize = quad.getTraceRadius()
             sizes[i] = rmsSize
 
-        # TODO: Keep only the if block and remove the else blocks in DM-36311
-        if self.config.stampSize:
-            pixKernelSize = self.config.stampSize
-            actualKernelSize = int(2*np.floor(0.5*pixKernelSize/self.config.samplingSize) + 1)
-        elif self.config.kernelSize >= 15:
-            self.log.warning("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
-            actualKernelSize = self.config.kernelSize
-            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0:
-                pixKernelSize += 1
-        else:
-            actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
-            # TODO: DM-36311 Remove deprecated kernelSizeMin and kernelSizeMax
-            if actualKernelSize < self.config.kernelSizeMin:
-                actualKernelSize = self.config.kernelSizeMin
-            if actualKernelSize > self.config.kernelSizeMax:
-                actualKernelSize = self.config.kernelSizeMax
+        pixKernelSize = self.config.stampSize
+        actualKernelSize = int(2*np.floor(0.5*pixKernelSize/self.config.samplingSize) + 1)
 
-            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0:
-                pixKernelSize += 1
-
-            if display:
-                rms = np.median(sizes)
-                self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
-                               rms, 2*np.sqrt(2*np.log(2))*rms)
+        if display:
+            rms = np.median(sizes)
+            self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
+                           rms, 2*np.sqrt(2*np.log(2))*rms)
 
         self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize, pixKernelSize)
 
