@@ -96,14 +96,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         doc="Should PSFEX be permitted to recentroid PSF candidates?",
         default=False,
     )
-    kernelSize = pexConfig.Field[int](
-        doc=("Size of the postage stamp around each star that is extracted for fitting."
-             "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
-             "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
-        default=None,
-        optional=True,
-        deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
-    )
 
     def setDefaults(self):
         super().setDefaults()
