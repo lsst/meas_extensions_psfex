@@ -1,9 +1,10 @@
+# This file is part of meas_extensions_psfex.
 #
-# LSST Data Management System
-# Copyright 2008, 2009, 2010 LSST Corporation.
-#
-# This product includes software developed by the
-# LSST Project (http://www.lsst.org/).
+# Developed for the LSST Data Management System.
+# This product includes software developed by the LSST Project
+# (https://www.lsst.org).
+# See the COPYRIGHT file at the top-level directory of this distribution
+# for details of code ownership.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +16,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the LSST License Statement and
-# the GNU General Public License along with this program.  If not,
-# see <http://www.lsstcorp.org/LegalNotices/>.
-#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+__all__ = ("PsfexStarSelectorConfig", "PsfexStarSelectorTask")
+
 import re
 import sys
 
@@ -35,8 +37,6 @@ import lsst.afw.display as afwDisplay
 from lsst.meas.algorithms import BaseSourceSelectorTask, sourceSelectorRegistry
 from . import psfexLib
 from .psfex import compute_fwhmrange
-
-__all__ = ["PsfexStarSelectorConfig", "PsfexStarSelectorTask"]
 
 
 class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
@@ -64,19 +64,6 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
         dtype=float,
         doc="Allowed FWHM variability (1.0 = 100%)",
         default=0.2,
-    )
-    maxbad = pexConfig.Field(
-        dtype=int,
-        doc="Max number of bad pixels ",
-        default=0,
-        check=lambda x: x >= 0,
-        deprecated="This field has never worked and its code is gone. Will be removed after v21."
-    )
-    maxbadflag = pexConfig.Field(
-        dtype=bool,
-        doc="Filter bad pixels? ",
-        default=True,
-        deprecated="This field has never worked and its code is gone. Will be removed after v21."
     )
     maxellip = pexConfig.Field(
         dtype=float,

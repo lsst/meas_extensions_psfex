@@ -1,9 +1,10 @@
+# This file is part of meas_extensions_psfex.
 #
-# LSST Data Management System
-# Copyright 2008-2015 AURA/LSST.
-#
-# This product includes software developed by the
-# LSST Project (http://www.lsst.org/).
+# Developed for the LSST Data Management System.
+# This product includes software developed by the LSST Project
+# (https://www.lsst.org).
+# See the COPYRIGHT file at the top-level directory of this distribution
+# for details of code ownership.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +16,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the LSST License Statement and
-# the GNU General Public License along with this program.  If not,
-# see <https://www.lsstcorp.org/LegalNotices/>.
-#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+__all__ = ("PsfexPsfDeterminerConfig", "PsfexPsfDeterminerTask")
+
 import os
 import numpy as np
 
@@ -93,14 +95,6 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
     recentroid = pexConfig.Field[bool](
         doc="Should PSFEX be permitted to recentroid PSF candidates?",
         default=False,
-    )
-    kernelSize = pexConfig.Field[int](
-        doc=("Size of the postage stamp around each star that is extracted for fitting."
-             "Note: this reflects the oversampling setting of the psf, set by `samplingSize`;"
-             "e.g. `samplingSize=0.5` would require this value to be 2x what you expect."),
-        default=None,
-        optional=True,
-        deprecated="'kernelSize' is deprecated and will be removed in v25. Use `stampSize` instead.",
     )
 
     def setDefaults(self):
@@ -178,32 +172,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             rmsSize = quad.getTraceRadius()
             sizes[i] = rmsSize
 
-        # TODO: Keep only the if block and remove the else blocks in DM-36311
-        if self.config.stampSize:
-            pixKernelSize = self.config.stampSize
-            actualKernelSize = int(2*np.floor(0.5*pixKernelSize/self.config.samplingSize) + 1)
-        elif self.config.kernelSize >= 15:
-            self.log.warning("NOT scaling kernelSize by stellar quadrupole moment, but using absolute value")
-            actualKernelSize = self.config.kernelSize
-            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0:
-                pixKernelSize += 1
-        else:
-            actualKernelSize = 2 * int(self.config.kernelSize * np.sqrt(np.median(sizes)) + 0.5) + 1
-            # TODO: DM-36311 Remove deprecated kernelSizeMin and kernelSizeMax
-            if actualKernelSize < self.config.kernelSizeMin:
-                actualKernelSize = self.config.kernelSizeMin
-            if actualKernelSize > self.config.kernelSizeMax:
-                actualKernelSize = self.config.kernelSizeMax
+        pixKernelSize = self.config.stampSize
+        actualKernelSize = int(2*np.floor(0.5*pixKernelSize/self.config.samplingSize) + 1)
 
-            pixKernelSize = int(actualKernelSize*self.config.samplingSize)
-            if pixKernelSize % 2 == 0:
-                pixKernelSize += 1
-
-            if display:
-                rms = np.median(sizes)
-                self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
-                               rms, 2*np.sqrt(2*np.log(2))*rms)
+        if display:
+            rms = np.median(sizes)
+            self.log.debug("Median PSF RMS size=%.2f pixels (\"FWHM\"=%.2f)",
+                           rms, 2*np.sqrt(2*np.log(2))*rms)
 
         self.log.trace("Psfex Kernel size=%.2f, Image Kernel Size=%.2f", actualKernelSize, pixKernelSize)
 
