@@ -6,6 +6,7 @@ setupRequired(psfex)
 setupRequired(sconsUtils)
 setupRequired(utils)
 setupRequired(geom)
+setupOptional(afwdata)
 
 envPrepend(PATH, ${PRODUCT_DIR}/bin)
 
