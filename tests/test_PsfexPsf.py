@@ -199,7 +199,7 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         del self.schema
         del self.measureSources
 
-    def setupDeterminer(self, exposure):
+    def setupDeterminer(self, exposure, fluxField=None):
         """Setup the starSelector and psfDeterminer"""
         starSelectorClass = measAlg.sourceSelectorRegistry["objectSize"]
         starSelectorConfig = starSelectorClass.ConfigClass()
@@ -221,6 +221,8 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         psfDeterminerConfig.sizeCellX = width
         psfDeterminerConfig.sizeCellY = height//3
         psfDeterminerConfig.spatialOrder = 1
+        if fluxField is not None:
+            psfDeterminerConfig.photometricFluxField = fluxField
 
         self.psfDeterminer = psfDeterminerClass(psfDeterminerConfig)
 
@@ -283,6 +285,21 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "Failed to determine"):
             psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateListShort, metadata)
+
+    def testPsfDeterminerChangeFluxField(self):
+        """Test the psfDeterminer with a different flux normalization field."""
+        # We test here with an aperture that we would be unlikely to ever use
+        # as a default.
+        self.setupDeterminer(self.exposure, fluxField="base_CircularApertureFlux_6_0_instFlux")
+        metadata = dafBase.PropertyList()
+
+        stars = self.starSelector.run(self.catalog, exposure=self.exposure)
+        psfCandidateList = self.makePsfCandidates.run(stars.sourceCat, exposure=self.exposure).psfCandidates
+        psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
+        self.exposure.setPsf(psf)
+
+        # Test how well we can subtract the PSF model
+        self.subtractStars(self.exposure, self.catalog, chi_lim=5.6)
 
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):
