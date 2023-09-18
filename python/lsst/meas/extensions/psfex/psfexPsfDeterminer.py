@@ -96,6 +96,12 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         doc="Should PSFEX be permitted to recentroid PSF candidates?",
         default=False,
     )
+    photometricFluxField = pexConfig.Field[str](
+        doc="Flux field to use for photometric normalization. This overrides the "
+            "``PHOTFLUX_KEY`` field for psfex. The associated flux error is "
+            "derived by appending ``Err`` to this field.",
+        default="base_CircularApertureFlux_9_0_instFlux",
+    )
 
     def setDefaults(self):
         super().setDefaults()
@@ -192,6 +198,8 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
         args_md.set("PSF_SIZE", str(actualKernelSize))
         args_md.set("PSF_SAMPLING", str(self.config.samplingSize))
+        args_md.set("PHOTFLUX_KEY", str(self.config.photometricFluxField))
+        args_md.set("PHOTFLUXERR_KEY", str(self.config.photometricFluxField) + "Err")
         prefs = psfex.Prefs(defaultsFile, args_md)
         prefs.setCommandLine([])
         prefs.addCatalog("psfexPsfDeterminer")
