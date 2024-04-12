@@ -301,6 +301,25 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         # Test how well we can subtract the PSF model
         self.subtractStars(self.exposure, self.catalog, chi_lim=5.6)
 
+    def testPsfDeterminerDownsample(self):
+        """Test the psfDeterminer with downsampling."""
+        self.setupDeterminer(self.exposure)
+        metadata = dafBase.PropertyList()
+
+        # Decrease the maximum number of stars.
+        # Without more changes to the test harness, we do not have access
+        # to which psf stars were used. With only 3 stars we fail below
+        # so we use this to confirm that the selection code is
+        # triggering.
+        self.psfDeterminer.config.maxCandidates = 10
+
+        stars = self.starSelector.run(self.catalog, exposure=self.exposure)
+        psfCandidateList = self.makePsfCandidates.run(stars.sourceCat, exposure=self.exposure).psfCandidates
+        psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
+
+        self.assertEqual(metadata['numAvailStars'], self.psfDeterminer.config.maxCandidates)
+        self.assertLessEqual(metadata['numGoodStars'], self.psfDeterminer.config.maxCandidates)
+
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):
     pass
