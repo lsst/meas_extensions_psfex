@@ -132,6 +132,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         psf: `lsst.meas.extensions.psfex.PsfexPsf`
             The determined PSF.
         """
+        psfCandidateList = self.downsampleCandidates(psfCandidateList)
 
         import lsstDebug
         display = lsstDebug.Info(__name__).display
