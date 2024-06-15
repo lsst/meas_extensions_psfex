@@ -35,6 +35,54 @@ import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.meas.extensions.psfex as psfex
+from lsst.pipe.base import AlgorithmError
+
+
+class PsfexTooFewStarsAlgorithmError(AlgorithmError):
+    """Custom exception for PSFEx algorithmic error when too few good stars are
+    available for PSF determination.
+    """
+
+    def __init__(
+        self,
+        message,
+        num_available_stars,
+        num_good_stars,
+        poly_ndim_initial,
+        poly_ndim_final,
+    ) -> None:
+        """
+        Initialize the PSFEx error exception for too few stars.
+
+        Parameters
+        ----------
+        message : str
+            Error message.
+        num_available_stars : int
+            Number of available stars for PSF determination.
+        num_good_stars : int
+            Number of good stars used for PSF determination.
+        poly_ndim_initial : int
+            Initial number of dependency parameters (dimensions) used in
+            polynomial fitting.
+        poly_ndim_final : int
+            Final number of dependency parameters (dimensions) set in the PSFEx
+            model after polynomial fitting.
+        """
+        super().__init__(message)
+        self._num_available_stars = num_available_stars
+        self._num_good_stars = num_good_stars
+        self._poly_ndim_initial = poly_ndim_initial
+        self._poly_ndim_final = poly_ndim_final
+
+    @property
+    def metadata(self) -> dict:
+        return {
+            "num_available_stars": self._num_available_stars,
+            "num_good_stars": self._num_good_stars,
+            "poly_ndim_initial": self._poly_ndim_initial,
+            "poly_ndim_final": self._poly_ndim_final,
+        }
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
@@ -367,8 +415,18 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # the PSF kernel and checking for an InvalidParameterError.
         try:
             _ = psf.getKernel(psf.getAveragePosition())
-        except pexExcept.InvalidParameterError:
-            raise RuntimeError("Failed to determine psfex psf: too few good stars.")
+        except pexExcept.InvalidParameterError as e:
+            ndim = int(str(e).split('saw ')[1].split()[0])
+            # Algorithmically impossible to determine PSF; raise an error
+            # indicating a generic problem with the entire algorithm that
+            # caused the whole task to fail. Include some metadata for QA.
+            raise PsfexTooFewStarsAlgorithmError(
+                "Failed to determine psfex psf: too few good stars.",
+                num_available_stars=nCand,
+                num_good_stars=numGoodStars,
+                poly_ndim_initial=psfSet.getNcontext(),
+                poly_ndim_final=ndim,
+            )
 
         #
         # Display code for debugging
