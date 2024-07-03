@@ -39,8 +39,22 @@ from lsst.pipe.base import AlgorithmError
 
 
 class PsfexTooFewStarsAlgorithmError(AlgorithmError):
-    """Custom exception for PSFEx algorithmic error when too few good stars are
-    available for PSF determination.
+    """Raised if too few good stars are available for PSF determination.
+
+    Parameters
+    ----------
+    message : `str`
+        Error message.
+    num_available_stars : `int`
+        Number of available stars for PSF determination.
+    num_good_stars : `int`
+        Number of good stars used for PSF determination.
+    poly_ndim_initial : `int`
+        Initial number of dependency parameters (dimensions) used in
+        polynomial fitting.
+    poly_ndim_final : `int`
+        Final number of dependency parameters (dimensions) set in the PSFEx
+        model after polynomial fitting.
     """
 
     def __init__(
@@ -51,24 +65,6 @@ class PsfexTooFewStarsAlgorithmError(AlgorithmError):
         poly_ndim_initial,
         poly_ndim_final,
     ) -> None:
-        """
-        Initialize the PSFEx error exception for too few stars.
-
-        Parameters
-        ----------
-        message : str
-            Error message.
-        num_available_stars : int
-            Number of available stars for PSF determination.
-        num_good_stars : int
-            Number of good stars used for PSF determination.
-        poly_ndim_initial : int
-            Initial number of dependency parameters (dimensions) used in
-            polynomial fitting.
-        poly_ndim_final : int
-            Final number of dependency parameters (dimensions) set in the PSFEx
-            model after polynomial fitting.
-        """
         super().__init__(message)
         self._num_available_stars = num_available_stars
         self._num_good_stars = num_good_stars
