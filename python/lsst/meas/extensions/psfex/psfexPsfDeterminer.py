@@ -43,8 +43,6 @@ class PsfexTooFewStarsAlgorithmError(AlgorithmError):
 
     Parameters
     ----------
-    message : `str`
-        Error message.
     num_available_stars : `int`
         Number of available stars for PSF determination.
     num_good_stars : `int`
@@ -59,17 +57,21 @@ class PsfexTooFewStarsAlgorithmError(AlgorithmError):
 
     def __init__(
         self,
-        message,
         num_available_stars,
         num_good_stars,
         poly_ndim_initial,
         poly_ndim_final,
     ) -> None:
-        super().__init__(message)
         self._num_available_stars = num_available_stars
         self._num_good_stars = num_good_stars
         self._poly_ndim_initial = poly_ndim_initial
         self._poly_ndim_final = poly_ndim_final
+        super().__init__(
+            f"Failed to determine psfex psf: too few good stars. {num_good_stars} stars were used from "
+            f"{num_available_stars} available. To accommodate this low count, the polynomial dimension was "
+            f"lowered from {poly_ndim_initial} to {poly_ndim_final}, which is not handled by the Science "
+            "Pipelines code."
+        )
 
     @property
     def metadata(self) -> dict:
@@ -417,7 +419,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             # indicating a generic problem with the entire algorithm that
             # caused the whole task to fail. Include some metadata for QA.
             raise PsfexTooFewStarsAlgorithmError(
-                "Failed to determine psfex psf: too few good stars.",
                 num_available_stars=nCand,
                 num_good_stars=numGoodStars,
                 poly_ndim_initial=psfSet.getNcontext(),
