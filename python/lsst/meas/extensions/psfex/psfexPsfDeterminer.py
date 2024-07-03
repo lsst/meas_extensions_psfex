@@ -415,9 +415,6 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             _ = psf.getKernel(psf.getAveragePosition())
         except pexExcept.InvalidParameterError as e:
             ndim = int(str(e).split('saw ')[1].split()[0])
-            # Algorithmically impossible to determine PSF; raise an error
-            # indicating a generic problem with the entire algorithm that
-            # caused the whole task to fail. Include some metadata for QA.
             raise PsfexTooFewStarsAlgorithmError(
                 num_available_stars=nCand,
                 num_good_stars=numGoodStars,
