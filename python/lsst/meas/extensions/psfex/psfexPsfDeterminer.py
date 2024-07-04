@@ -38,7 +38,7 @@ import lsst.meas.extensions.psfex as psfex
 from lsst.pipe.base import AlgorithmError
 
 
-class PsfexTooFewStarsAlgorithmError(AlgorithmError):
+class PsfexTooFewGoodStarsError(AlgorithmError):
     """Raised if too few good stars are available for PSF determination.
 
     Parameters
@@ -67,7 +67,7 @@ class PsfexTooFewStarsAlgorithmError(AlgorithmError):
         self._poly_ndim_initial = poly_ndim_initial
         self._poly_ndim_final = poly_ndim_final
         super().__init__(
-            f"Failed to determine psfex psf: too few good stars. {num_good_stars} stars were used from "
+            f"Failed to determine psfex psf: too few good stars ({num_good_stars}) out of "
             f"{num_available_stars} available. To accommodate this low count, the polynomial dimension was "
             f"lowered from {poly_ndim_initial} to {poly_ndim_final}, which is not handled by the Science "
             "Pipelines code."
@@ -413,7 +413,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # of the context data stored in the PsfexPsf class.
         ndim = psf.getNdim()
         if ndim == 0:
-            raise PsfexTooFewStarsAlgorithmError(
+            raise PsfexTooFewGoodStarsError(
                 num_available_stars=nCand,
                 num_good_stars=numGoodStars,
                 poly_ndim_initial=psfSet.getNcontext(),
