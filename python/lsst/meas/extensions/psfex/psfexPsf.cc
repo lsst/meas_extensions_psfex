@@ -63,6 +63,7 @@ void wrapPsfexPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
         clsPsfexPsf.def("getAveragePosition", &PsfexPsf::getAveragePosition);
         clsPsfexPsf.def("getKernel", &PsfexPsf::getKernel,
                         "position"_a = lsst::geom::Point2D(std::numeric_limits<double>::quiet_NaN()));
+        clsPsfexPsf.def("getNdim", &PsfexPsf::getNdim);
         clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
         clsPsfexPsf.def("write", &PsfexPsf::write);
     });

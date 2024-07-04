@@ -69,6 +69,10 @@ public:
     bool isPersistable() const noexcept override { return true; }
 
     void write(lsst::afw::table::io::OutputArchiveHandle & handle) const override;
+
+    /// Return the dimensionality of the context data
+    int getNdim() const;
+
 private:
     lsst::geom::Point2D _averagePosition;
     // Here are the unpacked fields from the psfex psf struct

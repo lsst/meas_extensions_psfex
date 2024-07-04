@@ -110,6 +110,11 @@ PsfexPsf::resized(int width, int height) const {
     throw LSST_EXCEPT(pex::exceptions::LogicError, "Not Implemented");
 }
 
+// Get the dimensionality of the context data
+int PsfexPsf::getNdim() const {
+    return _context.size();
+}
+
 std::shared_ptr<afw::math::LinearCombinationKernel const>
 PsfexPsf::getKernel(geom::Point2D position) const
 {
