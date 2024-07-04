@@ -409,12 +409,10 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # If there are too few stars, the PSFEx psf model will reduce the order
         # to 0, which the Science Pipelines code cannot handle (see
         # https://github.com/lsst/meas_extensions_psfex/blob/f0d5218b5446faf5e39edc30e31d2e6f673ef294/src/PsfexPsf.cc#L118
-        # ).  The easiest way to test for this condition is trying to compute
-        # the PSF kernel and checking for an InvalidParameterError.
-        try:
-            _ = psf.getKernel(psf.getAveragePosition())
-        except pexExcept.InvalidParameterError as e:
-            ndim = int(str(e).split('saw ')[1].split()[0])
+        # ).  One way to test for this condition is to fetch the dimensionality
+        # of the context data stored in the PsfexPsf class.
+        ndim = psf.getNdim()
+        if ndim == 0:
             raise PsfexTooFewStarsAlgorithmError(
                 num_available_stars=nCand,
                 num_good_stars=numGoodStars,
