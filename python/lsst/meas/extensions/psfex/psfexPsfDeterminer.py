@@ -410,8 +410,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # to 0, which the Science Pipelines code cannot handle (see
         # https://github.com/lsst/meas_extensions_psfex/blob/f0d5218b5446faf5e39edc30e31d2e6f673ef294/src/PsfexPsf.cc#L118
         # ).
-        ndim = psf.getNdim()
-        if ndim == 0:
+        if (ndim := psf.getNdim()) == 0:
             raise PsfexTooFewGoodStarsError(
                 num_available_stars=nCand,
                 num_good_stars=numGoodStars,
