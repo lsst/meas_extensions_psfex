@@ -70,7 +70,7 @@ public:
 
     void write(lsst::afw::table::io::OutputArchiveHandle & handle) const override;
 
-    /// Return the dimensionality of the context data
+    /// Return the number of dependency parameters in the psfex polynomial fit.
     int getNdim() const;
 
 private:

@@ -409,8 +409,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # If there are too few stars, the PSFEx psf model will reduce the order
         # to 0, which the Science Pipelines code cannot handle (see
         # https://github.com/lsst/meas_extensions_psfex/blob/f0d5218b5446faf5e39edc30e31d2e6f673ef294/src/PsfexPsf.cc#L118
-        # ).  One way to test for this condition is to fetch the dimensionality
-        # of the context data stored in the PsfexPsf class.
+        # ).
         ndim = psf.getNdim()
         if ndim == 0:
             raise PsfexTooFewGoodStarsError(
