@@ -35,6 +35,52 @@ import lsst.afw.math as afwMath
 import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.meas.extensions.psfex as psfex
+from lsst.pipe.base import AlgorithmError
+
+
+class PsfexTooFewGoodStarsError(AlgorithmError):
+    """Raised if too few good stars are available for PSF determination.
+
+    Parameters
+    ----------
+    num_available_stars : `int`
+        Number of available stars for PSF determination.
+    num_good_stars : `int`
+        Number of good stars used for PSF determination.
+    poly_ndim_initial : `int`
+        Initial number of dependency parameters (dimensions) used in
+        polynomial fitting.
+    poly_ndim_final : `int`
+        Final number of dependency parameters (dimensions) set in the PSFEx
+        model after initializing the PSF structure.
+    """
+
+    def __init__(
+        self,
+        num_available_stars,
+        num_good_stars,
+        poly_ndim_initial,
+        poly_ndim_final,
+    ) -> None:
+        self._num_available_stars = num_available_stars
+        self._num_good_stars = num_good_stars
+        self._poly_ndim_initial = poly_ndim_initial
+        self._poly_ndim_final = poly_ndim_final
+        super().__init__(
+            f"Failed to determine psfex psf: too few good stars ({num_good_stars}) out of "
+            f"{num_available_stars} available. To accommodate this low count, the polynomial dimension was "
+            f"lowered from {poly_ndim_initial} to {poly_ndim_final}, which is not handled by the Science "
+            "Pipelines code."
+        )
+
+    @property
+    def metadata(self) -> dict:
+        return {
+            "num_available_stars": self._num_available_stars,
+            "num_good_stars": self._num_good_stars,
+            "poly_ndim_initial": self._poly_ndim_initial,
+            "poly_ndim_final": self._poly_ndim_final,
+        }
 
 
 class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
@@ -363,12 +409,14 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         # If there are too few stars, the PSFEx psf model will reduce the order
         # to 0, which the Science Pipelines code cannot handle (see
         # https://github.com/lsst/meas_extensions_psfex/blob/f0d5218b5446faf5e39edc30e31d2e6f673ef294/src/PsfexPsf.cc#L118
-        # ).  The easiest way to test for this condition is trying to compute
-        # the PSF kernel and checking for an InvalidParameterError.
-        try:
-            _ = psf.getKernel(psf.getAveragePosition())
-        except pexExcept.InvalidParameterError:
-            raise RuntimeError("Failed to determine psfex psf: too few good stars.")
+        # ).
+        if (ndim := psf.getNdim()) == 0:
+            raise PsfexTooFewGoodStarsError(
+                num_available_stars=nCand,
+                num_good_stars=numGoodStars,
+                poly_ndim_initial=psfSet.getNcontext(),
+                poly_ndim_final=ndim,
+            )
 
         #
         # Display code for debugging
