@@ -52,7 +52,7 @@ class PsfexTooFewGoodStarsError(AlgorithmError):
         polynomial fitting.
     poly_ndim_final : `int`
         Final number of dependency parameters (dimensions) set in the PSFEx
-        model after polynomial fitting.
+        model after initializing the PSF structure.
     """
 
     def __init__(
