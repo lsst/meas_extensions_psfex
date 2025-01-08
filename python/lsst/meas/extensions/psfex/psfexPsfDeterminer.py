@@ -153,6 +153,17 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
         super().setDefaults()
         self.stampSize = 41
 
+    def validate(self):
+        super().validate()
+        fluxFieldEnding = self.photometricFluxField.rpartition("_")[-1]
+        if "_" not in self.photometricFluxField or not (
+            fluxFieldEnding == "flux" or fluxFieldEnding.endswith("Flux")
+        ):
+            raise ValueError(
+                "Expected `photometricFluxField` to end with '_flux' "
+                f"or '_*Flux', but got '{self.photometricFluxField}'"
+            )
+
 
 class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
     ConfigClass = PsfexPsfDeterminerConfig
@@ -294,7 +305,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         badBits = mi.getMask().getPlaneBitMask(self.config.badMaskBits)
         fluxName = prefs.getPhotfluxRkey()
-        fluxFlagName = "base_" + fluxName + "_flag"
+        fluxFlagName = fluxName.rpartition("_")[0] + "_flag"
 
         xpos, ypos = [], []
         for i, psfCandidate in enumerate(psfCandidateList):
