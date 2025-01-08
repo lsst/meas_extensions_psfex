@@ -316,7 +316,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             if not np.isfinite(xc) or not np.isfinite(yc):
                 continue
             # skip flagged sources
-            if fluxFlagName in source.schema and source.get(fluxFlagName):
+            if source.get(fluxFlagName):
                 continue
             # skip nonfinite and negative sources
             flux = source.get(fluxName)
