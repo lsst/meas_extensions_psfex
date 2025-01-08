@@ -38,6 +38,44 @@ import lsst.meas.extensions.psfex as psfex
 from lsst.pipe.base import AlgorithmError
 
 
+class PsfexNoStarsError(AlgorithmError):
+    """Raised if no stars are available for PSF determination.
+
+    Parameters
+    ----------
+    msg : `str`
+        Error message.
+    """
+
+    def __init__(self, msg) -> None:
+        super().__init__(msg)
+
+    @property
+    def metadata(self) -> dict:
+        return {
+            "num_available_stars": 0,
+        }
+
+
+class PsfexNoGoodStarsError(AlgorithmError):
+    """Raised if no "good" stars are available for PSF determination.
+
+    Parameters
+    ----------
+    msg : `str`
+        Error message.
+    """
+
+    def __init__(self, msg) -> None:
+        super().__init__(msg)
+
+    @property
+    def metadata(self) -> dict:
+        return {
+            "num_available_stars": 0,
+        }
+
+
 class PsfexTooFewGoodStarsError(AlgorithmError):
     """Raised if too few good stars are available for PSF determination.
 
@@ -211,7 +249,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         nCand = len(psfCandidateList)
         if nCand == 0:
-            raise RuntimeError("No PSF candidates supplied.")
+            raise PsfexNoStarsError("No psf candidates supplied.")
         #
         # How big should our PSF models be?
         #
@@ -368,7 +406,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 disp.dot("o", xc, yc, ctype=afwDisplay.CYAN, size=4)
 
         if psfSet.getNsample() == 0:
-            raise RuntimeError("No good PSF candidates to pass to PSFEx")
+            raise PsfexNoGoodStarsError("No good psf candidates to pass to psfex.")
 
         # ---- Update min and max and then the scaling
         for i in range(psfSet.getNcontext()):
