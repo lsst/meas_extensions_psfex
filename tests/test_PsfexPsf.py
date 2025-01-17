@@ -286,6 +286,48 @@ class SpatialModelPsfTestCase(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Failed to determine"):
             psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateListShort, metadata)
 
+    def testPsfexDeterminerNoStars(self):
+        """Test the (Psfex) psfDeterminer with no stars at all."""
+        self.setupDeterminer(self.exposure)
+        metadata = dafBase.PropertyList()
+        psfCandidateListEmpty = []
+
+        with self.assertRaises(
+            lsst.meas.extensions.psfex.psfexPsfDeterminer.PsfexNoStarsError, msg="No psf candidates supplied."
+        ):
+            psf, cellSet = self.psfDeterminer.determinePsf(self.exposure, psfCandidateListEmpty, metadata)
+
+    def testPsfexDeterminerNoGoodStars(self):
+        """Test the (Psfex) psfDeterminer with no good stars."""
+        self.setupDeterminer(self.exposure)
+        metadata = dafBase.PropertyList()
+
+        stars = self.starSelector.run(self.catalog, exposure=self.exposure)
+        psfCandidateList = self.makePsfCandidates.run(stars.sourceCat, exposure=self.exposure).psfCandidates
+
+        # Get the first three stars to make them bad in various ways.
+        psfCandidateListNoGoodStars = psfCandidateList[0: 3]
+
+        # For the first star, make the centroid bad.
+        s1 = psfCandidateListNoGoodStars[0].getSource()
+        s1["base_SdssCentroid_x"] = np.nan
+
+        # For the second star, make the default flux flagged.
+        s2 = psfCandidateListNoGoodStars[1].getSource()
+        s2.set("base_CircularApertureFlux_9_0_flag", True)
+
+        # For the third star, make the default flux negative.
+        s3 = psfCandidateListNoGoodStars[2].getSource()
+        s3.set("base_CircularApertureFlux_9_0_instFlux", -0.25)
+
+        with self.assertRaises(
+            lsst.meas.extensions.psfex.psfexPsfDeterminer.PsfexNoGoodStarsError,
+            msg="No good psf candidates to pass to psfex.",
+        ):
+            psf, cellSet = self.psfDeterminer.determinePsf(
+                self.exposure, psfCandidateListNoGoodStars, metadata
+            )
+
     def testPsfDeterminerChangeFluxField(self):
         """Test the psfDeterminer with a different flux normalization field."""
         # We test here with an aperture that we would be unlikely to ever use
