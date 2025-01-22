@@ -19,7 +19,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-__all__ = ("PsfexPsfDeterminerConfig", "PsfexPsfDeterminerTask")
+__all__ = (
+    "PsfexPsfDeterminerConfig",
+    "PsfexPsfDeterminerTask",
+    "PsfexNoStarsError",
+    "PsfexNoGoodStarsError",
+    "PsfexTooFewGoodStarsError",
+)
 
 import os
 import numpy as np
@@ -36,6 +42,33 @@ import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.meas.extensions.psfex as psfex
 from lsst.pipe.base import AlgorithmError
+
+
+class PsfexNoStarsError(AlgorithmError):
+    """Raised if no stars are available for PSF determination."""
+
+    def __init__(self) -> None:
+        super().__init__("No psf candidates supplied.")
+
+
+class PsfexNoGoodStarsError(AlgorithmError):
+    """Raised if no "good" stars are available for PSF determination.
+
+    Parameters
+    ----------
+    num_available_stars : `int`
+        Number of available stars for PSF determination.
+    """
+
+    def __init__(self, num_available_stars) -> None:
+        self._num_available_stars = num_available_stars
+        super().__init__(f"No good psf candidates to pass to psfex out of {num_available_stars} available.")
+
+    @property
+    def metadata(self) -> dict:
+        return {
+            "num_available_stars": self._num_available_stars,
+        }
 
 
 class PsfexTooFewGoodStarsError(AlgorithmError):
@@ -211,7 +244,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
 
         nCand = len(psfCandidateList)
         if nCand == 0:
-            raise RuntimeError("No PSF candidates supplied.")
+            raise PsfexNoStarsError()
         #
         # How big should our PSF models be?
         #
@@ -368,7 +401,7 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
                 disp.dot("o", xc, yc, ctype=afwDisplay.CYAN, size=4)
 
         if psfSet.getNsample() == 0:
-            raise RuntimeError("No good PSF candidates to pass to PSFEx")
+            raise PsfexNoGoodStarsError(num_available_stars=nCand)
 
         # ---- Update min and max and then the scaling
         for i in range(psfSet.getNcontext()):
