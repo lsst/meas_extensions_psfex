@@ -94,6 +94,7 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
     def setDefaults(self):
         self.badFlags = [
             "base_PixelFlags_flag_edge",
+            "base_PixelFlags_flag_nodata",
             "base_PixelFlags_flag_saturatedCenter",
             "base_PixelFlags_flag_crCenter",
             "base_PixelFlags_flag_bad",
