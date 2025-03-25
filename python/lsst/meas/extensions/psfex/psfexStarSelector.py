@@ -92,8 +92,10 @@ class PsfexStarSelectorConfig(BaseSourceSelectorTask.ConfigClass):
                                                  f"minFwhm ({self.minFwhm}) > maxFwhm ({self.maxFwhm})")
 
     def setDefaults(self):
+        super().setDefaults()
         self.badFlags = [
             "base_PixelFlags_flag_edge",
+            "base_PixelFlags_flag_nodata",
             "base_PixelFlags_flag_saturatedCenter",
             "base_PixelFlags_flag_crCenter",
             "base_PixelFlags_flag_bad",

@@ -307,6 +307,7 @@ def showPsf(psf, set, ext=None, wcsData=None, trim=0, nspot=5,
 def getFlags(tab=None):
     flagKeys = [
         "base_PixelFlags_flag_edge",
+        "base_PixelFlags_flag_nodata",
         # "base_PixelFlags_flag_interpolated",
         # "base_PixelFlags_flag_interpolatedCenter",
         # "base_PixelFlags_flag_saturated",
