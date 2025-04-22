@@ -50,6 +50,10 @@ class PsfexNoStarsError(AlgorithmError):
     def __init__(self) -> None:
         super().__init__("No psf candidates supplied.")
 
+    @property
+    def metadata(self) -> dict:
+        return {}
+
 
 class PsfexNoGoodStarsError(AlgorithmError):
     """Raised if no "good" stars are available for PSF determination.
