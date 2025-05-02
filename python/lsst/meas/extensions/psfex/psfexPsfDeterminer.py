@@ -352,6 +352,9 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             xc, yc = source.getX(), source.getY()
             if not np.isfinite(xc) or not np.isfinite(yc):
                 continue
+            # centroids might be finite but still failing
+            if source.get('slot_Centroid_flag'):
+                continue
             # skip flagged sources
             if source.get(fluxFlagName):
                 continue
