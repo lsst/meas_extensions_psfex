@@ -185,6 +185,11 @@ class PsfexPsfDeterminerConfig(measAlg.BasePsfDeterminerConfig):
             "derived by appending ``Err`` to this field.",
         default="base_CircularApertureFlux_9_0_instFlux",
     )
+    rejectFlaggedCentroids = pexConfig.Field[bool](
+        doc="Should flagged centroids be rejected? Note that setting this to False "
+            "additionally ignores aperture flux flags since those are tied together.",
+        default=True,
+    )
 
     def setDefaults(self):
         super().setDefaults()
@@ -352,12 +357,13 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
             xc, yc = source.getX(), source.getY()
             if not np.isfinite(xc) or not np.isfinite(yc):
                 continue
-            # centroids might be finite but still failing
-            if source.get("slot_Centroid_flag"):
-                continue
-            # skip flagged sources
-            if source.get(fluxFlagName):
-                continue
+            if self.config.rejectFlaggedCentroids:
+                # centroids might be finite but still failing
+                if source.get("slot_Centroid_flag"):
+                    continue
+                # skip flagged sources
+                if source.get(fluxFlagName):
+                    continue
             # skip nonfinite and negative sources
             flux = source.get(fluxName)
             if flux < 0 or not np.isfinite(flux):
