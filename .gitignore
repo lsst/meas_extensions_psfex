@@ -28,6 +28,8 @@ src/psfex
 src/wcs/Makefile
 stamp-h1
 python/lsst/meas/extensions/psfex/version.py
+python/lsst_meas_extensions_psfex.dist-info
+
 TAGS
 
 psfex.xml
