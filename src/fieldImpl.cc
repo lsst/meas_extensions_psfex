@@ -107,7 +107,12 @@ Field::addExt(lsst::afw::geom::SkyWcs const& wcs_,
     auto const crpix = wcs_.getPixelOrigin() + geom::Extent2D(1, 1);
     auto const cdMatrix = wcs_.getCdMatrix();
     std::string const cunit("DEG");
-    auto metadata = wcs_.getFitsMetadata();
+    std::shared_ptr<daf::base::PropertyList> metadata;
+    try {
+        metadata = wcs_.getFitsMetadata();
+    } catch (pex::exceptions::RuntimeError &) {
+        metadata = wcs_.getTanWcs(wcs_.getPixelOrigin())->getFitsMetadata();
+    }
     for (int i = 0; i != wcs->naxis; ++i) {
         auto ifits = i + 1;
         auto ctype = metadata->getAsString("CTYPE" + std::to_string(ifits));
