@@ -37,7 +37,7 @@ namespace extensions {
 namespace psfex {
 
 void wrapField(lsst::cpputils::python::WrapperCollection &wrappers) {
-    using PyField =  py::class_<Field, std::shared_ptr<Field>>;
+    using PyField =  py::classh<Field>;
     wrappers.wrapType(PyField(wrappers.module, "Field"), [](auto &mod, auto &clsField) {
 
         clsField.def(py::init<std::string const &>(),
