@@ -52,7 +52,7 @@ void wrapPsfexPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
     wrappers.module.attr("BIG") = py::cast(BIG);
     wrappers.module.attr("INTERPFAC") = py::cast(INTERPFAC);
 
-    using PyPsfexPsf = py::class_<PsfexPsf, std::shared_ptr<PsfexPsf>, lsst::meas::algorithms::ImagePsf>;
+    using PyPsfexPsf = py::classh<PsfexPsf, lsst::meas::algorithms::ImagePsf>;
     wrappers.wrapType(PyPsfexPsf(wrappers.module, "PsfexPsf"), [](auto &mod, auto &clsPsfexPsf) {
         lsst::afw::table::io::python::addPersistableMethods<PsfexPsf>(clsPsfexPsf);
 
