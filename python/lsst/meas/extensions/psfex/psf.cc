@@ -79,7 +79,7 @@ void wrapPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
         clsSample.def("getNorm", &Sample::getNorm);
     });
 
-    using PySet = py::class_<Set, std::shared_ptr<Set>>;
+    using PySet = py::classh<Set>;
     wrappers.wrapType(PySet(wrappers.module, "Set"), [](auto &mod, auto &clsSet) {
         clsSet.def(py::init<Context &>());
 
