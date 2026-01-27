@@ -546,4 +546,50 @@ void PsfexPsf::write(afw::table::io::OutputArchiveHandle & handle) const {
     }
 }
 
+std::shared_ptr<PsfexPsf> PsfexPsf::fromSerializationData(PsfexPsfSerializationData const & data) {
+    std::shared_ptr<PsfexPsf> result(new PsfexPsf());
+    result->_averagePosition = geom::Point2D(data.average_x, data.average_y);
+    result->_pixstep = data.pixel_step;
+    std::vector<int> group = data.group;
+    for (auto & g : group) {
+        ++g;  // poly_init inconsistently subtracts 1 from each element.
+    }
+    result->_poly = poly_init(
+        group.data(), group.size(),
+        const_cast<int*>(data.degree.data()), data.degree.size()
+    );
+    assert(static_cast<std::size_t>(result->_poly->ncoeff) == data.basis.size());
+    assert(static_cast<std::size_t>(result->_poly->ncoeff) == data.coeff.size());
+    std::copy(data.basis.begin(), data.basis.end(), result->_poly->basis);
+    std::copy(data.coeff.begin(), data.coeff.end(), result->_poly->coeff);
+    result->_size.assign(data.size.begin(), data.size.end());
+    result->_comp.assign(data.comp.begin(), data.comp.end());
+    result->_context.resize(data.context.size());
+    for (std::size_t i = 0; i != result->_context.size(); ++i) {
+        result->_context[i].first  = data.context[i][0];
+        result->_context[i].second = data.context[i][1];
+    }
+    return result;
+}
+
+PsfexPsfSerializationData PsfexPsf::getSerializationData() const {
+    PsfexPsfSerializationData result;
+    result.average_x = _averagePosition.getX();
+    result.average_y = _averagePosition.getY();
+    result.pixel_step = _pixstep;
+    result.group.assign(_poly->group, _poly->group + _poly->ndim);
+    result.degree.assign(_poly->degree, _poly->degree + _poly->ngroup);
+    result.basis.assign(_poly->basis, _poly->basis + _poly->ncoeff);
+    result.coeff.assign(_poly->coeff, _poly->coeff + _poly->ncoeff);
+    result.size = _size;
+    result.comp = ndarray::allocate(_comp.size());
+    std::copy(_comp.begin(), _comp.end(), result.comp.begin());
+    result.context = ndarray::allocate(_context.size(), 2);
+    for (std::size_t i = 0; i != _context.size(); ++i) {
+        result.context[i][0] = _context[i].first;
+        result.context[i][1] = _context[i].second;
+    }
+    return result;
+}
+
 }}}}

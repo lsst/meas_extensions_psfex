@@ -20,6 +20,8 @@
  * see <https://www.lsstcorp.org/LegalNotices/>.
  */
 #include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
+#include "ndarray/pybind11.h"
 #include "lsst/cpputils/python.h"
 
 #include "lsst/afw/table/io/python.h"  // for addPersistableMethods
@@ -66,7 +68,25 @@ void wrapPsfexPsf(lsst::cpputils::python::WrapperCollection &wrappers) {
         clsPsfexPsf.def("getNdim", &PsfexPsf::getNdim);
         clsPsfexPsf.def("isPersistable", &PsfexPsf::isPersistable);
         clsPsfexPsf.def("write", &PsfexPsf::write);
+        clsPsfexPsf.def("getSerializationData", &PsfexPsf::getSerializationData);
+        clsPsfexPsf.def_static("fromSerializationData", &PsfexPsf::fromSerializationData);
     });
+    using PyPsfexPsfSerializationData = py::classh<PsfexPsfSerializationData>;
+    wrappers.wrapType(PyPsfexPsfSerializationData(wrappers.module, "PsfexPsfSerializationData"),
+        [](auto & mod, auto & cls) {
+            cls.def(py::init<>());
+            cls.def_readwrite("average_x", &PsfexPsfSerializationData::average_x);
+            cls.def_readwrite("average_y", &PsfexPsfSerializationData::average_y);
+            cls.def_readwrite("pixel_step", &PsfexPsfSerializationData::pixel_step);
+            cls.def_readwrite("group", &PsfexPsfSerializationData::group);
+            cls.def_readwrite("degree", &PsfexPsfSerializationData::degree);
+            cls.def_readwrite("basis", &PsfexPsfSerializationData::basis);
+            cls.def_readwrite("coeff", &PsfexPsfSerializationData::coeff);
+            cls.def_readwrite("size", &PsfexPsfSerializationData::size);
+            cls.def_readwrite("comp", &PsfexPsfSerializationData::comp);
+            cls.def_readwrite("context", &PsfexPsfSerializationData::context);
+        }
+    );
 }
 
 }  // namespace psfex

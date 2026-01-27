@@ -32,7 +32,9 @@ import lsst.afw.math as afwMath
 import lsst.afw.table as afwTable
 import lsst.daf.base as dafBase
 import lsst.meas.algorithms as measAlg
+import lsst.afw.image.testUtils  # Inject some test helpers.
 from lsst.meas.base import SingleFrameMeasurementTask
+from lsst.meas.extensions.psfex import PsfexPsf
 # register the PSF determiner
 import lsst.meas.extensions.psfex.psfexPsfDeterminer
 assert lsst.meas.extensions.psfex.psfexPsfDeterminer  # make pyflakes happy
@@ -61,7 +63,7 @@ def psfVal(ix, iy, x, y, sigma1, sigma2, b):
             + b*math.exp(-0.5*(u**2 + (v*ab)**2)/sigma2**2))/(1 + b)
 
 
-class SpatialModelPsfTestCase(unittest.TestCase):
+class SpatialModelPsfTestCase(lsst.utils.tests.TestCase):
     """A test case for SpatialModelPsf"""
 
     def measure(self, footprintSet, exposure):
@@ -361,6 +363,23 @@ class SpatialModelPsfTestCase(unittest.TestCase):
 
         self.assertEqual(metadata['numAvailStars'], self.psfDeterminer.config.maxCandidates)
         self.assertLessEqual(metadata['numGoodStars'], self.psfDeterminer.config.maxCandidates)
+
+    def testSerializationData(self):
+        """Test that we can round-trip through the new PsfExSerializationData
+        struct.
+        """
+        self.setupDeterminer(self.exposure)
+        metadata = dafBase.PropertyList()
+
+        stars = self.starSelector.run(self.catalog, exposure=self.exposure)
+        psfCandidateList = self.makePsfCandidates.run(stars.sourceCat, exposure=self.exposure).psfCandidates
+        psf1, _ = self.psfDeterminer.determinePsf(self.exposure, psfCandidateList, metadata)
+
+        data = psf1.getSerializationData()
+        psf2 = PsfexPsf.fromSerializationData(data)
+        self.assertEqual(psf1.getAveragePosition(), psf2.getAveragePosition())
+        self.assertImagesEqual(psf1.computeImage(psf1.getAveragePosition()),
+                               psf2.computeImage(psf2.getAveragePosition()))
 
 
 class TestMemory(lsst.utils.tests.MemoryTestCase):

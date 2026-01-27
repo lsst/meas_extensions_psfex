@@ -24,6 +24,7 @@
 # if !defined(LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H)
 #define LSST_MEAS_EXTENSIONS_PSFEX_PSFEX_H 1
 
+#include "ndarray.h"
 #include "lsst/geom/Box.h"
 #include "lsst/meas/algorithms/ImagePsf.h"
 #include "lsst/meas/extensions/psfex/psf.hh"
@@ -32,6 +33,20 @@ namespace lsst { namespace meas { namespace extensions { namespace psfex {
     namespace detail {
         class PsfexPsfFactory;
     }
+
+
+struct PsfexPsfSerializationData {
+    double average_x = 0.0;
+    double average_y = 0.0;
+    double pixel_step = 0.0;
+    std::vector<int> group = std::vector<int>();
+    std::vector<int> degree = std::vector<int>();
+    std::vector<double> basis = std::vector<double>();
+    std::vector<double> coeff = std::vector<double>();
+    std::vector<int> size = std::vector<int>();
+    ndarray::Array<float, 1, 1> comp = ndarray::Array<float, 1, 1>();
+    ndarray::Array<double, 2, 2> context = ndarray::Array<double, 2, 2>();
+};
 
 /**
  * @brief Represent a PSF as a linear combination of PSFEX (== Karhunen-Loeve) basis functions
@@ -72,6 +87,12 @@ public:
 
     /// Return the number of dependency parameters in the psfex polynomial fit.
     int getNdim() const;
+
+    /// Return a representation suitable for serialization.
+    PsfexPsfSerializationData getSerializationData() const;
+
+    /// Construct from serialization data.
+    static std::shared_ptr<PsfexPsf> fromSerializationData(PsfexPsfSerializationData const & data);
 
 private:
     lsst::geom::Point2D _averagePosition;
