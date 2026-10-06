@@ -27,7 +27,6 @@ __all__ = (
     "PsfexTooFewGoodStarsError",
 )
 
-import os
 import numpy as np
 
 import lsst.daf.base as dafBase
@@ -42,6 +41,7 @@ import lsst.meas.algorithms as measAlg
 import lsst.meas.algorithms.utils as maUtils
 import lsst.meas.extensions.psfex as psfex
 from lsst.pipe.base import AlgorithmError
+from lsst.resources import ResourcePath
 
 
 class PsfexNoStarsError(AlgorithmError):
@@ -292,7 +292,9 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         #
         # Insert the good candidates into the set
         #
-        defaultsFile = os.path.join(os.environ["MEAS_EXTENSIONS_PSFEX_DIR"], "config", "default-lsst.psfex")
+        defaultsPath = ResourcePath(
+            "resource://lsst.meas.extensions.psfex/resources/config/default-lsst.psfex"
+        )
         args_md = dafBase.PropertySet()
         args_md.set("BASIS_TYPE", str(self.config.psfexBasis))
         args_md.set("PSFVAR_DEGREES", str(self.config.spatialOrder))
@@ -300,7 +302,11 @@ class PsfexPsfDeterminerTask(measAlg.BasePsfDeterminerTask):
         args_md.set("PSF_SAMPLING", str(self.config.samplingSize))
         args_md.set("PHOTFLUX_KEY", str(self.config.photometricFluxField))
         args_md.set("PHOTFLUXERR_KEY", str(self.config.photometricFluxField) + "Err")
-        prefs = psfex.Prefs(defaultsFile, args_md)
+        # psfex.Prefs is C++ and needs a local filesystem path
+        # as_local() yields the real file for on-disk installs
+        # and a temporary copy for zip installs.
+        with defaultsPath.as_local() as defaultsFile:
+            prefs = psfex.Prefs(defaultsFile.ospath, args_md)
         prefs.setCommandLine([])
         prefs.addCatalog("psfexPsfDeterminer")
 
