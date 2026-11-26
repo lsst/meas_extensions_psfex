@@ -1,0 +1,11 @@
+prefix=${pcfiledir}/../..
+includedir=${prefix}/include
+libdir=${prefix}/lib
+doxygen_tag=${prefix}/doc/meas_extensions_psfex.tag
+lsst_build_requires=lsst_afw boost_test lsst_daf_base fftw3 fftw3f lsst_meas_base lsst_meas_algorithms pybind11 python3 lsst_cpputils lsst_psfex
+
+Name: lsst_meas_extensions_psfex
+Description: LSST Science Pipelines PSFEx PSF modeling
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmeas_extensions_psfex
